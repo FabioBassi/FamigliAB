@@ -4,37 +4,34 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.fabiobassi.famigliab.ui.features.budgeting.BudgetingScreen
+import com.fabiobassi.famigliab.ui.features.documents.DocumentsScreen
+import com.fabiobassi.famigliab.ui.features.grocerylist.GroceryListScreen
+import com.fabiobassi.famigliab.ui.features.home.HomeScreen
+import com.fabiobassi.famigliab.ui.features.passwords.PasswordsScreen
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 
 class MainActivity : ComponentActivity() {
@@ -49,101 +46,61 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-sealed class BottomNavItem(val title: String, val icon: ImageVector) {
-    object Home : BottomNavItem("Home", Icons.Default.Home)
-    object Spese : BottomNavItem("Spese", Icons.AutoMirrored.Filled.TrendingUp)
-    object Calendario : BottomNavItem("Calendario", Icons.Default.CalendarToday)
-    object ListaSpesa : BottomNavItem("Lista", Icons.Default.ShoppingCart)
-    object Documenti : BottomNavItem("Documenti", Icons.Default.Description)
+sealed class BottomNavItem(val title: String, val icon: ImageVector, val route: String) {
+    object Home : BottomNavItem("Home", Icons.Default.Home, "home")
+    object Budgeting : BottomNavItem("Bilancio", Icons.Default.Analytics, "budgeting")
+    object GroceryList : BottomNavItem("Lista Spesa", Icons.Default.ShoppingCart, "grocery_list")
+    object Passwords : BottomNavItem("Passwords", Icons.Default.Lock, "passwords")
+    object Documents : BottomNavItem("Documenti", Icons.Default.Description, "documents")
 }
 
 @Composable
 fun MainScreen() {
-    var selectedScreen by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Home) }
+    val navController = rememberNavController()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        bottomBar = { AppBottomNavigationBar(selectedScreen) { selectedScreen = it } }
+        bottomBar = { AppBottomNavigationBar(navController = navController) }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-            when (selectedScreen) {
-                BottomNavItem.Home -> HomeScreen()
-                else -> PlaceholderScreen(screen = selectedScreen)
-            }
+        NavHost(navController, startDestination = BottomNavItem.Home.route, Modifier.padding(innerPadding)) {
+            composable(BottomNavItem.Home.route) { HomeScreen() }
+            composable(BottomNavItem.Budgeting.route) { BudgetingScreen() }
+            composable(BottomNavItem.GroceryList.route) { GroceryListScreen() }
+            composable(BottomNavItem.Passwords.route) { PasswordsScreen() }
+            composable(BottomNavItem.Documents.route) { DocumentsScreen() }
         }
     }
 }
 
 @Composable
-fun AppBottomNavigationBar(selectedScreen: BottomNavItem, onScreenSelected: (BottomNavItem) -> Unit) {
+fun AppBottomNavigationBar(navController: NavController) {
     val items = listOf(
         BottomNavItem.Home,
-        BottomNavItem.Spese,
-        BottomNavItem.Calendario,
-        BottomNavItem.ListaSpesa,
-        BottomNavItem.Documenti
+        BottomNavItem.Budgeting,
+        BottomNavItem.GroceryList,
+        BottomNavItem.Passwords,
+        BottomNavItem.Documents
     )
     NavigationBar {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+
         items.forEach { item ->
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = item.title) },
                 label = { Text(item.title) },
-                selected = selectedScreen == item,
-                onClick = { onScreenSelected(item) }
+                selected = currentRoute == item.route,
+                onClick = {
+                    navController.navigate(item.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         }
-    }
-}
-
-@Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.Start
-    ) {
-        WelcomeTitle(name = "Fab")
-        InfoWidget(title = "Ultime Spese")
-        InfoWidget(title = "Prossimi Eventi")
-    }
-}
-
-@Composable
-fun WelcomeTitle(name: String) {
-    Text(
-        text = "Ciao $name!",
-        fontSize = 36.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(top = 16.dp, bottom = 24.dp)
-    )
-}
-
-@Composable
-fun InfoWidget(title: String, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = title, style = MaterialTheme.typography.headlineSmall)
-            Text(text = "Nessuna informazione da mostrare.", modifier = Modifier.padding(top = 8.dp))
-        }
-    }
-}
-
-@Composable
-fun PlaceholderScreen(screen: BottomNavItem) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(text = "Schermata ${screen.title}", fontSize = 24.sp)
     }
 }
 
