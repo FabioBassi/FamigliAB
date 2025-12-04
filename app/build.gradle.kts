@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -51,4 +52,6 @@ dependencies {
 
     // 🧭 Navigation (optional but useful)
     implementation(libs.androidx.navigation.compose)
+
+    //ksp("androidx.room:room-compiler:2.5.0")
 }
