@@ -1,5 +1,6 @@
 package com.fabiobassi.famigliab
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,9 +12,11 @@ import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.NavigationBar
@@ -27,8 +30,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -40,6 +45,7 @@ import com.fabiobassi.famigliab.ui.features.grocerylist.GroceryListScreen
 import com.fabiobassi.famigliab.ui.features.home.HomeScreen
 import com.fabiobassi.famigliab.ui.features.passwords.PasswordsScreen
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
+import java.io.File
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +72,7 @@ sealed class BottomNavItem(val title: String, val icon: ImageVector, val route: 
 fun MainScreen() {
     val navController = rememberNavController()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+    val context = LocalContext.current
 
     val items = listOf(
         BottomNavItem.Home,
@@ -93,8 +100,28 @@ fun MainScreen() {
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     scrolledContainerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                actions = {
+                    if (currentScreen?.route == BottomNavItem.Passwords.route) {
+                        IconButton(onClick = {
+                            val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
+                            if (file.exists()) {
+                                val uri = FileProvider.getUriForFile(context, "com.fabiobassi.famigliab.fileprovider", file)
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    type = "application/json"
+                                    putExtra(Intent.EXTRA_STREAM, uri)
+                                }
+                                val chooser = Intent.createChooser(intent, "Share File")
+                                context.startActivity(chooser)
+                            }
+                        }) {
+                            Icon(Icons.Default.Share, contentDescription = "Share Passwords")
+                        }
+                    }
+                }
             )
         },
         bottomBar = { AppBottomNavigationBar(navController = navController, items = items) }

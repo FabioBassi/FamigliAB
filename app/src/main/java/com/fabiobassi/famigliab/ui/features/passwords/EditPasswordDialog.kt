@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -48,7 +49,8 @@ fun EditPasswordDialog(
             Column(
                 modifier = Modifier
                     .padding(16.dp)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .imePadding(),
             ) {
                 Text(
                     text = "Edit password",
@@ -112,8 +114,8 @@ fun EditPasswordDialog(
                 ) {
                     TextButton(
                         onClick = onDelete,
-                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                    ) {
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)})
+                     {
                         Text("Delete")
                     }
                     Spacer(Modifier.weight(1f))
