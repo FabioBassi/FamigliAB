@@ -48,6 +48,20 @@ import com.fabiobassi.famigliab.ui.features.settings.SettingsScreen
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 import java.io.File
 
+// New imports
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import android.widget.Toast
+import android.net.Uri
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,6 +89,7 @@ fun MainScreen() {
     val navController = rememberNavController()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
 
     val items = listOf(
         BottomNavItem.Home,
@@ -88,6 +103,27 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val currentScreen = items.find { it.route == currentRoute }
+
+    val showShareOptionsDialog = remember { mutableStateOf(false) }
+
+    val saveFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
+        uri?.let { outputUri ->
+            val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
+            if (file.exists()) {
+                try {
+                    context.contentResolver.openOutputStream(outputUri)?.use { outputStream ->
+                        file.inputStream().copyTo(outputStream)
+                    }
+                    Toast.makeText(context, "Passwords saved to files", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Error saving file: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                Toast.makeText(context, "Passwords file not found", Toast.LENGTH_SHORT).show()
+            }
+        }
+        showShareOptionsDialog.value = false // Dismiss dialog after operation
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -109,17 +145,7 @@ fun MainScreen() {
                 actions = {
                     if (currentScreen?.route == BottomNavItem.Passwords.route) {
                         IconButton(onClick = {
-                            val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
-                            if (file.exists()) {
-                                val uri = FileProvider.getUriForFile(context, "com.fabiobassi.famigliab.fileprovider", file)
-                                val intent = Intent(Intent.ACTION_SEND).apply {
-                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                    type = "application/json"
-                                    putExtra(Intent.EXTRA_STREAM, uri)
-                                }
-                                val chooser = Intent.createChooser(intent, "Share File")
-                                context.startActivity(chooser)
-                            }
+                            showShareOptionsDialog.value = true
                         }) {
                             Icon(Icons.Default.Share, contentDescription = "Share Passwords")
                         }
@@ -131,15 +157,72 @@ fun MainScreen() {
     ) { innerPadding ->
         NavHost(
             navController,
-            startDestination = BottomNavItem.Passwords.route,
-            modifier = Modifier.padding(innerPadding)
+            startDestination = BottomNavItem.Passwords.route
         ) {
             composable(BottomNavItem.Home.route) { HomeScreen() }
             composable(BottomNavItem.Budgeting.route) { BudgetingScreen() }
             composable(BottomNavItem.GroceryList.route) { GroceryListScreen() }
             composable(BottomNavItem.Passwords.route) { PasswordsScreen(innerPadding) }
             composable(BottomNavItem.Documents.route) { DocumentsScreen() }
-            composable(BottomNavItem.Settings.route) { SettingsScreen() }
+            composable(BottomNavItem.Settings.route) { SettingsScreen(innerPadding) }
+        }
+
+        if (showShareOptionsDialog.value) {
+            AlertDialog(
+                onDismissRequest = { showShareOptionsDialog.value = false },
+                title = { Text("Share or Save Passwords") },
+                text = {
+                    Column {
+                        // Share option
+                        TextButton(onClick = {
+                            val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
+                            if (file.exists()) {
+                                val uri = FileProvider.getUriForFile(context, "com.fabiobassi.famigliab.fileprovider", file)
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    type = "application/json"
+                                    putExtra(Intent.EXTRA_STREAM, uri)
+                                }
+                                val chooser = Intent.createChooser(intent, "Share File")
+                                context.startActivity(chooser)
+                            } else {
+                                Toast.makeText(context, "Passwords file not found", Toast.LENGTH_SHORT).show()
+                            }
+                            showShareOptionsDialog.value = false
+                        }) {
+                            Text("Share with other apps")
+                        }
+
+                        // Save to Files option
+                        TextButton(onClick = {
+                            saveFileLauncher.launch("passwords.json") // Suggests a filename
+                            // The dialog will be dismissed in the launcher's callback
+                        }) {
+                            Text("Save to Files")
+                        }
+
+                        // Copy to Clipboard option
+                        TextButton(onClick = {
+                            val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
+                            if (file.exists()) {
+                                val fileContent = file.readText()
+                                clipboardManager.setText(AnnotatedString(fileContent))
+                                Toast.makeText(context, "Passwords copied to clipboard", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "Passwords file not found", Toast.LENGTH_SHORT).show()
+                            }
+                            showShareOptionsDialog.value = false
+                        }) {
+                            Text("Copy to Clipboard")
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showShareOptionsDialog.value = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
