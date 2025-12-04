@@ -11,11 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.fabiobassi.famigliab.ui.features.passwords.PasswordsScreen
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 
 @Composable
@@ -26,21 +23,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             .padding(16.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        WelcomeTitle(name = "Fab")
         InfoWidget(title = "Ultime Spese")
         InfoWidget(title = "Prossimi Eventi")
     }
-}
-
-@Composable
-fun WelcomeTitle(name: String) {
-    Text(
-        text = "Ciao $name!",
-        fontSize = 36.sp,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 16.dp, bottom = 24.dp)
-    )
 }
 
 @Composable
