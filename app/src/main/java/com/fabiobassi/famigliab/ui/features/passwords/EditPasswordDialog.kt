@@ -114,8 +114,9 @@ fun EditPasswordDialog(
                 ) {
                     TextButton(
                         onClick = onDelete,
-                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)})
-                     {
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    )
+                    {
                         Text("Delete")
                     }
                     Spacer(Modifier.weight(1f))

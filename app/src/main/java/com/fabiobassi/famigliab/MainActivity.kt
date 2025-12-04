@@ -5,13 +5,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +44,7 @@ import com.fabiobassi.famigliab.ui.features.documents.DocumentsScreen
 import com.fabiobassi.famigliab.ui.features.grocerylist.GroceryListScreen
 import com.fabiobassi.famigliab.ui.features.home.HomeScreen
 import com.fabiobassi.famigliab.ui.features.passwords.PasswordsScreen
+import com.fabiobassi.famigliab.ui.features.settings.SettingsScreen
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 import java.io.File
 
@@ -65,6 +66,7 @@ sealed class BottomNavItem(val title: String, val icon: ImageVector, val route: 
     object GroceryList : BottomNavItem("Lista Spesa", Icons.Default.ShoppingCart, "grocery_list")
     object Passwords : BottomNavItem("Passwords", Icons.Default.Lock, "passwords")
     object Documents : BottomNavItem("Documenti", Icons.Default.Description, "documents")
+    object Settings : BottomNavItem("Impostazioni", Icons.Default.Settings, "settings")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,7 +81,8 @@ fun MainScreen() {
         BottomNavItem.Budgeting,
         BottomNavItem.GroceryList,
         BottomNavItem.Passwords,
-        BottomNavItem.Documents
+        BottomNavItem.Documents,
+        BottomNavItem.Settings
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -128,15 +131,15 @@ fun MainScreen() {
     ) { innerPadding ->
         NavHost(
             navController,
-            //startDestination = BottomNavItem.Home.route,
             startDestination = BottomNavItem.Passwords.route,
-            //Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding)
         ) {
             composable(BottomNavItem.Home.route) { HomeScreen() }
             composable(BottomNavItem.Budgeting.route) { BudgetingScreen() }
             composable(BottomNavItem.GroceryList.route) { GroceryListScreen() }
             composable(BottomNavItem.Passwords.route) { PasswordsScreen(innerPadding) }
             composable(BottomNavItem.Documents.route) { DocumentsScreen() }
+            composable(BottomNavItem.Settings.route) { SettingsScreen() }
         }
     }
 }
