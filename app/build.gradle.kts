@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -52,6 +53,9 @@ dependencies {
 
     // 🧭 Navigation (optional but useful)
     implementation(libs.androidx.navigation.compose)
+
+    // Kotlinx Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     //ksp("androidx.room:room-compiler:2.5.0")
 }
