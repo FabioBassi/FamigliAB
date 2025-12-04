@@ -3,6 +3,7 @@ package com.fabiobassi.famigliab.ui.features.passwords
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,12 +34,14 @@ import androidx.compose.ui.window.Dialog
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 
 @Composable
-fun AddPasswordDialog(
+fun EditPasswordDialog(
+    item: PasswordItem,
     onDismiss: () -> Unit,
-    onSave: (PasswordItem) -> Unit
+    onSave: (PasswordItem) -> Unit,
+    onDelete: () -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
-    val fields = remember { mutableStateListOf(Pair("", "")) }
+    var title by remember { mutableStateOf(item.title) }
+    val fields = remember { mutableStateListOf(*item.arguments.toTypedArray()) }
 
     Dialog(onDismissRequest = onDismiss) {
         Card {
@@ -48,7 +51,7 @@ fun AddPasswordDialog(
                     .fillMaxWidth(),
             ) {
                 Text(
-                    text = "Add new password",
+                    text = "Edit password",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -60,9 +63,7 @@ fun AddPasswordDialog(
                     isError = title.isBlank()
                 )
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
-                ) {
+                LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
                     itemsIndexed(fields) { index, pair ->
                         Column {
                             Row(
@@ -107,8 +108,15 @@ fun AddPasswordDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.End
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    TextButton(
+                        onClick = onDelete,
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Delete")
+                    }
+                    Spacer(Modifier.weight(1f))
                     TextButton(onClick = onDismiss) {
                         Text("Cancel")
                     }
@@ -131,11 +139,13 @@ fun AddPasswordDialog(
 
 @Preview(showBackground = true)
 @Composable
-fun AddPasswordDialogPreview() {
+fun EditPasswordDialogPreview() {
     FamigliABTheme {
-        AddPasswordDialog(
+        EditPasswordDialog(
+            item = PasswordItem("Sample Title", listOf("Key1" to "Value1")),
             onDismiss = {},
-            onSave = {}
+            onSave = {},
+            onDelete = {}
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.fabiobassi.famigliab.ui.features.passwords
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,10 +19,14 @@ import androidx.compose.ui.unit.sp
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 
 @Composable
-fun PasswordCard(item: PasswordItem) {
+fun PasswordCard(
+    item: PasswordItem,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -52,7 +57,8 @@ fun PasswordCardPreview() {
             item = PasswordItem(
                 title = "Sample Title",
                 arguments = listOf("Key1" to "Value1", "Key2" to "Value2")
-            )
+            ),
+            onClick = {}
         )
     }
 }
