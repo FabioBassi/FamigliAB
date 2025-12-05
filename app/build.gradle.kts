@@ -55,7 +55,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     // Kotlinx Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
     //ksp("androidx.room:room-compiler:2.5.0")
 }

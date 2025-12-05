@@ -14,7 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fabiobassi.famigliab.data.Category
-import com.fabiobassi.famigliab.data.PaidBy
+import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Payment
 import java.util.Date
 
@@ -48,7 +48,7 @@ fun PaymentItemPreview() {
             Date(),
             "Spesa Esselunga",
             150.55,
-            PaidBy.FAB,
+            Person.FAB,
             Category.CIBO
         )
     )
