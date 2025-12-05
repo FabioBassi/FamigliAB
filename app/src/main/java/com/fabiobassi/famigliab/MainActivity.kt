@@ -160,14 +160,14 @@ fun MainScreen() {
             startDestination = BottomNavItem.Passwords.route
         ) {
             composable(BottomNavItem.Home.route) { HomeScreen() }
-            composable(BottomNavItem.Budgeting.route) { BudgetingScreen() }
+            composable(BottomNavItem.Budgeting.route) { BudgetingScreen(innerPadding) }
             composable(BottomNavItem.GroceryList.route) { GroceryListScreen() }
             composable(BottomNavItem.Passwords.route) { PasswordsScreen(innerPadding) }
             composable(BottomNavItem.Documents.route) { DocumentsScreen() }
             composable(BottomNavItem.Settings.route) { SettingsScreen(innerPadding) }
         }
 
-        if (showShareOptionsDialog.value) {
+        if (showShareOptionsDialog.value) { // Password screen share option
             AlertDialog(
                 onDismissRequest = { showShareOptionsDialog.value = false },
                 title = { Text("Share or Save Passwords") },

@@ -33,7 +33,7 @@ fun PasswordsScreen(paddingValues: PaddingValues) {
     val repository = remember { PasswordRepository(context) }
     val allPasswords = remember {
         mutableStateListOf<PasswordItem>().also {
-            it.addAll(repository.loadPasswords())
+            it.addAll(repository.loadPasswords().sortedBy { password -> password.title })
         }
     }
 
@@ -46,6 +46,7 @@ fun PasswordsScreen(paddingValues: PaddingValues) {
             onDismiss = { showDialog = false },
             onSave = {
                 allPasswords.add(it)
+                allPasswords.sortBy { password -> password.title }
                 showDialog = false
             }
         )
@@ -59,6 +60,7 @@ fun PasswordsScreen(paddingValues: PaddingValues) {
                 val index = allPasswords.indexOf(item)
                 if (index != -1) {
                     allPasswords[index] = updatedItem
+                    allPasswords.sortBy { password -> password.title }
                 }
                 editingPassword = null
             },
