@@ -21,6 +21,17 @@ class BudgetingViewModel : ViewModel() {
         _incomes.value = createMockIncomes()
     }
 
+    fun addPayment(description: String, amount: Double, category: Category, paidBy: Person) {
+        val newPayment = Payment(
+            date = Date(),
+            description = description,
+            amount = amount,
+            paidBy = paidBy,
+            category = category,
+        )
+        _payments.value = _payments.value + newPayment
+    }
+
     private fun createMockPayments(): List<Payment> {
         return listOf(
             Payment(Date(), "Spesa Esselunga", 150.55, Person.FAB, Category.CIBO),

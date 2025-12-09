@@ -1,5 +1,6 @@
 package com.fabiobassi.famigliab.ui.features.budgeting
 
+import android.R
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -21,9 +22,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -62,12 +65,25 @@ fun BudgetingScreen(
     viewModel: BudgetingViewModel = viewModel(),
     onViewAllPaymentsClick: () -> Unit,
 ) {
+    var showDialog by remember { mutableStateOf(false) }
     val payments by viewModel.payments.collectAsState()
     val incomes by viewModel.incomes.collectAsState()
     var currentDate by remember { mutableStateOf(Date()) }
 
+    if (showDialog) {
+        AddPaymentDialog(
+            onDismiss = { showDialog = false },
+            onConfirm = {
+                description, amount, category, person ->
+                viewModel.addPayment(description, amount, category, person)
+                showDialog = false
+            }
+        )
+    }
+
     BudgetingScreenContent(
         paddingValues = paddingValues,
+        showDialog = showDialog,
         payments = payments,
         incomes = incomes,
         currentDate = currentDate,
@@ -83,19 +99,22 @@ fun BudgetingScreen(
             calendar.add(Calendar.MONTH, 1)
             currentDate = calendar.time
         },
-        onViewAllPaymentsClick = onViewAllPaymentsClick
+        onViewAllPaymentsClick = onViewAllPaymentsClick,
+        onAddPaymentClick = { showDialog = true }
     )
 }
 
 @Composable
 fun BudgetingScreenContent(
     paddingValues: PaddingValues,
+    showDialog: Boolean,
     payments: List<Payment>,
     incomes: List<Income>,
     currentDate: Date,
     onPreviousMonthClick: () -> Unit,
     onNextMonthClick: () -> Unit,
-    onViewAllPaymentsClick: () -> Unit
+    onViewAllPaymentsClick: () -> Unit,
+    onAddPaymentClick: () -> Unit
 ) {
     val monthlyPayments = remember(payments, currentDate) {
         val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
@@ -129,44 +148,55 @@ fun BudgetingScreenContent(
 
     val paymentsByCategory = monthlyPayments.groupBy { it.category }
 
-    LazyColumn(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            .padding(paddingValues)
     ) {
-        item {
-            MonthNavigation(
-                currentDate = currentDate,
-                onPreviousMonthClick = onPreviousMonthClick,
-                onNextMonthClick = onNextMonthClick
-            )
-        }
-        item {
-            SummarySection(
-                totalIncomeFab = totalIncomeFab,
-                totalIncomeSab = totalIncomeSab,
-                totalIncome = totalIncome,
-                totalOutcomeFab = totalPaymentsFab,
-                totalOutcomeSab = totalPaymentsSab,
-                totalOutcome = totalPayments
-            )
-        }
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            item {
+                MonthNavigation(
+                    currentDate = currentDate,
+                    onPreviousMonthClick = onPreviousMonthClick,
+                    onNextMonthClick = onNextMonthClick
+                )
+            }
+            item {
+                SummarySection(
+                    totalIncomeFab = totalIncomeFab,
+                    totalIncomeSab = totalIncomeSab,
+                    totalIncome = totalIncome,
+                    totalOutcomeFab = totalPaymentsFab,
+                    totalOutcomeSab = totalPaymentsSab,
+                    totalOutcome = totalPayments
+                )
+            }
 
-        item {
-            LastPaymentsSection(
-                payments = monthlyPayments,
-                colors = categoryColors,
-                onViewAllPaymentsClick = onViewAllPaymentsClick
-            )
-        }
+            item {
+                LastPaymentsSection(
+                    payments = monthlyPayments,
+                    colors = categoryColors,
+                    onViewAllPaymentsClick = onViewAllPaymentsClick
+                )
+            }
 
-        item {
-            ExpensesSummary(
-                paymentsByCategory = paymentsByCategory,
-                colors = categoryColors
-            )
+            item {
+                ExpensesSummary(
+                    paymentsByCategory = paymentsByCategory,
+                    colors = categoryColors
+                )
+            }
+        }
+        FloatingActionButton(
+            onClick = { onAddPaymentClick() },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(Icons.Filled.Add, "Add new payment")
         }
     }
 }
@@ -561,6 +591,8 @@ fun BudgetingScreenPreview() {
         currentDate = Date(),
         onPreviousMonthClick = {},
         onNextMonthClick = {},
-        onViewAllPaymentsClick = {}
+        onViewAllPaymentsClick = {},
+        onAddPaymentClick = {},
+        showDialog = false
     )
 }
