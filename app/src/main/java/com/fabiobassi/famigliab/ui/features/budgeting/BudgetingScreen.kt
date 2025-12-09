@@ -1,5 +1,8 @@
 package com.fabiobassi.famigliab.ui.features.budgeting
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,17 +14,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,7 +40,9 @@ import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Income
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Payment
+import com.fabiobassi.famigliab.ui.theme.categoryColors
 import java.util.Date
+import kotlin.math.min
 
 
 @Composable
@@ -61,9 +74,6 @@ fun BudgetingScreenContent(
     val totalIncome = totalIncomeFab + totalIncomeSab
 
     val paymentsByCategory = payments.groupBy { it.category }
-    val maxCategoryTotal = paymentsByCategory.values.maxOfOrNull { categoryoutcomes ->
-        categoryoutcomes.sumOf { it.amount }
-    } ?: 1.0
 
     LazyColumn(
         modifier = Modifier
@@ -83,25 +93,10 @@ fun BudgetingScreenContent(
             )
         }
 
-        items(paymentsByCategory.entries.toList()) { (category, paymentsInCategory) ->
-            val categoryTotalFab = paymentsInCategory.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
-            val categoryTotalSab = paymentsInCategory.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
-            val barFractionFab = if (maxCategoryTotal > 0) {
-                (categoryTotalFab / maxCategoryTotal).toFloat()
-            } else {
-                0f
-            }
-            val barFractionSab = if (maxCategoryTotal > 0) {
-                (categoryTotalSab / maxCategoryTotal).toFloat()
-            } else {
-                0f
-            }
-            CategoryBar(
-                category = category,
-                totalFab = categoryTotalFab,
-                totalSab = categoryTotalSab,
-                fractionFab = barFractionFab,
-                fractionSab = barFractionSab
+        item {
+            ExpensesSummary(
+                paymentsByCategory = paymentsByCategory,
+                colors = categoryColors
             )
         }
     }
@@ -116,118 +111,229 @@ private fun SummarySection(
     totalOutcomeSab: Double,
     totalOutcome: Double
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = "Totale Entrate Fab: ${"%.2f".format(totalIncomeFab)} €",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = Color.Green
-        )
-        Text(
-            text = "Totale Entrate Sab: ${"%.2f".format(totalIncomeSab)} €",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = Color.Green
-        )
-        Text(
-            text = "Totale Entrate: ${"%.2f".format(totalIncome)} €",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = Color.Green
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Totale Uscite Fab: ${"%.2f".format(totalOutcomeFab)} €",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = Color.Red
-        )
-        Text(
-            text = "Totale Uscite Sab: ${"%.2f".format(totalOutcomeSab)} €",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = Color.Red
-        )
-        Text(
-            text = "Totale Uscite: ${"%.2f".format(totalOutcome)} €",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = Color.Red
-        )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Card(
+            modifier = Modifier.weight(1f),
+            shape = MaterialTheme.shapes.large,
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "INCOME",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = "Fab: ${"%.2f".format(totalIncomeFab)} €",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Sab: ${"%.2f".format(totalIncomeSab)} €",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Total: ${"%.2f".format(totalIncome)} €",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+        Card(
+            modifier = Modifier.weight(1f),
+            shape = MaterialTheme.shapes.large,
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "EXPENSES",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = "Fab: ${"%.2f".format(totalOutcomeFab)} €",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+                Text(
+                    text = "Sab: ${"%.2f".format(totalOutcomeSab)} €",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+                Text(
+                    text = "Total: ${"%.2f".format(totalOutcome)} €",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun CategoryBar(
-    category: Category,
-    totalFab: Double,
-    totalSab: Double,
-    fractionFab: Float,
-    fractionSab: Float
+private fun ExpensesSummary(
+    paymentsByCategory: Map<Category, List<Payment>>,
+    colors: List<Color>
 ) {
-    val barColorFab = MaterialTheme.colorScheme.primary
-    val barColorSab = MaterialTheme.colorScheme.secondary
-
-    Column {
-        Text(
-            text = category.name.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(24.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                        shape = MaterialTheme.shapes.small,
-                    )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(fractionFab)
-                        .height(24.dp)
-                        .background(
-                            color = barColorFab,
-                            shape = MaterialTheme.shapes.small,
-                        )
-                )
-            }
-            Text(
-                text = "${"%.2f".format(totalFab)} €",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(start = 8.dp)
-            )
+    val categoryTotals = remember(paymentsByCategory) {
+        Category.entries.associateWith { category ->
+            paymentsByCategory[category]?.sumOf { it.amount } ?: 0.0
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(24.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f),
-                        shape = MaterialTheme.shapes.small,
-                    )
+    }
+    val totalExpenses = remember(categoryTotals) { categoryTotals.values.sum() }
+
+    val animationProgress = remember { Animatable(0f) }
+
+    LaunchedEffect(key1 = totalExpenses) {
+        animationProgress.snapTo(0f)
+        animationProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 1500)
+        )
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Title
+            Text(
+                text = "EXPENSES BY CATEGORY",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(fractionSab)
-                        .height(24.dp)
-                        .background(
-                            color = barColorSab,
-                            shape = MaterialTheme.shapes.small,
-                        )
+                Text(
+                    text = "CATEGORY",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1.5f)
+                )
+                Text(
+                    text = "FAB",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1.16f),
+                    textAlign = TextAlign.End
+                )
+                Text(
+                    text = "SAB",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1.16f),
+                    textAlign = TextAlign.End
+                )
+                Text(
+                    text = "TOTAL",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1.18f),
+                    textAlign = TextAlign.End
                 )
             }
-            Text(
-                text = "${"%.2f".format(totalSab)} €",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(start = 8.dp)
-            )
+            // Body
+            Category.entries.sortedBy { it.name }.forEachIndexed { index, category ->
+                val payments = paymentsByCategory[category] ?: emptyList()
+                val totalFab = payments.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
+                val totalSab = payments.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
+                val total = totalFab + totalSab
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1.5f), // Adjusted weight for the category column
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = category.name.lowercase().replaceFirstChar { it.titlecase() },
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier
+                                .background(
+                                    color = colors[index % colors.size].copy(alpha = 0.2f),
+                                    shape = RoundedCornerShape(50)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            softWrap = false
+                        )
+                    }
+                    Text(
+                        text = "%.2f €".format(totalFab),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.weight(1.16f),
+                        textAlign = TextAlign.End
+                    )
+                    Text(
+                        text = "%.2f €".format(totalSab),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.weight(1.16f),
+                        textAlign = TextAlign.End
+                    )
+                    Text(
+                        text = "%.2f €".format(total),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.weight(1.18f),
+                        textAlign = TextAlign.End
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            if (totalExpenses > 0) {
+                Canvas(modifier = Modifier
+                    .size(200.dp)
+                    .align(Alignment.CenterHorizontally)) {
+                    val totalAngleToDraw = 360f * animationProgress.value
+                    var startAngle = -90f
+                    var drawnAngle = 0f
+
+                    Category.entries.sortedBy { it.name }.forEachIndexed { index, category ->
+                        if (drawnAngle >= totalAngleToDraw) return@forEachIndexed
+
+                        val total = categoryTotals[category] ?: 0.0
+                        if (total > 0) {
+                            val sweepAngleForCategory = (total / totalExpenses).toFloat() * 360f
+                            val angleToDraw = min(sweepAngleForCategory, totalAngleToDraw - drawnAngle)
+
+                            drawArc(
+                                color = colors[index % colors.size],
+                                startAngle = startAngle,
+                                sweepAngle = angleToDraw,
+                                useCenter = true
+                            )
+                            startAngle += sweepAngleForCategory
+                            drawnAngle += sweepAngleForCategory
+                        }
+                    }
+                }
+            } else {
+                Text("No expense data to display.", modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
         }
     }
 }
@@ -241,10 +347,26 @@ fun BudgetingScreenPreview() {
         Payment(Date(), "Cinema", 20.0, Person.FAB, Category.SVAGO),
         Payment(Date(), "Bolletta luce", 80.0, Person.SAB, Category.BOLLETTE),
         Payment(Date(), "Ristorante", 95.0, Person.FAB, Category.CIBO),
+        Payment(Date(), "Affitto", 800.0, Person.FAB, Category.CASA),
+        Payment(Date(), "Spesa abbigliamento", 120.0, Person.SAB, Category.ABBIGLIAMENTO),
+        Payment(Date(), "Piscina", 45.0, Person.FAB, Category.SPORT),
+        Payment(Date(), "Visita medica", 60.0, Person.SAB, Category.SALUTE),
+        Payment(Date(), "Regalo compleanno", 30.0, Person.FAB, Category.REGALI),
+        Payment(Date(), "Viaggio Roma", 300.0, Person.SAB, Category.TURISMO),
+        Payment(Date(), "Cena fuori", 75.0, Person.FAB, Category.RISTORANTE),
+        Payment(Date(), "Manutenzione auto", 150.0, Person.SAB, Category.MACCHINA),
+        Payment(Date(), "Libro", 25.0, Person.FAB, Category.VARIE),
+        Payment(Date(), "Netflix", 15.99, Person.SAB, Category.SVAGO),
+        Payment(Date(), "Uscita amici", 50.0, Person.FAB, Category.SVAGO),
+        Payment(Date(), "Regalo di Natale", 100.0, Person.SAB, Category.REGALI),
+        Payment(Date(), "Treno", 40.0, Person.FAB, Category.TURISMO),
+        Payment(Date(), "Spesa Carrefour", 85.30, Person.SAB, Category.CIBO),
+        Payment(Date(), "Parrucchiere", 40.0, Person.FAB, Category.VARIE)
     )
     val mockIncomes = listOf(
         Income(Date(), "Stipendio", 2000.0, Person.FAB),
         Income(Date(), "Stipendio", 1500.0, Person.SAB),
+        Income(Date(), "Bonus", 200.0, Person.FAB),
     )
     BudgetingScreenContent(
         paddingValues = PaddingValues(),
