@@ -18,15 +18,23 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,7 +49,10 @@ import com.fabiobassi.famigliab.data.Income
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Payment
 import com.fabiobassi.famigliab.ui.theme.categoryColors
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import kotlin.math.min
 
 
@@ -49,13 +60,30 @@ import kotlin.math.min
 fun BudgetingScreen(
     paddingValues: PaddingValues,
     viewModel: BudgetingViewModel = viewModel(),
+    onViewAllPaymentsClick: () -> Unit,
 ) {
     val payments by viewModel.payments.collectAsState()
     val incomes by viewModel.incomes.collectAsState()
+    var currentDate by remember { mutableStateOf(Date()) }
+
     BudgetingScreenContent(
         paddingValues = paddingValues,
         payments = payments,
-        incomes = incomes
+        incomes = incomes,
+        currentDate = currentDate,
+        onPreviousMonthClick = {
+            val calendar = Calendar.getInstance()
+            calendar.time = currentDate
+            calendar.add(Calendar.MONTH, -1)
+            currentDate = calendar.time
+        },
+        onNextMonthClick = {
+            val calendar = Calendar.getInstance()
+            calendar.time = currentDate
+            calendar.add(Calendar.MONTH, 1)
+            currentDate = calendar.time
+        },
+        onViewAllPaymentsClick = onViewAllPaymentsClick
     )
 }
 
@@ -63,17 +91,43 @@ fun BudgetingScreen(
 fun BudgetingScreenContent(
     paddingValues: PaddingValues,
     payments: List<Payment>,
-    incomes: List<Income>
+    incomes: List<Income>,
+    currentDate: Date,
+    onPreviousMonthClick: () -> Unit,
+    onNextMonthClick: () -> Unit,
+    onViewAllPaymentsClick: () -> Unit
 ) {
-    val totalPaymentsFab = payments.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
-    val totalPaymentsSab = payments.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
+    val monthlyPayments = remember(payments, currentDate) {
+        val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
+        val selectedMonth = selectedMonthCal.get(Calendar.MONTH)
+        val selectedYear = selectedMonthCal.get(Calendar.YEAR)
+        val itemCalendar = Calendar.getInstance()
+        payments.filter { payment ->
+            itemCalendar.time = payment.date
+            itemCalendar.get(Calendar.MONTH) == selectedMonth && itemCalendar.get(Calendar.YEAR) == selectedYear
+        }
+    }
+
+    val monthlyIncomes = remember(incomes, currentDate) {
+        val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
+        val selectedMonth = selectedMonthCal.get(Calendar.MONTH)
+        val selectedYear = selectedMonthCal.get(Calendar.YEAR)
+        val itemCalendar = Calendar.getInstance()
+        incomes.filter { income ->
+            itemCalendar.time = income.date
+            itemCalendar.get(Calendar.MONTH) == selectedMonth && itemCalendar.get(Calendar.YEAR) == selectedYear
+        }
+    }
+
+    val totalPaymentsFab = monthlyPayments.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
+    val totalPaymentsSab = monthlyPayments.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
     val totalPayments = totalPaymentsFab + totalPaymentsSab
 
-    val totalIncomeFab = incomes.filter { it.paidTo == Person.FAB }.sumOf { it.amount }
-    val totalIncomeSab = incomes.filter { it.paidTo == Person.SAB }.sumOf { it.amount }
+    val totalIncomeFab = monthlyIncomes.filter { it.paidTo == Person.FAB }.sumOf { it.amount }
+    val totalIncomeSab = monthlyIncomes.filter { it.paidTo == Person.SAB }.sumOf { it.amount }
     val totalIncome = totalIncomeFab + totalIncomeSab
 
-    val paymentsByCategory = payments.groupBy { it.category }
+    val paymentsByCategory = monthlyPayments.groupBy { it.category }
 
     LazyColumn(
         modifier = Modifier
@@ -82,6 +136,13 @@ fun BudgetingScreenContent(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
+        item {
+            MonthNavigation(
+                currentDate = currentDate,
+                onPreviousMonthClick = onPreviousMonthClick,
+                onNextMonthClick = onNextMonthClick
+            )
+        }
         item {
             SummarySection(
                 totalIncomeFab = totalIncomeFab,
@@ -94,10 +155,45 @@ fun BudgetingScreenContent(
         }
 
         item {
+            LastPaymentsSection(
+                payments = monthlyPayments,
+                colors = categoryColors,
+                onViewAllPaymentsClick = onViewAllPaymentsClick
+            )
+        }
+
+        item {
             ExpensesSummary(
                 paymentsByCategory = paymentsByCategory,
                 colors = categoryColors
             )
+        }
+    }
+}
+
+@Composable
+private fun MonthNavigation(
+    currentDate: Date,
+    onPreviousMonthClick: () -> Unit,
+    onNextMonthClick: () -> Unit
+) {
+    val monthFormat = remember { SimpleDateFormat("MMMM yyyy", Locale.getDefault()) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onPreviousMonthClick) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month")
+        }
+        Text(
+            text = monthFormat.format(currentDate).uppercase(),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        IconButton(onClick = onNextMonthClick) {
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month")
         }
     }
 }
@@ -175,6 +271,96 @@ private fun SummarySection(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LastPaymentsSection(
+    payments: List<Payment>,
+    colors: List<Color>,
+    onViewAllPaymentsClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "LAST PAYMENTS",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (payments.isNotEmpty()) {
+                val dateFormat = remember { SimpleDateFormat("dd/MM", Locale.getDefault()) }
+                val sortedCategories = remember { Category.entries.sortedBy { it.name } }
+
+                payments.sortedByDescending { it.date }.take(3).forEach { payment ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = dateFormat.format(payment.date),
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.weight(0.15f)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Box(modifier = Modifier.weight(0.3f)) {
+                            val categoryIndex = sortedCategories.indexOf(payment.category)
+                            Text(
+                                text = payment.category.name.lowercase().replaceFirstChar { it.titlecase() },
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier
+                                    .background(
+                                        color = colors[categoryIndex % colors.size].copy(alpha = 0.2f),
+                                        shape = RoundedCornerShape(50)
+                                    )
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = payment.description,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(0.35f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "%.2f €".format(payment.amount),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.weight(0.5f)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            } else {
+                Text(
+                    text = "No payments recorded yet.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Button(
+                onClick = onViewAllPaymentsClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("View All Monthly Payments")
             }
         }
     }
@@ -371,6 +557,10 @@ fun BudgetingScreenPreview() {
     BudgetingScreenContent(
         paddingValues = PaddingValues(),
         payments = mockOutcomes,
-        incomes = mockIncomes
+        incomes = mockIncomes,
+        currentDate = Date(),
+        onPreviousMonthClick = {},
+        onNextMonthClick = {},
+        onViewAllPaymentsClick = {}
     )
 }

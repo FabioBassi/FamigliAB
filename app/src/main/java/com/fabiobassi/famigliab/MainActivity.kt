@@ -160,7 +160,7 @@ fun MainScreen() {
             startDestination = BottomNavItem.Passwords.route
         ) {
             composable(BottomNavItem.Home.route) { HomeScreen() }
-            composable(BottomNavItem.Budgeting.route) { BudgetingScreen(innerPadding) }
+            composable(BottomNavItem.Budgeting.route) { BudgetingScreen(innerPadding, onViewAllPaymentsClick = { }) }
             composable(BottomNavItem.GroceryList.route) { GroceryListScreen() }
             composable(BottomNavItem.Passwords.route) { PasswordsScreen(innerPadding) }
             composable(BottomNavItem.Documents.route) { DocumentsScreen() }
