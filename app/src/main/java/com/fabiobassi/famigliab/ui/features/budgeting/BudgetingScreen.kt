@@ -256,18 +256,17 @@ private fun SummarySection(
                     text = "INCOME",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = "Fab: ${"%.2f".format(totalIncomeFab)} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 16.sp
                 )
                 Text(
                     text = "Sab: ${"%.2f".format(totalIncomeSab)} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 16.sp
                 )
                 Text(
@@ -291,18 +290,17 @@ private fun SummarySection(
                     text = "EXPENSES",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = "Fab: ${"%.2f".format(totalOutcomeFab)} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.tertiary,
                     fontSize = 16.sp
                 )
                 Text(
                     text = "Sab: ${"%.2f".format(totalOutcomeSab)} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.tertiary,
                     fontSize = 16.sp
                 )
                 Text(
@@ -335,7 +333,8 @@ private fun LastPaymentsSection(
                 text = "LAST PAYMENTS",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -351,7 +350,8 @@ private fun LastPaymentsSection(
                         Text(
                             text = dateFormat.format(payment.date),
                             style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.weight(0.15f)
+                            modifier = Modifier.weight(0.15f),
+                            fontSize = 10.sp
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Box(modifier = Modifier.weight(0.3f)) {
@@ -442,7 +442,8 @@ private fun ExpensesSummary(
                 text = "EXPENSES BY CATEGORY",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
             // Header
@@ -509,20 +510,22 @@ private fun ExpensesSummary(
                     Text(
                         text = "%.2f €".format(totalFab),
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1.16f),
-                        textAlign = TextAlign.End
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.End,
+                        fontSize = 10.sp
                     )
                     Text(
                         text = "%.2f €".format(totalSab),
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1.16f),
-                        textAlign = TextAlign.End
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.End,
+                        fontSize = 10.sp
                     )
                     Text(
                         text = "%.2f €".format(total),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1.18f),
+                        modifier = Modifier.weight(1.5f),
                         textAlign = TextAlign.End
                     )
                 }
