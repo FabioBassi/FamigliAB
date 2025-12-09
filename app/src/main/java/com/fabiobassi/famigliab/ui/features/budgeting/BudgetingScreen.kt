@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Income
@@ -220,7 +221,8 @@ private fun MonthNavigation(
         Text(
             text = monthFormat.format(currentDate).uppercase(),
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
         )
         IconButton(onClick = onNextMonthClick) {
             Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month")
@@ -254,21 +256,25 @@ private fun SummarySection(
                     text = "INCOME",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
                 )
                 Text(
                     text = "Fab: ${"%.2f".format(totalIncomeFab)} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp
                 )
                 Text(
                     text = "Sab: ${"%.2f".format(totalIncomeSab)} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp
                 )
                 Text(
                     text = "Total: ${"%.2f".format(totalIncome)} €",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
                 )
             }
         }
@@ -285,21 +291,25 @@ private fun SummarySection(
                     text = "EXPENSES",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
                 )
                 Text(
                     text = "Fab: ${"%.2f".format(totalOutcomeFab)} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.tertiary
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontSize = 16.sp
                 )
                 Text(
                     text = "Sab: ${"%.2f".format(totalOutcomeSab)} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.tertiary
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontSize = 16.sp
                 )
                 Text(
                     text = "Total: ${"%.2f".format(totalOutcome)} €",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
                 )
             }
         }

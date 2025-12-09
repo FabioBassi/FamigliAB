@@ -1,7 +1,10 @@
 package com.fabiobassi.famigliab.ui.features.budgeting
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -11,6 +14,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -19,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
+import com.fabiobassi.famigliab.ui.theme.categoryColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,8 +73,16 @@ fun AddPaymentDialog(
                         onDismissRequest = { isCategoryExpanded = false }
                     ) {
                         Category.entries.forEach { category ->
+                            val categoryIndex = Category.entries.sortedBy { it.name }.indexOf(category)
                             DropdownMenuItem(
                                 text = { Text(category.name) },
+                                modifier = Modifier
+                                    .padding(horizontal = 2.dp, vertical = 4.dp)
+                                    .background(
+                                        color = categoryColors[categoryIndex % categoryColors.size].copy(alpha = 0.2f),
+                                        shape = RoundedCornerShape(50)
+                                    )
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
                                 onClick = {
                                     selectedCategory = category
                                     isCategoryExpanded = false
@@ -120,7 +133,7 @@ fun AddPaymentDialog(
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
+            TextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
         }
