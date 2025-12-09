@@ -76,7 +76,7 @@ fun BudgetingScreen(
             onDismiss = { showDialog = false },
             onConfirm = {
                 description, amount, category, person ->
-                viewModel.addPayment(description, amount, category, person)
+                viewModel.addPayment(Date(), description, amount, category, person)
                 showDialog = false
             }
         )

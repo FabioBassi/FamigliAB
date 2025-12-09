@@ -21,15 +21,25 @@ class BudgetingViewModel : ViewModel() {
         _incomes.value = createMockIncomes()
     }
 
-    fun addPayment(description: String, amount: Double, category: Category, paidBy: Person) {
+    fun addPayment(date: Date = Date(), description: String, amount: Double, category: Category, paidBy: Person) {
         val newPayment = Payment(
-            date = Date(),
+            date = date,
             description = description,
             amount = amount,
             paidBy = paidBy,
             category = category,
         )
-        _payments.value = _payments.value + newPayment
+        _payments.value += newPayment
+    }
+
+    fun addIncome(date: Date = Date(), description: String, amount: Double, paidTo: Person) {
+        val newIncome = Income(
+            date = date,
+            description = description,
+            amount = amount,
+            paidTo = paidTo
+        )
+        _incomes.value += newIncome
     }
 
     private fun createMockPayments(): List<Payment> {
