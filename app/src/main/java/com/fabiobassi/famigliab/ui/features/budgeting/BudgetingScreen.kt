@@ -1,6 +1,5 @@
 package com.fabiobassi.famigliab.ui.features.budgeting
 
-import android.R
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -23,6 +22,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -50,8 +52,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Income
-import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Payment
+import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Voucher
 import com.fabiobassi.famigliab.ui.theme.categoryColors
 import java.text.SimpleDateFormat
@@ -67,26 +69,47 @@ fun BudgetingScreen(
     viewModel: BudgetingViewModel = viewModel(),
     onViewAllPaymentsClick: () -> Unit,
 ) {
-    var showDialog by remember { mutableStateOf(false) }
+    var showAddPaymentDialog by remember { mutableStateOf(false) }
+    var showAddIncomeDialog by remember { mutableStateOf(false) }
+    var showAddVoucherDialog by remember { mutableStateOf(false) }
     val payments by viewModel.payments.collectAsState()
     val incomes by viewModel.incomes.collectAsState()
     val vouchers by viewModel.vouchers.collectAsState()
     var currentDate by remember { mutableStateOf(Date()) }
 
-    if (showDialog) {
+    if (showAddPaymentDialog) {
         AddPaymentDialog(
-            onDismiss = { showDialog = false },
+            onDismiss = { showAddPaymentDialog = false },
             onConfirm = {
-                description, amount, category, person ->
-                viewModel.addPayment(description, amount, category, person)
-                showDialog = false
+                date, description, amount, category, person ->
+                viewModel.addPayment(date, description, amount, category, person)
+                showAddPaymentDialog = false
+            }
+        )
+    }
+
+    if (showAddIncomeDialog) {
+        AddIncomeDialog(
+            onDismiss = { showAddIncomeDialog = false },
+            onConfirm = { description, amount, person ->
+                viewModel.addIncome(description, amount, person)
+                showAddIncomeDialog = false
+            }
+        )
+    }
+
+    if (showAddVoucherDialog) {
+        AddVoucherDialog(
+            onDismiss = { showAddVoucherDialog = false },
+            onConfirm = { value, numberUsed, person ->
+                viewModel.addVoucher(value, numberUsed, person)
+                showAddVoucherDialog = false
             }
         )
     }
 
     BudgetingScreenContent(
         paddingValues = paddingValues,
-        showDialog = showDialog,
         payments = payments,
         incomes = incomes,
         vouchers = vouchers,
@@ -104,14 +127,15 @@ fun BudgetingScreen(
             currentDate = calendar.time
         },
         onViewAllPaymentsClick = onViewAllPaymentsClick,
-        onAddPaymentClick = { showDialog = true }
+        onAddPaymentClick = { showAddPaymentDialog = true },
+        onAddIncomeClick = { showAddIncomeDialog = true },
+        onAddVoucherClick = { showAddVoucherDialog = true }
     )
 }
 
 @Composable
 fun BudgetingScreenContent(
     paddingValues: PaddingValues,
-    showDialog: Boolean,
     payments: List<Payment>,
     incomes: List<Income>,
     vouchers: List<Voucher>,
@@ -119,7 +143,9 @@ fun BudgetingScreenContent(
     onPreviousMonthClick: () -> Unit,
     onNextMonthClick: () -> Unit,
     onViewAllPaymentsClick: () -> Unit,
-    onAddPaymentClick: () -> Unit
+    onAddPaymentClick: () -> Unit,
+    onAddIncomeClick: () -> Unit,
+    onAddVoucherClick: () -> Unit
 ) {
     val monthlyPayments = remember(payments, currentDate) {
         val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
@@ -137,8 +163,7 @@ fun BudgetingScreenContent(
         val selectedMonth = selectedMonthCal.get(Calendar.MONTH)
         val selectedYear = selectedMonthCal.get(Calendar.YEAR)
         val itemCalendar = Calendar.getInstance()
-        incomes.filter { income ->
-            itemCalendar.time = income.date
+        incomes.filter { _ ->
             itemCalendar.get(Calendar.MONTH) == selectedMonth && itemCalendar.get(Calendar.YEAR) == selectedYear
         }
     }
@@ -152,6 +177,7 @@ fun BudgetingScreenContent(
     val totalIncome = totalIncomeFab + totalIncomeSab
 
     val paymentsByCategory = monthlyPayments.groupBy { it.category }
+    var isExpanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -199,13 +225,44 @@ fun BudgetingScreenContent(
                 VoucherSummarySection(vouchers = vouchers)
             }
         }
-        FloatingActionButton(
-            onClick = { onAddPaymentClick() },
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Icon(Icons.Filled.Add, "Add new payment")
+            if (isExpanded) {
+                FloatingActionButton(
+                    onClick = { 
+                        onAddPaymentClick()
+                        isExpanded = false
+                     },
+                ) {
+                    Icon(Icons.Filled.ShoppingCart, "Add new payment")
+                }
+                FloatingActionButton(
+                    onClick = { 
+                        onAddIncomeClick()
+                        isExpanded = false
+                     },
+                ) {
+                    Icon(Icons.Filled.AttachMoney, "Add new income")
+                }
+                FloatingActionButton(
+                    onClick = { 
+                        onAddVoucherClick()
+                        isExpanded = false
+                     },
+                ) {
+                    Icon(Icons.Filled.CreditCard, "Edit vouchers")
+                }
+            }
+            FloatingActionButton(
+                onClick = { isExpanded = !isExpanded },
+            ) {
+                Icon(Icons.Filled.Add, "Add")
+            }
         }
     }
 }
@@ -693,9 +750,9 @@ fun BudgetingScreenPreview() {
         Payment(Date(), "Parrucchiere", 40.0, Person.FAB, Category.VARIE)
     )
     val mockIncomes = listOf(
-        Income(Date(), "Stipendio", 2000.0, Person.FAB),
-        Income(Date(), "Stipendio", 1500.0, Person.SAB),
-        Income(Date(), "Bonus", 200.0, Person.FAB),
+        Income("Stipendio", 2000.0, Person.FAB),
+        Income("Stipendio", 1500.0, Person.SAB),
+        Income("Bonus", 200.0, Person.FAB),
     )
     val mockVouchers = listOf(
         Voucher(value = 50.0, numberUsed = 2, whose = Person.FAB),
@@ -712,6 +769,7 @@ fun BudgetingScreenPreview() {
         onNextMonthClick = {},
         onViewAllPaymentsClick = {},
         onAddPaymentClick = {},
-        showDialog = false
+        onAddIncomeClick = {},
+        onAddVoucherClick = {},
     )
 }

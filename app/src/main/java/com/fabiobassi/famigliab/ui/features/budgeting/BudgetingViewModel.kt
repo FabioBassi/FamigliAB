@@ -25,15 +25,33 @@ class BudgetingViewModel : ViewModel() {
         _vouchers.value = createMockVouchers()
     }
 
-    fun addPayment(description: String, amount: Double, category: Category, paidBy: Person) {
+    fun addPayment(description: String, amount: Double, category: Category, paidBy: Person, date: Date) {
         val newPayment = Payment(
-            date = Date(),
+            date = date,
             description = description,
             amount = amount,
             paidBy = paidBy,
             category = category,
         )
-        _payments.value = _payments.value + newPayment
+        _payments.value += newPayment
+    }
+
+    fun addIncome(description: String, amount: Double, paidTo: Person) {
+        val newIncome = Income(
+            description = description,
+            amount = amount,
+            paidTo = paidTo,
+        )
+        _incomes.value += newIncome
+    }
+
+    fun addVoucher(value: Double, numberUsed: Int, whose: Person) {
+        val newVoucher = Voucher(
+            value = value,
+            numberUsed = numberUsed,
+            whose = whose,
+        )
+        _vouchers.value += newVoucher
     }
 
     private fun createMockPayments(): List<Payment> {
@@ -62,8 +80,8 @@ class BudgetingViewModel : ViewModel() {
     }
     private fun createMockIncomes(): List<Income> {
         return listOf(
-            Income(Date(), "Stipendio ENAV", amount = 2000.0, paidTo = Person.FAB),
-            Income(Date(), "Stipendio FF", amount = 1500.0, paidTo = Person.SAB)
+            Income("Stipendio ENAV", amount = 2000.0, paidTo = Person.FAB),
+            Income("Stipendio FF", amount = 1500.0, paidTo = Person.SAB)
         )
     }
 
