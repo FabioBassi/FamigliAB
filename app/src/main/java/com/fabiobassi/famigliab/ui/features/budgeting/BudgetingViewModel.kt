@@ -5,6 +5,7 @@ import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Income
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Payment
+import com.fabiobassi.famigliab.data.Voucher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.Date
@@ -15,31 +16,24 @@ class BudgetingViewModel : ViewModel() {
     val payments: StateFlow<List<Payment>> = _payments
     private val _incomes = MutableStateFlow<List<Income>>(emptyList())
     val incomes: StateFlow<List<Income>> = _incomes
+    private val _vouchers = MutableStateFlow<List<Voucher>>(emptyList())
+    val vouchers: StateFlow<List<Voucher>> = _vouchers
 
     init {
         _payments.value = createMockPayments()
         _incomes.value = createMockIncomes()
+        _vouchers.value = createMockVouchers()
     }
 
-    fun addPayment(date: Date = Date(), description: String, amount: Double, category: Category, paidBy: Person) {
+    fun addPayment(description: String, amount: Double, category: Category, paidBy: Person) {
         val newPayment = Payment(
-            date = date,
+            date = Date(),
             description = description,
             amount = amount,
             paidBy = paidBy,
             category = category,
         )
-        _payments.value += newPayment
-    }
-
-    fun addIncome(date: Date = Date(), description: String, amount: Double, paidTo: Person) {
-        val newIncome = Income(
-            date = date,
-            description = description,
-            amount = amount,
-            paidTo = paidTo
-        )
-        _incomes.value += newIncome
+        _payments.value = _payments.value + newPayment
     }
 
     private fun createMockPayments(): List<Payment> {
@@ -70,6 +64,14 @@ class BudgetingViewModel : ViewModel() {
         return listOf(
             Income(Date(), "Stipendio ENAV", amount = 2000.0, paidTo = Person.FAB),
             Income(Date(), "Stipendio FF", amount = 1500.0, paidTo = Person.SAB)
+        )
+    }
+
+    private fun createMockVouchers(): List<Voucher> {
+        return listOf(
+            Voucher(value = 50.0, numberUsed = 2, whose = Person.FAB),
+            Voucher(value = 25.0, numberUsed = 1, whose = Person.SAB),
+            Voucher(value = 100.0, numberUsed = 1, whose = Person.FAB)
         )
     }
 }

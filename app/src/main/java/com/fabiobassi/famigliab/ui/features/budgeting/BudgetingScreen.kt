@@ -52,6 +52,7 @@ import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Income
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Payment
+import com.fabiobassi.famigliab.data.Voucher
 import com.fabiobassi.famigliab.ui.theme.categoryColors
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -69,6 +70,7 @@ fun BudgetingScreen(
     var showDialog by remember { mutableStateOf(false) }
     val payments by viewModel.payments.collectAsState()
     val incomes by viewModel.incomes.collectAsState()
+    val vouchers by viewModel.vouchers.collectAsState()
     var currentDate by remember { mutableStateOf(Date()) }
 
     if (showDialog) {
@@ -76,7 +78,7 @@ fun BudgetingScreen(
             onDismiss = { showDialog = false },
             onConfirm = {
                 description, amount, category, person ->
-                viewModel.addPayment(Date(), description, amount, category, person)
+                viewModel.addPayment(description, amount, category, person)
                 showDialog = false
             }
         )
@@ -87,6 +89,7 @@ fun BudgetingScreen(
         showDialog = showDialog,
         payments = payments,
         incomes = incomes,
+        vouchers = vouchers,
         currentDate = currentDate,
         onPreviousMonthClick = {
             val calendar = Calendar.getInstance()
@@ -111,6 +114,7 @@ fun BudgetingScreenContent(
     showDialog: Boolean,
     payments: List<Payment>,
     incomes: List<Income>,
+    vouchers: List<Voucher>,
     currentDate: Date,
     onPreviousMonthClick: () -> Unit,
     onNextMonthClick: () -> Unit,
@@ -189,6 +193,10 @@ fun BudgetingScreenContent(
                     paymentsByCategory = paymentsByCategory,
                     colors = categoryColors
                 )
+            }
+
+            item {
+                VoucherSummarySection(vouchers = vouchers)
             }
         }
         FloatingActionButton(
@@ -510,14 +518,14 @@ private fun ExpensesSummary(
                     Text(
                         text = "%.2f €".format(totalFab),
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1.16f),
                         textAlign = TextAlign.End,
                         fontSize = 10.sp
                     )
                     Text(
                         text = "%.2f €".format(totalSab),
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1.16f),
                         textAlign = TextAlign.End,
                         fontSize = 10.sp
                     )
@@ -525,7 +533,7 @@ private fun ExpensesSummary(
                         text = "%.2f €".format(total),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1.5f),
+                        modifier = Modifier.weight(1.18f),
                         textAlign = TextAlign.End
                     )
                 }
@@ -567,6 +575,98 @@ private fun ExpensesSummary(
     }
 }
 
+@Composable
+private fun VoucherSummarySection(vouchers: List<Voucher>) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "VOUCHERS USED",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (vouchers.isNotEmpty()) {
+                val fabVouchers = vouchers.filter { it.whose == Person.FAB }
+                val sabVouchers = vouchers.filter { it.whose == Person.SAB }
+
+                val totalFabVouchersCount = fabVouchers.sumOf { it.numberUsed }
+                val totalFabVouchersValue = fabVouchers.sumOf { it.value * it.numberUsed }
+                val totalSabVouchersCount = sabVouchers.sumOf { it.numberUsed }
+                val totalSabVouchersValue = sabVouchers.sumOf { it.value * it.numberUsed }
+                val totalVouchersCount = totalFabVouchersCount + totalSabVouchersCount
+                val totalVouchersValue = totalFabVouchersValue + totalSabVouchersValue
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Fab:",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "$totalFabVouchersCount vouchers (%.2f €)".format(totalFabVouchersValue),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.End
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Sab:",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "$totalSabVouchersCount vouchers (%.2f €)".format(totalSabVouchersValue),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.End
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Total:",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "$totalVouchersCount vouchers (%.2f €)".format(totalVouchersValue),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.End
+                    )
+                }
+            } else {
+                Text(
+                    text = "No vouchers used yet.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun BudgetingScreenPreview() {
@@ -597,10 +697,16 @@ fun BudgetingScreenPreview() {
         Income(Date(), "Stipendio", 1500.0, Person.SAB),
         Income(Date(), "Bonus", 200.0, Person.FAB),
     )
+    val mockVouchers = listOf(
+        Voucher(value = 50.0, numberUsed = 2, whose = Person.FAB),
+        Voucher(value = 25.0, numberUsed = 1, whose = Person.SAB),
+        Voucher(value = 100.0, numberUsed = 1, whose = Person.FAB)
+    )
     BudgetingScreenContent(
         paddingValues = PaddingValues(),
         payments = mockOutcomes,
         incomes = mockIncomes,
+        vouchers = mockVouchers,
         currentDate = Date(),
         onPreviousMonthClick = {},
         onNextMonthClick = {},
