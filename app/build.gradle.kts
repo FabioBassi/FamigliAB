@@ -58,5 +58,8 @@ dependencies {
     // Kotlinx Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
+    // kotlin-csv
+    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.9.3")
+
     //ksp("androidx.room:room-compiler:2.5.0")
 }

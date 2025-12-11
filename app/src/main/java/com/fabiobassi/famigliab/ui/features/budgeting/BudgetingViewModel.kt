@@ -1,16 +1,22 @@
 package com.fabiobassi.famigliab.ui.features.budgeting
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Income
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Payment
 import com.fabiobassi.famigliab.data.Voucher
+import com.fabiobassi.famigliab.file.CsvFileManager
+import com.fabiobassi.famigliab.file.CsvFileType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.util.Calendar
 import java.util.Date
 
-class BudgetingViewModel : ViewModel() {
+class BudgetingViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val csvFileManager = CsvFileManager(application.applicationContext)
 
     private val _payments = MutableStateFlow<List<Payment>>(emptyList())
     val payments: StateFlow<List<Payment>> = _payments
@@ -19,13 +25,20 @@ class BudgetingViewModel : ViewModel() {
     private val _vouchers = MutableStateFlow<List<Voucher>>(emptyList())
     val vouchers: StateFlow<List<Voucher>> = _vouchers
 
+    private val _currentDate = MutableStateFlow(Date())
+    val currentDate: StateFlow<Date> = _currentDate
+
     init {
-        _payments.value = createMockPayments()
-        _incomes.value = createMockIncomes()
-        _vouchers.value = createMockVouchers()
+        loadDataForMonth(_currentDate.value)
     }
 
-    fun addPayment(description: String, amount: Double, category: Category, paidBy: Person, date: Date) {
+    private fun loadDataForMonth(date: Date) {
+        _payments.value = csvFileManager.readData(CsvFileType.PAYMENTS, date, Payment::fromCsvRow)
+        _incomes.value = csvFileManager.readData(CsvFileType.INCOMES, date, Income::fromCsvRow)
+        _vouchers.value = csvFileManager.readData(CsvFileType.VOUCHERS, date, Voucher::fromCsvRow)
+    }
+
+    fun addPayment(date: Date, description: String, amount: Double, category: Category, paidBy: Person) {
         val newPayment = Payment(
             date = date,
             description = description,
@@ -34,6 +47,7 @@ class BudgetingViewModel : ViewModel() {
             category = category,
         )
         _payments.value += newPayment
+        csvFileManager.writeData(CsvFileType.PAYMENTS, date, newPayment)
     }
 
     fun addIncome(description: String, amount: Double, paidTo: Person) {
@@ -43,6 +57,7 @@ class BudgetingViewModel : ViewModel() {
             paidTo = paidTo,
         )
         _incomes.value += newIncome
+        csvFileManager.writeData(CsvFileType.INCOMES, _currentDate.value, newIncome)
     }
 
     fun addVoucher(value: Double, numberUsed: Int, whose: Person) {
@@ -52,44 +67,22 @@ class BudgetingViewModel : ViewModel() {
             whose = whose,
         )
         _vouchers.value += newVoucher
+        csvFileManager.writeData(CsvFileType.VOUCHERS, _currentDate.value, newVoucher)
     }
 
-    private fun createMockPayments(): List<Payment> {
-        return listOf(
-            Payment(Date(), "Spesa Esselunga", 150.55, Person.FAB, Category.CIBO),
-            Payment(Date(), "Benzina", 70.0, Person.SAB, Category.MACCHINA),
-            Payment(Date(), "Cinema", 20.0, Person.FAB, Category.SVAGO),
-            Payment(Date(), "Bolletta luce", 80.0, Person.SAB, Category.BOLLETTE),
-            Payment(Date(), "Ristorante", 95.0, Person.FAB, Category.CIBO),
-            Payment(Date(), "Affitto", 800.0, Person.FAB, Category.CASA),
-            Payment(Date(), "Spesa abbigliamento", 120.0, Person.SAB, Category.ABBIGLIAMENTO),
-            Payment(Date(), "Piscina", 45.0, Person.FAB, Category.SPORT),
-            Payment(Date(), "Visita medica", 60.0, Person.SAB, Category.SALUTE),
-            Payment(Date(), "Regalo compleanno", 30.0, Person.FAB, Category.REGALI),
-            Payment(Date(), "Viaggio Roma", 3000.0, Person.SAB, Category.TURISMO),
-            Payment(Date(), "Cena fuori", 75.0, Person.FAB, Category.RISTORANTE),
-            Payment(Date(), "Manutenzione auto", 150.0, Person.SAB, Category.MACCHINA),
-            Payment(Date(), "Libro", 25.0, Person.FAB, Category.VARIE),
-            Payment(Date(), "Netflix", 15.99, Person.SAB, Category.SVAGO),
-            Payment(Date(), "Uscita amici", 50.0, Person.FAB, Category.SVAGO),
-            Payment(Date(), "Regalo di Natale", 100.0, Person.SAB, Category.REGALI),
-            Payment(Date(), "Treno", 40.0, Person.FAB, Category.TURISMO),
-            Payment(Date(), "Spesa Carrefour", 85.30, Person.SAB, Category.CIBO),
-            Payment(Date(), "Parrucchiere", 40.0, Person.FAB, Category.VARIE)
-        )
-    }
-    private fun createMockIncomes(): List<Income> {
-        return listOf(
-            Income("Stipendio ENAV", amount = 2000.0, paidTo = Person.FAB),
-            Income("Stipendio FF", amount = 1500.0, paidTo = Person.SAB)
-        )
+    fun nextMonth() {
+        val calendar = Calendar.getInstance()
+        calendar.time = _currentDate.value
+        calendar.add(Calendar.MONTH, 1)
+        _currentDate.value = calendar.time
+        loadDataForMonth(_currentDate.value)
     }
 
-    private fun createMockVouchers(): List<Voucher> {
-        return listOf(
-            Voucher(value = 50.0, numberUsed = 2, whose = Person.FAB),
-            Voucher(value = 25.0, numberUsed = 1, whose = Person.SAB),
-            Voucher(value = 100.0, numberUsed = 1, whose = Person.FAB)
-        )
+    fun previousMonth() {
+        val calendar = Calendar.getInstance()
+        calendar.time = _currentDate.value
+        calendar.add(Calendar.MONTH, -1)
+        _currentDate.value = calendar.time
+        loadDataForMonth(_currentDate.value)
     }
 }

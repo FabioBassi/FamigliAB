@@ -75,7 +75,7 @@ fun BudgetingScreen(
     val payments by viewModel.payments.collectAsState()
     val incomes by viewModel.incomes.collectAsState()
     val vouchers by viewModel.vouchers.collectAsState()
-    var currentDate by remember { mutableStateOf(Date()) }
+    val currentDate by viewModel.currentDate.collectAsState()
 
     if (showAddPaymentDialog) {
         AddPaymentDialog(
@@ -114,18 +114,8 @@ fun BudgetingScreen(
         incomes = incomes,
         vouchers = vouchers,
         currentDate = currentDate,
-        onPreviousMonthClick = {
-            val calendar = Calendar.getInstance()
-            calendar.time = currentDate
-            calendar.add(Calendar.MONTH, -1)
-            currentDate = calendar.time
-        },
-        onNextMonthClick = {
-            val calendar = Calendar.getInstance()
-            calendar.time = currentDate
-            calendar.add(Calendar.MONTH, 1)
-            currentDate = calendar.time
-        },
+        onPreviousMonthClick = viewModel::previousMonth,
+        onNextMonthClick = viewModel::nextMonth,
         onViewAllPaymentsClick = onViewAllPaymentsClick,
         onAddPaymentClick = { showAddPaymentDialog = true },
         onAddIncomeClick = { showAddIncomeDialog = true },
@@ -158,22 +148,12 @@ fun BudgetingScreenContent(
         }
     }
 
-    val monthlyIncomes = remember(incomes, currentDate) {
-        val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
-        val selectedMonth = selectedMonthCal.get(Calendar.MONTH)
-        val selectedYear = selectedMonthCal.get(Calendar.YEAR)
-        val itemCalendar = Calendar.getInstance()
-        incomes.filter { _ ->
-            itemCalendar.get(Calendar.MONTH) == selectedMonth && itemCalendar.get(Calendar.YEAR) == selectedYear
-        }
-    }
-
     val totalPaymentsFab = monthlyPayments.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
     val totalPaymentsSab = monthlyPayments.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
     val totalPayments = totalPaymentsFab + totalPaymentsSab
 
-    val totalIncomeFab = monthlyIncomes.filter { it.paidTo == Person.FAB }.sumOf { it.amount }
-    val totalIncomeSab = monthlyIncomes.filter { it.paidTo == Person.SAB }.sumOf { it.amount }
+    val totalIncomeFab = incomes.filter { it.paidTo == Person.FAB }.sumOf { it.amount }
+    val totalIncomeSab = incomes.filter { it.paidTo == Person.SAB }.sumOf { it.amount }
     val totalIncome = totalIncomeFab + totalIncomeSab
 
     val paymentsByCategory = monthlyPayments.groupBy { it.category }

@@ -41,7 +41,7 @@ import java.util.Locale
 @Composable
 fun AddPaymentDialog(
     onDismiss: () -> Unit,
-    onConfirm: (String, Double, Category, Person, Date) -> Unit
+    onConfirm: (Date, String, Double, Category, Person) -> Unit
 ) {
     var description by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
@@ -168,7 +168,7 @@ fun AddPaymentDialog(
                     }
                     Button(
                         onClick = {
-                            onConfirm(description, amount.toDouble(), selectedCategory, selectedPerson, date)
+                            onConfirm(date, description, amount.toDouble(), selectedCategory, selectedPerson)
                         },
                         enabled = description.isNotBlank() && amount.isNotBlank()
                     ) {
