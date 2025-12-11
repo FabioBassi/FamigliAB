@@ -29,8 +29,7 @@ class CsvFileManager(private val context: Context) {
         return File(typeDir, fileName)
     }
 
-    // No changes needed here as 'T' is inferred from the 'data' parameter.
-    fun <T : CsvData> writeData(type: CsvFileType, date: Date, data: T) {
+    fun <T : CsvData> writeData(type: CsvFileType, date: Date, data: List<T>) {
         val file = getFileForMonth(type, date)
         data.writeToCsv(file)
     }

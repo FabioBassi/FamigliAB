@@ -46,8 +46,20 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
             paidBy = paidBy,
             category = category,
         )
-        _payments.value += newPayment
-        csvFileManager.writeData(CsvFileType.PAYMENTS, date, newPayment)
+
+        val paymentCalendar = Calendar.getInstance().apply { time = date }
+        val currentCalendar = Calendar.getInstance().apply { time = _currentDate.value }
+
+        if (paymentCalendar.get(Calendar.MONTH) == currentCalendar.get(Calendar.MONTH) &&
+            paymentCalendar.get(Calendar.YEAR) == currentCalendar.get(Calendar.YEAR)) {
+            val updatedPayments = _payments.value + newPayment
+            _payments.value = updatedPayments
+            csvFileManager.writeData(CsvFileType.PAYMENTS, _currentDate.value, updatedPayments)
+        } else {
+            val otherMonthPayments = csvFileManager.readData(CsvFileType.PAYMENTS, date, Payment::fromCsvRow)
+            val updatedOtherMonthPayments = otherMonthPayments + newPayment
+            csvFileManager.writeData(CsvFileType.PAYMENTS, date, updatedOtherMonthPayments)
+        }
     }
 
     fun addIncome(description: String, amount: Double, paidTo: Person) {
@@ -56,8 +68,9 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
             amount = amount,
             paidTo = paidTo,
         )
-        _incomes.value += newIncome
-        csvFileManager.writeData(CsvFileType.INCOMES, _currentDate.value, newIncome)
+        val updatedIncomes = _incomes.value + newIncome
+        _incomes.value = updatedIncomes
+        csvFileManager.writeData(CsvFileType.INCOMES, _currentDate.value, updatedIncomes)
     }
 
     fun addVoucher(value: Double, numberUsed: Int, whose: Person) {
@@ -66,8 +79,9 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
             numberUsed = numberUsed,
             whose = whose,
         )
-        _vouchers.value += newVoucher
-        csvFileManager.writeData(CsvFileType.VOUCHERS, _currentDate.value, newVoucher)
+        val updatedVouchers = _vouchers.value + newVoucher
+        _vouchers.value = updatedVouchers
+        csvFileManager.writeData(CsvFileType.VOUCHERS, _currentDate.value, updatedVouchers)
     }
 
     fun nextMonth() {

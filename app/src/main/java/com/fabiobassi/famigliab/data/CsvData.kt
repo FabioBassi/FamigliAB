@@ -3,9 +3,6 @@ package com.fabiobassi.famigliab.data
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 interface CsvData {
     fun toCsvRow(): List<String>
@@ -22,6 +19,11 @@ interface CsvData {
 
 fun <T : CsvData> T.writeToCsv(file: File) {
     csvWriter().writeAll(listOf(this.toCsvRow()), file, append = true)
+}
+
+fun <T : CsvData> List<T>.writeToCsv(file: File) {
+    val rows = this.map { it.toCsvRow() }
+    csvWriter().writeAll(rows, file, append = false)
 }
 
 inline fun <reified T : CsvData> readCsv(

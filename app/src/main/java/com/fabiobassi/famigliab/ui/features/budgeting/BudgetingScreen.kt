@@ -1,5 +1,7 @@
 package com.fabiobassi.famigliab.ui.features.budgeting
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -43,19 +45,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Income
 import com.fabiobassi.famigliab.data.Payment
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Voucher
+import com.fabiobassi.famigliab.file.CsvFileManager
+import com.fabiobassi.famigliab.file.CsvFileType
 import com.fabiobassi.famigliab.ui.theme.categoryColors
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -76,6 +83,9 @@ fun BudgetingScreen(
     val incomes by viewModel.incomes.collectAsState()
     val vouchers by viewModel.vouchers.collectAsState()
     val currentDate by viewModel.currentDate.collectAsState()
+    val context = LocalContext.current
+    val csvFileManager = remember { CsvFileManager(context) }
+
 
     if (showAddPaymentDialog) {
         AddPaymentDialog(
@@ -119,7 +129,19 @@ fun BudgetingScreen(
         onViewAllPaymentsClick = onViewAllPaymentsClick,
         onAddPaymentClick = { showAddPaymentDialog = true },
         onAddIncomeClick = { showAddIncomeDialog = true },
-        onAddVoucherClick = { showAddVoucherDialog = true }
+        onAddVoucherClick = { showAddVoucherDialog = true },
+        onSharePaymentsClick = {
+            val file = csvFileManager.getFileForMonth(CsvFileType.PAYMENTS, currentDate)
+            shareFile(context, file)
+        },
+        onShareIncomesClick = {
+            val file = csvFileManager.getFileForMonth(CsvFileType.INCOMES, currentDate)
+            shareFile(context, file)
+        },
+        onShareVouchersClick = {
+            val file = csvFileManager.getFileForMonth(CsvFileType.VOUCHERS, currentDate)
+            shareFile(context, file)
+        }
     )
 }
 
@@ -135,7 +157,10 @@ fun BudgetingScreenContent(
     onViewAllPaymentsClick: () -> Unit,
     onAddPaymentClick: () -> Unit,
     onAddIncomeClick: () -> Unit,
-    onAddVoucherClick: () -> Unit
+    onAddVoucherClick: () -> Unit,
+    onSharePaymentsClick: () -> Unit,
+    onShareIncomesClick: () -> Unit,
+    onShareVouchersClick: () -> Unit
 ) {
     val monthlyPayments = remember(payments, currentDate) {
         val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
@@ -203,6 +228,13 @@ fun BudgetingScreenContent(
 
             item {
                 VoucherSummarySection(vouchers = vouchers)
+            }
+            item {
+                ShareSection(
+                    onSharePaymentsClick = onSharePaymentsClick,
+                    onShareIncomesClick = onShareIncomesClick,
+                    onShareVouchersClick = onShareVouchersClick
+                )
             }
         }
         Column(
@@ -315,7 +347,7 @@ private fun SummarySection(
                     fontSize = 16.sp
                 )
                 Text(
-                    text = "Total: ${"%.2f".format(totalIncome)} €",
+                    text = "${"%.2f".format(totalIncome)} €",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp
@@ -349,7 +381,7 @@ private fun SummarySection(
                     fontSize = 16.sp
                 )
                 Text(
-                    text = "Total: ${"%.2f".format(totalOutcome)} €",
+                    text = "${"%.2f".format(totalOutcome)} €",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp
@@ -553,21 +585,21 @@ private fun ExpensesSummary(
                         )
                     }
                     Text(
-                        text = "%.2f €".format(totalFab),
+                        text = "%.2f€".format(totalFab),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.weight(1.16f),
                         textAlign = TextAlign.End,
                         fontSize = 10.sp
                     )
                     Text(
-                        text = "%.2f €".format(totalSab),
+                        text = "%.2f€".format(totalSab),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.weight(1.16f),
                         textAlign = TextAlign.End,
                         fontSize = 10.sp
                     )
                     Text(
-                        text = "%.2f €".format(total),
+                        text = "%.2f€".format(total),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.weight(1.18f),
@@ -704,6 +736,66 @@ private fun VoucherSummarySection(vouchers: List<Voucher>) {
     }
 }
 
+@Composable
+private fun ShareSection(
+    onSharePaymentsClick: () -> Unit,
+    onShareIncomesClick: () -> Unit,
+    onShareVouchersClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "SHARE CSV FILES",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onSharePaymentsClick,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Payments")
+                }
+                Button(
+                    onClick = onShareIncomesClick,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Incomes")
+                }
+                Button(
+                    onClick = onShareVouchersClick,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Vouchers")
+                }
+            }
+        }
+    }
+}
+
+private fun shareFile(context: Context, file: File) {
+    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/csv"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    context.startActivity(Intent.createChooser(intent, "Share CSV"))
+}
+
 @Preview(showBackground = true)
 @Composable
 fun BudgetingScreenPreview() {
@@ -751,5 +843,8 @@ fun BudgetingScreenPreview() {
         onAddPaymentClick = {},
         onAddIncomeClick = {},
         onAddVoucherClick = {},
+        onSharePaymentsClick = {},
+        onShareIncomesClick = {},
+        onShareVouchersClick = {}
     )
 }
