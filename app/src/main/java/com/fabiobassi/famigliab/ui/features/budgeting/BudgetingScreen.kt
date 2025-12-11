@@ -182,7 +182,6 @@ fun BudgetingScreenContent(
     val totalIncome = totalIncomeFab + totalIncomeSab
 
     val paymentsByCategory = monthlyPayments.groupBy { it.category }
-    var isExpanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -244,36 +243,26 @@ fun BudgetingScreenContent(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (isExpanded) {
-                FloatingActionButton(
-                    onClick = { 
-                        onAddPaymentClick()
-                        isExpanded = false
-                     },
-                ) {
-                    Icon(Icons.Filled.ShoppingCart, "Add new payment")
-                }
-                FloatingActionButton(
-                    onClick = { 
-                        onAddIncomeClick()
-                        isExpanded = false
-                     },
-                ) {
-                    Icon(Icons.Filled.AttachMoney, "Add new income")
-                }
-                FloatingActionButton(
-                    onClick = { 
-                        onAddVoucherClick()
-                        isExpanded = false
-                     },
-                ) {
-                    Icon(Icons.Filled.CreditCard, "Edit vouchers")
-                }
+            FloatingActionButton(
+                onClick = {
+                    onAddPaymentClick()
+                 },
+            ) {
+                Icon(Icons.Filled.ShoppingCart, "Add new payment")
             }
             FloatingActionButton(
-                onClick = { isExpanded = !isExpanded },
+                onClick = {
+                    onAddIncomeClick()
+                 },
             ) {
-                Icon(Icons.Filled.Add, "Add")
+                Icon(Icons.Filled.AttachMoney, "Add new income")
+            }
+            FloatingActionButton(
+                onClick = {
+                    onAddVoucherClick()
+                 },
+            ) {
+                Icon(Icons.Filled.CreditCard, "Edit vouchers")
             }
         }
     }
