@@ -16,6 +16,6 @@ enum class Category {
     SVAGO,
     REGALI,
     TURISMO,
-    RISTORANTE,
+    RISTORAZIONE,
     VARIE
 }

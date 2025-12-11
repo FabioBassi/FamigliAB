@@ -800,7 +800,7 @@ fun BudgetingScreenPreview() {
         Payment(Date(), "Visita medica", 60.0, Person.SAB, Category.SALUTE),
         Payment(Date(), "Regalo compleanno", 30.0, Person.FAB, Category.REGALI),
         Payment(Date(), "Viaggio Roma", 300.0, Person.SAB, Category.TURISMO),
-        Payment(Date(), "Cena fuori", 75.0, Person.FAB, Category.RISTORANTE),
+        Payment(Date(), "Cena fuori", 75.0, Person.FAB, Category.RISTORAZIONE),
         Payment(Date(), "Manutenzione auto", 150.0, Person.SAB, Category.MACCHINA),
         Payment(Date(), "Libro", 25.0, Person.FAB, Category.VARIE),
         Payment(Date(), "Netflix", 15.99, Person.SAB, Category.SVAGO),
