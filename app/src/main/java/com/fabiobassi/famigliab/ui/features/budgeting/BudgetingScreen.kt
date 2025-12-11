@@ -383,7 +383,7 @@ private fun SummarySection(
 @Composable
 private fun LastPaymentsSection(
     payments: List<Payment>,
-    colors: List<Color>,
+    colors: Map<String, Color>,
     onViewAllPaymentsClick: () -> Unit
 ) {
     Card(
@@ -406,7 +406,6 @@ private fun LastPaymentsSection(
 
             if (payments.isNotEmpty()) {
                 val dateFormat = remember { SimpleDateFormat("dd/MM", Locale.getDefault()) }
-                val sortedCategories = remember { Category.entries.sortedBy { it.name } }
 
                 payments.sortedByDescending { it.date }.take(3).forEach { payment ->
                     Row(
@@ -421,14 +420,14 @@ private fun LastPaymentsSection(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Box(modifier = Modifier.weight(0.3f)) {
-                            val categoryIndex = sortedCategories.indexOf(payment.category)
+                            val color = colors[payment.category.name] ?: Color.DarkGray
                             Text(
                                 text = payment.category.name.lowercase().replaceFirstChar { it.titlecase() },
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier
                                     .background(
-                                        color = colors[categoryIndex % colors.size].copy(alpha = 0.2f),
-                                        shape = RoundedCornerShape(50)
+                                        color = color.copy(),
+                                        shape = RoundedCornerShape(25)
                                     )
                                     .padding(horizontal = 6.dp, vertical = 2.dp),
                                 maxLines = 1,
@@ -475,7 +474,7 @@ private fun LastPaymentsSection(
 @Composable
 private fun ExpensesSummary(
     paymentsByCategory: Map<Category, List<Payment>>,
-    colors: List<Color>
+    colors: Map<String, Color>
 ) {
     val categoryTotals = remember(paymentsByCategory) {
         Category.entries.associateWith { category ->
@@ -546,7 +545,7 @@ private fun ExpensesSummary(
                 )
             }
             // Body
-            Category.entries.sortedBy { it.name }.forEachIndexed { index, category ->
+            Category.entries.sortedBy { it.name }.forEach { category ->
                 val payments = paymentsByCategory[category] ?: emptyList()
                 val totalFab = payments.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
                 val totalSab = payments.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
@@ -564,10 +563,11 @@ private fun ExpensesSummary(
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier
                                 .background(
-                                    color = colors[index % colors.size].copy(alpha = 0.2f),
-                                    shape = RoundedCornerShape(50)
+                                    color = (colors[category.name] ?: Color.DarkGray).copy(),
+                                    shape = RoundedCornerShape(25)
                                 )
                                 .padding(horizontal = 8.dp, vertical = 4.dp),
+                            fontSize = 12.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             softWrap = false
@@ -607,8 +607,8 @@ private fun ExpensesSummary(
                     var startAngle = -90f
                     var drawnAngle = 0f
 
-                    Category.entries.sortedBy { it.name }.forEachIndexed { index, category ->
-                        if (drawnAngle >= totalAngleToDraw) return@forEachIndexed
+                    Category.entries.sortedBy { it.name }.forEach { category ->
+                        if (drawnAngle >= totalAngleToDraw) return@forEach
 
                         val total = categoryTotals[category] ?: 0.0
                         if (total > 0) {
@@ -616,7 +616,7 @@ private fun ExpensesSummary(
                             val angleToDraw = min(sweepAngleForCategory, totalAngleToDraw - drawnAngle)
 
                             drawArc(
-                                color = colors[index % colors.size],
+                                color = colors[category.name] ?: Color.LightGray,
                                 startAngle = startAngle,
                                 sweepAngle = angleToDraw,
                                 useCenter = true
