@@ -5,7 +5,9 @@ import android.content.Intent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,11 +25,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CreditCard
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -36,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -68,6 +70,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 import kotlin.math.min
 
 
@@ -86,6 +89,7 @@ fun BudgetingScreen(
     val context = LocalContext.current
     var showAllPayments by remember { mutableStateOf(false) }
     val csvFileManager = remember { CsvFileManager(context) }
+    var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
 
 
     if (showAddPaymentDialog) {
@@ -96,6 +100,17 @@ fun BudgetingScreen(
                 viewModel.addPayment(date, description, amount, category, person)
                 showAddPaymentDialog = false
             }
+        )
+    }
+
+    paymentToDelete?.let {
+        DeleteConfirmationDialog(
+            payment = it,
+            onConfirm = {
+                viewModel.deletePayment(it.id)
+                paymentToDelete = null
+            },
+            onDismiss = { paymentToDelete = null }
         )
     }
 
@@ -143,7 +158,8 @@ fun BudgetingScreen(
         onShareVouchersClick = {
             val file = csvFileManager.getFileForMonth(CsvFileType.VOUCHERS, currentDate)
             shareFile(context, file)
-        }
+        },
+        onPaymentLongClick = { paymentToDelete = it },
     )
 }
 
@@ -163,7 +179,8 @@ fun BudgetingScreenContent(
     onAddVoucherClick: () -> Unit,
     onSharePaymentsClick: () -> Unit,
     onShareIncomesClick: () -> Unit,
-    onShareVouchersClick: () -> Unit
+    onShareVouchersClick: () -> Unit,
+    onPaymentLongClick: (Payment) -> Unit,
 ) {
     val monthlyPayments = remember(payments, currentDate) {
         val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
@@ -218,7 +235,8 @@ fun BudgetingScreenContent(
                     payments = monthlyPayments,
                     colors = categoryColors,
                     showAllPayments = showAllPayments,
-                    onShowAllPaymentsClick = onShowAllPaymentsClick
+                    onShowAllPaymentsClick = onShowAllPaymentsClick,
+                    onPaymentLongClick = onPaymentLongClick,
                 )
             }
 
@@ -386,12 +404,14 @@ private fun SummarySection(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LastPaymentsSection(
     payments: List<Payment>,
     colors: Map<String, Color>,
     showAllPayments: Boolean,
-    onShowAllPaymentsClick: () -> Unit
+    onShowAllPaymentsClick: () -> Unit,
+    onPaymentLongClick: (Payment) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -400,13 +420,13 @@ private fun LastPaymentsSection(
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
                 text = if (showAllPayments) "ALL PAYMENTS" else "LAST PAYMENTS",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+                modifier = Modifier.align(Alignment.Start),
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -421,6 +441,10 @@ private fun LastPaymentsSection(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 2.dp)
+                            .combinedClickable(
+                                onClick = { },
+                                onLongClick = { onPaymentLongClick(payment) },
+                            )
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -471,17 +495,6 @@ private fun LastPaymentsSection(
                                 textAlign = TextAlign.End,
                                 modifier = Modifier.weight(0.3f)
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            IconButton(
-                                onClick = { /* TODO: implement deletion */ },
-                                modifier = Modifier.size(20.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete payment",
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
                         }
                     }
                     //Spacer(modifier = Modifier.height(2.dp))
@@ -533,14 +546,14 @@ private fun ExpensesSummary(
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             // Title
             Text(
                 text = "EXPENSES BY CATEGORY",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+                modifier = Modifier.align(Alignment.Start),
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -553,7 +566,7 @@ private fun ExpensesSummary(
                     text = "CATEGORY",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.5f)
+                    modifier = Modifier.weight(1.4f)
                 )
                 Text(
                     text = "FAB",
@@ -573,7 +586,7 @@ private fun ExpensesSummary(
                     text = "TOTAL",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.18f),
+                    modifier = Modifier.weight(1.28f),
                     textAlign = TextAlign.End
                 )
             }
@@ -588,13 +601,14 @@ private fun ExpensesSummary(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(
-                        modifier = Modifier.weight(1.5f), // Adjusted weight for the category column
+                        modifier = Modifier.weight(1.4f), // Adjusted weight for the category column
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = category.name.lowercase().replaceFirstChar { it.titlecase() },
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier
+                                .fillMaxWidth()
                                 .background(
                                     color = (colors[category.name] ?: Color.DarkGray).copy(),
                                     shape = RoundedCornerShape(25)
@@ -624,7 +638,7 @@ private fun ExpensesSummary(
                         text = "%.2f€".format(total),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1.18f),
+                        modifier = Modifier.weight(1.28f),
                         textAlign = TextAlign.End
                     )
                 }
@@ -808,6 +822,29 @@ private fun ShareSection(
     }
 }
 
+@Composable
+fun DeleteConfirmationDialog(
+    payment: Payment,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Delete Payment") },
+        text = { Text("Are you sure you want to delete this payment?\n\'${payment.description}' of ${payment.amount}€") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Delete")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
 private fun shareFile(context: Context, file: File) {
     val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
     val intent = Intent(Intent.ACTION_SEND).apply {
@@ -822,26 +859,26 @@ private fun shareFile(context: Context, file: File) {
 @Composable
 fun BudgetingScreenPreview() {
     val mockOutcomes = listOf(
-        Payment(Date(), "Spesa Esselunga", 150.55, Person.FAB, Category.CIBO),
-        Payment(Date(), "Benzina", 70.0, Person.SAB, Category.MACCHINA),
-        Payment(Date(), "Cinema", 20.0, Person.FAB, Category.SVAGO),
-        Payment(Date(), "Bolletta luce", 80.0, Person.SAB, Category.BOLLETTE),
-        Payment(Date(), "Ristorante", 95.0, Person.FAB, Category.CIBO),
-        Payment(Date(), "Affitto", 800.0, Person.FAB, Category.CASA),
-        Payment(Date(), "Spesa abbigliamento", 120.0, Person.SAB, Category.ABBIGLIAMENTO),
-        Payment(Date(), "Piscina", 45.0, Person.FAB, Category.SPORT),
-        Payment(Date(), "Visita medica", 60.0, Person.SAB, Category.SALUTE),
-        Payment(Date(), "Regalo compleanno", 30.0, Person.FAB, Category.REGALI),
-        Payment(Date(), "Viaggio Roma", 300.0, Person.SAB, Category.TURISMO),
-        Payment(Date(), "Cena fuori", 75.0, Person.FAB, Category.RISTORAZIONE),
-        Payment(Date(), "Manutenzione auto", 150.0, Person.SAB, Category.MACCHINA),
-        Payment(Date(), "Libro", 25.0, Person.FAB, Category.VARIE),
-        Payment(Date(), "Netflix", 15.99, Person.SAB, Category.SVAGO),
-        Payment(Date(), "Uscita amici", 50.0, Person.FAB, Category.SVAGO),
-        Payment(Date(), "Regalo di Natale", 100.0, Person.SAB, Category.REGALI),
-        Payment(Date(), "Treno", 40.0, Person.FAB, Category.TURISMO),
-        Payment(Date(), "Spesa Carrefour", 85.30, Person.SAB, Category.CIBO),
-        Payment(Date(), "Parrucchiere", 40.0, Person.FAB, Category.VARIE)
+        Payment(UUID.randomUUID().toString(), Date(), "Spesa Esselunga", 150.55, Person.FAB, Category.CIBO),
+        Payment(UUID.randomUUID().toString(), Date(), "Benzina", 70.0, Person.SAB, Category.MACCHINA),
+        Payment(UUID.randomUUID().toString(), Date(), "Cinema", 20.0, Person.FAB, Category.SVAGO),
+        Payment(UUID.randomUUID().toString(), Date(), "Bolletta luce", 80.0, Person.SAB, Category.BOLLETTE),
+        Payment(UUID.randomUUID().toString(), Date(), "Ristorante", 95.0, Person.FAB, Category.CIBO),
+        Payment(UUID.randomUUID().toString(), Date(), "Affitto", 800.0, Person.FAB, Category.CASA),
+        Payment(UUID.randomUUID().toString(), Date(), "Spesa abbigliamento", 120.0, Person.SAB, Category.ABBIGLIAMENTO),
+        Payment(UUID.randomUUID().toString(), Date(), "Piscina", 45.0, Person.FAB, Category.SPORT),
+        Payment(UUID.randomUUID().toString(), Date(), "Visita medica", 60.0, Person.SAB, Category.SALUTE),
+        Payment(UUID.randomUUID().toString(), Date(), "Regalo compleanno", 30.0, Person.FAB, Category.REGALI),
+        Payment(UUID.randomUUID().toString(), Date(), "Viaggio Roma", 300.0, Person.SAB, Category.TURISMO),
+        Payment(UUID.randomUUID().toString(), Date(), "Cena fuori", 75.0, Person.FAB, Category.RISTORAZIONE),
+        Payment(UUID.randomUUID().toString(), Date(), "Manutenzione auto", 150.0, Person.SAB, Category.MACCHINA),
+        Payment(UUID.randomUUID().toString(), Date(), "Libro", 25.0, Person.FAB, Category.VARIE),
+        Payment(UUID.randomUUID().toString(), Date(), "Netflix", 15.99, Person.SAB, Category.SVAGO),
+        Payment(UUID.randomUUID().toString(), Date(), "Uscita amici", 50.0, Person.FAB, Category.SVAGO),
+        Payment(UUID.randomUUID().toString(), Date(), "Regalo di Natale", 100.0, Person.SAB, Category.REGALI),
+        Payment(UUID.randomUUID().toString(), Date(), "Treno", 40.0, Person.FAB, Category.TURISMO),
+        Payment(UUID.randomUUID().toString(), Date(), "Spesa Carrefour", 85.30, Person.SAB, Category.CIBO),
+        Payment(UUID.randomUUID().toString(), Date(), "Parrucchiere", 40.0, Person.FAB, Category.VARIE)
     )
     val mockIncomes = listOf(
         Income("Stipendio", 2000.0, Person.FAB),
@@ -868,6 +905,7 @@ fun BudgetingScreenPreview() {
         onAddVoucherClick = {},
         onSharePaymentsClick = {},
         onShareIncomesClick = {},
-        onShareVouchersClick = {}
+        onShareVouchersClick = {},
+        onPaymentLongClick = {},
     )
 }

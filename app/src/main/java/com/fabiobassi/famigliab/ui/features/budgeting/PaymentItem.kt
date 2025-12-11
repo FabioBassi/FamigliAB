@@ -17,6 +17,7 @@ import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Payment
 import java.util.Date
+import java.util.UUID
 
 @Composable
 fun PaymentItem(payment: Payment) {
@@ -45,6 +46,7 @@ fun PaymentItem(payment: Payment) {
 fun PaymentItemPreview() {
     PaymentItem(
         payment = Payment(
+            UUID.randomUUID().toString(),
             Date(),
             "Spesa Esselunga",
             150.55,

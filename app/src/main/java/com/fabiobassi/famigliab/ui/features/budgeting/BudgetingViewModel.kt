@@ -62,6 +62,12 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    fun deletePayment(paymentId: String) {
+        val updatedPayments = _payments.value.filter { it.id != paymentId }
+        _payments.value = updatedPayments
+        csvFileManager.writeData(CsvFileType.PAYMENTS, _currentDate.value, updatedPayments)
+    }
+
     fun addIncome(description: String, amount: Double, paidTo: Person) {
         val newIncome = Income(
             description = description,

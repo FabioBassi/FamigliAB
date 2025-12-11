@@ -34,9 +34,6 @@ class CsvFileManager(private val context: Context) {
         data.writeToCsv(file)
     }
 
-    // FIX APPLIED HERE:
-    // 1. The function is marked as 'inline'.
-    // 2. The generic type 'T' is marked as 'reified'.
     inline fun <reified T : CsvData> readData(
         type: CsvFileType,
         date: Date,
