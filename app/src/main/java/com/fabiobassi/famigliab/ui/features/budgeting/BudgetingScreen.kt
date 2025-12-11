@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -74,7 +75,6 @@ import kotlin.math.min
 fun BudgetingScreen(
     paddingValues: PaddingValues,
     viewModel: BudgetingViewModel = viewModel(),
-    onViewAllPaymentsClick: () -> Unit,
 ) {
     var showAddPaymentDialog by remember { mutableStateOf(false) }
     var showAddIncomeDialog by remember { mutableStateOf(false) }
@@ -84,6 +84,7 @@ fun BudgetingScreen(
     val vouchers by viewModel.vouchers.collectAsState()
     val currentDate by viewModel.currentDate.collectAsState()
     val context = LocalContext.current
+    var showAllPayments by remember { mutableStateOf(false) }
     val csvFileManager = remember { CsvFileManager(context) }
 
 
@@ -124,9 +125,10 @@ fun BudgetingScreen(
         incomes = incomes,
         vouchers = vouchers,
         currentDate = currentDate,
+        showAllPayments = showAllPayments,
+        onShowAllPaymentsClick = { showAllPayments = !showAllPayments },
         onPreviousMonthClick = viewModel::previousMonth,
         onNextMonthClick = viewModel::nextMonth,
-        onViewAllPaymentsClick = onViewAllPaymentsClick,
         onAddPaymentClick = { showAddPaymentDialog = true },
         onAddIncomeClick = { showAddIncomeDialog = true },
         onAddVoucherClick = { showAddVoucherDialog = true },
@@ -152,9 +154,10 @@ fun BudgetingScreenContent(
     incomes: List<Income>,
     vouchers: List<Voucher>,
     currentDate: Date,
+    showAllPayments: Boolean,
+    onShowAllPaymentsClick: () -> Unit,
     onPreviousMonthClick: () -> Unit,
     onNextMonthClick: () -> Unit,
-    onViewAllPaymentsClick: () -> Unit,
     onAddPaymentClick: () -> Unit,
     onAddIncomeClick: () -> Unit,
     onAddVoucherClick: () -> Unit,
@@ -214,26 +217,29 @@ fun BudgetingScreenContent(
                 LastPaymentsSection(
                     payments = monthlyPayments,
                     colors = categoryColors,
-                    onViewAllPaymentsClick = onViewAllPaymentsClick
+                    showAllPayments = showAllPayments,
+                    onShowAllPaymentsClick = onShowAllPaymentsClick
                 )
             }
 
-            item {
-                ExpensesSummary(
-                    paymentsByCategory = paymentsByCategory,
-                    colors = categoryColors
-                )
-            }
+            if (!showAllPayments) {
+                item {
+                    ExpensesSummary(
+                        paymentsByCategory = paymentsByCategory,
+                        colors = categoryColors
+                    )
+                }
 
-            item {
-                VoucherSummarySection(vouchers = vouchers)
-            }
-            item {
-                ShareSection(
-                    onSharePaymentsClick = onSharePaymentsClick,
-                    onShareIncomesClick = onShareIncomesClick,
-                    onShareVouchersClick = onShareVouchersClick
-                )
+                item {
+                    VoucherSummarySection(vouchers = vouchers)
+                }
+                item {
+                    ShareSection(
+                        onSharePaymentsClick = onSharePaymentsClick,
+                        onShareIncomesClick = onShareIncomesClick,
+                        onShareVouchersClick = onShareVouchersClick
+                    )
+                }
             }
         }
         Column(
@@ -384,7 +390,8 @@ private fun SummarySection(
 private fun LastPaymentsSection(
     payments: List<Payment>,
     colors: Map<String, Color>,
-    onViewAllPaymentsClick: () -> Unit
+    showAllPayments: Boolean,
+    onShowAllPaymentsClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -396,7 +403,7 @@ private fun LastPaymentsSection(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "LAST PAYMENTS",
+                text = if (showAllPayments) "ALL PAYMENTS" else "LAST PAYMENTS",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -407,51 +414,77 @@ private fun LastPaymentsSection(
             if (payments.isNotEmpty()) {
                 val dateFormat = remember { SimpleDateFormat("dd/MM", Locale.getDefault()) }
 
-                payments.sortedByDescending { it.date }.take(3).forEach { payment ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                val n = if (showAllPayments) payments.size else 3
+                payments.sortedByDescending { it.date }.take(n).forEach { payment ->
+                    // single payment single row
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp)
                     ) {
-                        Text(
-                            text = dateFormat.format(payment.date),
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.weight(0.15f),
-                            fontSize = 10.sp
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Box(modifier = Modifier.weight(0.3f)) {
-                            val color = colors[payment.category.name] ?: Color.DarkGray
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
-                                text = payment.category.name.lowercase().replaceFirstChar { it.titlecase() },
+                                text = dateFormat.format(payment.date),
                                 style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier
-                                    .background(
-                                        color = color.copy(),
-                                        shape = RoundedCornerShape(25)
-                                    )
-                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                                fontSize = 12.sp
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Box {
+                                val color = colors[payment.category.name] ?: Color.DarkGray
+                                Text(
+                                    text = payment.category.name.lowercase().replaceFirstChar { it.titlecase() },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier
+                                        .background(
+                                            color = color.copy(),
+                                            shape = RoundedCornerShape(25)
+                                        )
+                                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(2.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = payment.description,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.weight(0.7f),
                                 maxLines = 1,
+                                fontSize = 16.sp,
                                 overflow = TextOverflow.Ellipsis
                             )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "%.2f €".format(payment.amount),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.weight(0.3f)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            IconButton(
+                                onClick = { /* TODO: implement deletion */ },
+                                modifier = Modifier.size(20.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete payment",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = payment.description,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(0.35f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "%.2f €".format(payment.amount),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.End,
-                            modifier = Modifier.weight(0.5f)
-                        )
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
+                    //Spacer(modifier = Modifier.height(2.dp))
                 }
             } else {
                 Text(
@@ -462,10 +495,10 @@ private fun LastPaymentsSection(
             }
             Spacer(modifier = Modifier.height(2.dp))
             Button(
-                onClick = onViewAllPaymentsClick,
+                onClick = onShowAllPaymentsClick,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("View All Monthly Payments")
+                Text(if (showAllPayments) "Hide All Payments" else "View All Monthly Payments")
             }
         }
     }
@@ -826,9 +859,10 @@ fun BudgetingScreenPreview() {
         incomes = mockIncomes,
         vouchers = mockVouchers,
         currentDate = Date(),
+        showAllPayments = false,
+        onShowAllPaymentsClick = {},
         onPreviousMonthClick = {},
         onNextMonthClick = {},
-        onViewAllPaymentsClick = {},
         onAddPaymentClick = {},
         onAddIncomeClick = {},
         onAddVoucherClick = {},
