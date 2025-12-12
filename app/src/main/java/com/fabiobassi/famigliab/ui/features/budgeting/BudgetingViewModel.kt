@@ -79,6 +79,12 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
         csvFileManager.writeData(CsvFileType.INCOMES, _currentDate.value, updatedIncomes)
     }
 
+    fun deleteIncome(income: Income) {
+        val updatedIncomes = _incomes.value.filter { it != income }
+        _incomes.value = updatedIncomes
+        csvFileManager.writeData(CsvFileType.INCOMES, _currentDate.value, updatedIncomes)
+    }
+
     fun addVoucher(value: Double, numberUsed: Int, whose: Person) {
         val newVoucher = Voucher(
             value = value,

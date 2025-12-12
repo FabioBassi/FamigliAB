@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -86,6 +87,7 @@ fun BudgetingScreen(
     var showAddPaymentDialog by remember { mutableStateOf(false) }
     var showAddIncomeDialog by remember { mutableStateOf(false) }
     var showAddVoucherDialog by remember { mutableStateOf(false) }
+    var showIncomeDialog by remember { mutableStateOf(false) }
     val payments by viewModel.payments.collectAsState()
     val incomes by viewModel.incomes.collectAsState()
     val vouchers by viewModel.vouchers.collectAsState()
@@ -138,6 +140,14 @@ fun BudgetingScreen(
         )
     }
 
+    if (showIncomeDialog) {
+        IncomeDialog(
+            incomes = incomes,
+            onDismiss = { showIncomeDialog = false },
+            onDeleteIncome = { viewModel.deleteIncome(it) }
+        )
+    }
+
     BudgetingScreenContent(
         paddingValues = paddingValues,
         payments = payments,
@@ -164,6 +174,7 @@ fun BudgetingScreen(
             shareFile(context, file)
         },
         onPaymentLongClick = { paymentToDelete = it },
+        onIncomeCardClick = { showIncomeDialog = true },
     )
 }
 
@@ -185,6 +196,7 @@ fun BudgetingScreenContent(
     onShareIncomesClick: () -> Unit,
     onShareVouchersClick: () -> Unit,
     onPaymentLongClick: (Payment) -> Unit,
+    onIncomeCardClick: () -> Unit,
 ) {
     val monthlyPayments = remember(payments, currentDate) {
         val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
@@ -230,7 +242,8 @@ fun BudgetingScreenContent(
                     totalIncome = totalIncome,
                     totalOutcomeFab = totalPaymentsFab,
                     totalOutcomeSab = totalPaymentsSab,
-                    totalOutcome = totalPayments
+                    totalOutcome = totalPayments,
+                    onIncomeCardClick = onIncomeCardClick,
                 )
             }
 
@@ -331,16 +344,20 @@ private fun SummarySection(
     totalIncome: Double,
     totalOutcomeFab: Double,
     totalOutcomeSab: Double,
-    totalOutcome: Double
+    totalOutcome: Double,
+    onIncomeCardClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Card(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .clickable { onIncomeCardClick() },
             shape = MaterialTheme.shapes.large,
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -934,5 +951,6 @@ fun BudgetingScreenPreview() {
         onShareIncomesClick = {},
         onShareVouchersClick = {},
         onPaymentLongClick = {},
+        onIncomeCardClick = {},
     )
 }
