@@ -842,19 +842,34 @@ private fun ShareSection(
                     onClick = onSharePaymentsClick,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Payments")
+                    Text(
+                        text = "Payments",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        softWrap = false
+                    )
                 }
                 Button(
                     onClick = onShareIncomesClick,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Incomes")
+                    Text(
+                        text = "Incomes",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        softWrap = false
+                    )
                 }
                 Button(
                     onClick = onShareVouchersClick,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Vouchers")
+                    Text(
+                        text = "Vouchers",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        softWrap = false
+                    )
                 }
             }
         }
