@@ -85,13 +85,24 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
         csvFileManager.writeData(CsvFileType.INCOMES, _currentDate.value, updatedIncomes)
     }
 
-    fun addVoucher(value: Double, numberUsed: Int, whose: Person) {
-        val newVoucher = Voucher(
-            value = value,
-            numberUsed = numberUsed,
-            whose = whose,
-        )
-        val updatedVouchers = _vouchers.value + newVoucher
+    fun updateVouchers(fabVouchers: Int, sabVouchers: Int, fabVoucherValue: Double, sabVoucherValue: Double) {
+        val fabVoucher = _vouchers.value.firstOrNull { it.whose == Person.FAB }
+        val sabVoucher = _vouchers.value.firstOrNull { it.whose == Person.SAB }
+
+        val updatedVouchers = mutableListOf<Voucher>()
+
+        if (fabVoucher != null) {
+            updatedVouchers.add(fabVoucher.copy(numberUsed = fabVouchers, value = fabVoucherValue))
+        } else {
+            updatedVouchers.add(Voucher(value = fabVoucherValue, numberUsed = fabVouchers, whose = Person.FAB))
+        }
+
+        if (sabVoucher != null) {
+            updatedVouchers.add(sabVoucher.copy(numberUsed = sabVouchers, value = sabVoucherValue))
+        } else {
+            updatedVouchers.add(Voucher(value = sabVoucherValue, numberUsed = sabVouchers, whose = Person.SAB))
+        }
+
         _vouchers.value = updatedVouchers
         csvFileManager.writeData(CsvFileType.VOUCHERS, _currentDate.value, updatedVouchers)
     }

@@ -28,7 +28,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AttachMoney
-import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -86,7 +85,7 @@ fun BudgetingScreen(
 ) {
     var showAddPaymentDialog by remember { mutableStateOf(false) }
     var showAddIncomeDialog by remember { mutableStateOf(false) }
-    var showAddVoucherDialog by remember { mutableStateOf(false) }
+    var showEditVoucherDialog by remember { mutableStateOf(false) }
     var showIncomeDialog by remember { mutableStateOf(false) }
     val payments by viewModel.payments.collectAsState()
     val incomes by viewModel.incomes.collectAsState()
@@ -130,12 +129,13 @@ fun BudgetingScreen(
         )
     }
 
-    if (showAddVoucherDialog) {
-        AddVoucherDialog(
-            onDismiss = { showAddVoucherDialog = false },
-            onConfirm = { value, numberUsed, person ->
-                viewModel.addVoucher(value, numberUsed, person)
-                showAddVoucherDialog = false
+    if (showEditVoucherDialog) {
+        EditVoucherDialog(
+            vouchers = vouchers,
+            onDismiss = { showEditVoucherDialog = false },
+            onConfirm = { fabVouchers, sabVouchers, fabVoucherValue, sabVoucherValue ->
+                viewModel.updateVouchers(fabVouchers, sabVouchers, fabVoucherValue, sabVoucherValue)
+                showEditVoucherDialog = false
             }
         )
     }
@@ -160,7 +160,6 @@ fun BudgetingScreen(
         onNextMonthClick = viewModel::nextMonth,
         onAddPaymentClick = { showAddPaymentDialog = true },
         onAddIncomeClick = { showAddIncomeDialog = true },
-        onAddVoucherClick = { showAddVoucherDialog = true },
         onSharePaymentsClick = {
             val file = csvFileManager.getFileForMonth(CsvFileType.PAYMENTS, currentDate)
             shareFile(context, file)
@@ -175,6 +174,7 @@ fun BudgetingScreen(
         },
         onPaymentLongClick = { paymentToDelete = it },
         onIncomeCardClick = { showIncomeDialog = true },
+        onVoucherCardClick = { showEditVoucherDialog = true },
     )
 }
 
@@ -191,12 +191,12 @@ fun BudgetingScreenContent(
     onNextMonthClick: () -> Unit,
     onAddPaymentClick: () -> Unit,
     onAddIncomeClick: () -> Unit,
-    onAddVoucherClick: () -> Unit,
     onSharePaymentsClick: () -> Unit,
     onShareIncomesClick: () -> Unit,
     onShareVouchersClick: () -> Unit,
     onPaymentLongClick: (Payment) -> Unit,
     onIncomeCardClick: () -> Unit,
+    onVoucherCardClick: () -> Unit,
 ) {
     val monthlyPayments = remember(payments, currentDate) {
         val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
@@ -266,7 +266,7 @@ fun BudgetingScreenContent(
                 }
 
                 item {
-                    VoucherSummarySection(vouchers = vouchers)
+                    VoucherSummarySection(vouchers = vouchers, onClick = onVoucherCardClick)
                 }
                 item {
                     ShareSection(
@@ -297,13 +297,6 @@ fun BudgetingScreenContent(
                  },
             ) {
                 Icon(Icons.Filled.AttachMoney, "Add new income")
-            }
-            FloatingActionButton(
-                onClick = {
-                    onAddVoucherClick()
-                 },
-            ) {
-                Icon(Icons.Filled.CreditCard, "Edit vouchers")
             }
         }
     }
@@ -725,9 +718,11 @@ private fun ExpensesSummary(
 }
 
 @Composable
-private fun VoucherSummarySection(vouchers: List<Voucher>) {
+private fun VoucherSummarySection(vouchers: List<Voucher>, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = MaterialTheme.shapes.large,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
@@ -875,7 +870,7 @@ fun DeleteConfirmationDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Delete Payment") },
-        text = { Text("Are you sure you want to delete this payment?\n\'${payment.description}' of ${payment.amount}€") },
+        text = { Text("Are you sure you want to delete this payment?\n'${payment.description}' of ${payment.amount}€") },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text("Delete")
@@ -946,11 +941,11 @@ fun BudgetingScreenPreview() {
         onNextMonthClick = {},
         onAddPaymentClick = {},
         onAddIncomeClick = {},
-        onAddVoucherClick = {},
         onSharePaymentsClick = {},
         onShareIncomesClick = {},
         onShareVouchersClick = {},
         onPaymentLongClick = {},
         onIncomeCardClick = {},
+        onVoucherCardClick = {},
     )
 }
