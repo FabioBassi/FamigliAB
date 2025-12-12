@@ -96,6 +96,7 @@ fun AddIncomeDialog(
                     }
                     Button(
                         onClick = {
+                            amount = amount.replace(",", ".")
                             onConfirm(description, amount.toDouble(), selectedPerson)
                         },
                         enabled = description.isNotBlank() && amount.isNotBlank()

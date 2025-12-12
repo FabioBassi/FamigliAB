@@ -10,8 +10,8 @@ interface CsvData {
     companion object {
         inline fun <reified T : CsvData> fromCsvRow(
             row: List<String>,
-            creator: (List<String>) -> T
-        ): T {
+            creator: (List<String>) -> T?
+        ): T? {
             return creator(row)
         }
     }
@@ -28,8 +28,10 @@ fun <T : CsvData> List<T>.writeToCsv(file: File) {
 
 inline fun <reified T : CsvData> readCsv(
     file: File,
-    noinline creator: (List<String>) -> T
+    noinline creator: (List<String>) -> T?
 ): List<T> {
-    if (!file.exists()) return emptyList()
-    return csvReader().readAll(file).map { CsvData.fromCsvRow(it, creator) }
+    if (!file.exists() || file.length() == 0L) return emptyList()
+    return csvReader().readAll(file)
+        .filter { it.any(String::isNotEmpty) }
+        .mapNotNull { CsvData.fromCsvRow(it, creator) }
 }

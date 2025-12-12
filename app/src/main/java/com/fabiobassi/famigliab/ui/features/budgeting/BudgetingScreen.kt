@@ -802,7 +802,7 @@ private fun VoucherSummarySection(vouchers: List<Voucher>, onClick: () -> Unit) 
                 }
             } else {
                 Text(
-                    text = "No vouchers used yet.",
+                    text = "No vouchers used yet, tap to add.",
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )

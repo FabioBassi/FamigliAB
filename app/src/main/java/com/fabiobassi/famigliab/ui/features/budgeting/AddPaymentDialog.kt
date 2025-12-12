@@ -168,6 +168,7 @@ fun AddPaymentDialog(
                     }
                     Button(
                         onClick = {
+                            amount = amount.replace(",", ".")
                             onConfirm(date, description, amount.toDouble(), selectedCategory, selectedPerson)
                         },
                         enabled = description.isNotBlank() && amount.isNotBlank()

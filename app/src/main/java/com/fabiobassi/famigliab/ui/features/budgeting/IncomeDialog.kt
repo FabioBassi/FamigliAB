@@ -73,22 +73,30 @@ fun IncomeDialog(
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(incomes) { income ->
-                        IncomeItem(
-                            income = income,
-                            onLongClick = { incomeToDelete = it }
-                        )
-                    }
+                if (incomes.isEmpty()) {
+                    Text(
+                        text = "No incomes present",
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Button(onClick = onDismiss) {
-                        Text("Close")
+                else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(incomes) { income ->
+                            IncomeItem(
+                                income = income,
+                                onLongClick = { incomeToDelete = it }
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Button(onClick = onDismiss) {
+                            Text("Close")
+                        }
                     }
                 }
             }

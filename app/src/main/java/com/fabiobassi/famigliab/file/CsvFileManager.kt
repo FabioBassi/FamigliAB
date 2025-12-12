@@ -37,11 +37,9 @@ class CsvFileManager(private val context: Context) {
     inline fun <reified T : CsvData> readData(
         type: CsvFileType,
         date: Date,
-        noinline creator: (List<String>) -> T
+        noinline creator: (List<String>) -> T?
     ): List<T> {
         val file = getFileForMonth(type, date)
-        // Since T is now reified, readCsv can use it.
-        // Assuming readCsv is also an inline function with a reified type parameter.
         return readCsv(file, creator)
     }
 }

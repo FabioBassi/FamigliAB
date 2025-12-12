@@ -24,25 +24,29 @@ data class Payment(
     )
 
     companion object {
-        fun fromCsvRow(row: List<String>): Payment {
+        fun fromCsvRow(row: List<String>): Payment? {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            return if (row.size == 6) {
-                Payment(
-                    id = row[0],
-                    date = dateFormat.parse(row[1]) ?: Date(),
-                    description = row[2],
-                    amount = row[3].toDouble(),
-                    paidBy = Person.valueOf(row[4]),
-                    category = Category.valueOf(row[5])
-                )
-            } else {
-                Payment(
-                    date = dateFormat.parse(row[0]) ?: Date(),
-                    description = row[1],
-                    amount = row[2].toDouble(),
-                    paidBy = Person.valueOf(row[3]),
-                    category = Category.valueOf(row[4])
-                )
+            return try {
+                if (row.size == 6) {
+                    Payment(
+                        id = row[0],
+                        date = dateFormat.parse(row[1]) ?: Date(),
+                        description = row[2],
+                        amount = row[3].toDouble(),
+                        paidBy = Person.valueOf(row[4]),
+                        category = Category.valueOf(row[5])
+                    )
+                } else {
+                    Payment(
+                        date = dateFormat.parse(row[0]) ?: Date(),
+                        description = row[1],
+                        amount = row[2].toDouble(),
+                        paidBy = Person.valueOf(row[3]),
+                        category = Category.valueOf(row[4])
+                    )
+                }
+            } catch (e: Exception) {
+                null
             }
         }
     }
