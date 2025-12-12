@@ -8,6 +8,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,7 +48,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -460,7 +464,13 @@ private fun LastPaymentsSection(
                                 val color = colors[payment.category.name] ?: Color.DarkGray
                                 Text(
                                     text = payment.category.name.lowercase().replaceFirstChar { it.titlecase() },
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        shadow = Shadow(
+                                            color = if (isSystemInDarkTheme()) Color.Black else Color.LightGray,
+                                            offset = Offset(2f, 2f),
+                                            blurRadius = 5f
+                                        )
+                                    ),
                                     modifier = Modifier
                                         .background(
                                             color = color.copy(),
@@ -471,6 +481,13 @@ private fun LastPaymentsSection(
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = payment.paidBy.name,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.End
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(2.dp))
@@ -485,8 +502,9 @@ private fun LastPaymentsSection(
                                 modifier = Modifier.weight(0.7f),
                                 maxLines = 1,
                                 fontSize = 16.sp,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                                overflow = TextOverflow.Ellipsis,
+                                fontWeight = FontWeight.Bold,
+                                )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "%.2f €".format(payment.amount),
@@ -566,7 +584,10 @@ private fun ExpensesSummary(
                     text = "CATEGORY",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.4f)
+                    modifier = Modifier.weight(1.4f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    softWrap = false
                 )
                 Text(
                     text = "FAB",
@@ -606,7 +627,13 @@ private fun ExpensesSummary(
                     ) {
                         Text(
                             text = category.name.lowercase().replaceFirstChar { it.titlecase() },
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                shadow = Shadow(
+                                    color = if (isSystemInDarkTheme()) Color.Black else Color.LightGray,
+                                    offset = Offset(2f, 2f),
+                                    blurRadius = 5f
+                                )
+                            ),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
