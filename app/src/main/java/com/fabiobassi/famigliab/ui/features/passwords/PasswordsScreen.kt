@@ -21,8 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 
 @Composable
@@ -95,7 +97,7 @@ fun PasswordsScreen(paddingValues: PaddingValues) {
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
         ) {
-            Icon(Icons.Filled.Add, "Add new password")
+            Icon(Icons.Filled.Add, stringResource(id = R.string.add_new_password))
         }
     }
 }

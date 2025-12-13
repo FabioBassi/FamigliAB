@@ -55,6 +55,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import android.widget.Toast
 import android.net.Uri
@@ -74,13 +75,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-sealed class BottomNavItem(val title: String, val icon: ImageVector, val route: String) {
-    object Home : BottomNavItem("Home", Icons.Default.Home, "home")
-    object Budgeting : BottomNavItem("Bilancio", Icons.Default.Analytics, "budgeting")
-    object GroceryList : BottomNavItem("Lista Spesa", Icons.Default.ShoppingCart, "grocery_list")
-    object Passwords : BottomNavItem("Passwords", Icons.Default.Lock, "passwords")
-    object Documents : BottomNavItem("Documenti", Icons.Default.Description, "documents")
-    object Settings : BottomNavItem("Impostazioni", Icons.Default.Settings, "settings")
+sealed class BottomNavItem(val titleResId: Int, val icon: ImageVector, val route: String) {
+    object Home : BottomNavItem(R.string.home, Icons.Default.Home, "home")
+    object Budgeting : BottomNavItem(R.string.budgeting, Icons.Default.Analytics, "budgeting")
+    object GroceryList : BottomNavItem(R.string.grocery_list, Icons.Default.ShoppingCart, "grocery_list")
+    object Passwords : BottomNavItem(R.string.passwords, Icons.Default.Lock, "passwords")
+    object Documents : BottomNavItem(R.string.documents, Icons.Default.Description, "documents")
+    object Settings : BottomNavItem(R.string.settings, Icons.Default.Settings, "settings")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,6 +107,7 @@ fun MainScreen() {
 
     val showShareOptionsDialog = remember { mutableStateOf(false) }
 
+    val errorSavingFileText: String = stringResource(R.string.error_saving_file)
     val saveFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
         uri?.let { outputUri ->
             val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
@@ -114,12 +116,12 @@ fun MainScreen() {
                     context.contentResolver.openOutputStream(outputUri)?.use { outputStream ->
                         file.inputStream().copyTo(outputStream)
                     }
-                    Toast.makeText(context, "Passwords saved to files", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.passwords_saved_to_files, Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Error saving file: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, errorSavingFileText, Toast.LENGTH_LONG).show()
                 }
             } else {
-                Toast.makeText(context, "Passwords file not found", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.passwords_file_not_found, Toast.LENGTH_SHORT).show()
             }
         }
         showShareOptionsDialog.value = false // Dismiss dialog after operation
@@ -131,7 +133,7 @@ fun MainScreen() {
             MediumTopAppBar(
                 title = {
                     Text(
-                        text = if (currentScreen?.route == BottomNavItem.Home.route) "Ciao Fab!" else currentScreen?.title ?: "",
+                        text = if (currentScreen?.route == BottomNavItem.Home.route) stringResource(id = R.string.greeting) else currentScreen?.titleResId?.let { stringResource(id = it) } ?: "",
                         fontWeight = FontWeight.Bold,
                     )
                 },
@@ -147,7 +149,7 @@ fun MainScreen() {
                         IconButton(onClick = {
                             showShareOptionsDialog.value = true
                         }) {
-                            Icon(Icons.Default.Share, contentDescription = "Share Passwords")
+                            Icon(Icons.Default.Share, contentDescription = stringResource(id = R.string.share_passwords))
                         }
                     }
                 }
@@ -170,10 +172,11 @@ fun MainScreen() {
         if (showShareOptionsDialog.value) { // Password screen share option
             AlertDialog(
                 onDismissRequest = { showShareOptionsDialog.value = false },
-                title = { Text("Share or Save Passwords") },
+                title = { Text(stringResource(id = R.string.share_or_save_passwords)) },
                 text = {
                     Column {
                         // Share option
+                        val shareFileText = stringResource(R.string.share_file)
                         TextButton(onClick = {
                             val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
                             if (file.exists()) {
@@ -183,22 +186,22 @@ fun MainScreen() {
                                     type = "application/json"
                                     putExtra(Intent.EXTRA_STREAM, uri)
                                 }
-                                val chooser = Intent.createChooser(intent, "Share File")
+                                val chooser = Intent.createChooser(intent, shareFileText)
                                 context.startActivity(chooser)
                             } else {
-                                Toast.makeText(context, "Passwords file not found", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, R.string.passwords_file_not_found, Toast.LENGTH_SHORT).show()
                             }
                             showShareOptionsDialog.value = false
                         }) {
-                            Text("Share with other apps")
+                            Text(stringResource(id = R.string.share_with_other_apps))
                         }
 
                         // Save to Files option
                         TextButton(onClick = {
-                            saveFileLauncher.launch("passwords.json") // Suggests a filename
+                            saveFileLauncher.launch("passwords.json")
                             // The dialog will be dismissed in the launcher's callback
                         }) {
-                            Text("Save to Files")
+                            Text(stringResource(id = R.string.save_to_files))
                         }
 
                         // Copy to Clipboard option
@@ -207,19 +210,19 @@ fun MainScreen() {
                             if (file.exists()) {
                                 val fileContent = file.readText()
                                 clipboardManager.setText(AnnotatedString(fileContent))
-                                Toast.makeText(context, "Passwords copied to clipboard", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, R.string.passwords_copied_to_clipboard, Toast.LENGTH_SHORT).show()
                             } else {
-                                Toast.makeText(context, "Passwords file not found", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, R.string.passwords_file_not_found, Toast.LENGTH_SHORT).show()
                             }
                             showShareOptionsDialog.value = false
                         }) {
-                            Text("Copy to Clipboard")
+                            Text(stringResource(id = R.string.copy_to_clipboard))
                         }
                     }
                 },
                 confirmButton = {
                     TextButton(onClick = { showShareOptionsDialog.value = false }) {
-                        Text("Cancel")
+                        Text(stringResource(id = R.string.cancel))
                     }
                 }
             )
@@ -234,9 +237,9 @@ fun AppBottomNavigationBar(navController: NavController, items: List<BottomNavIt
         val currentRoute = navBackStackEntry?.destination?.route
 
         items.forEach { item ->
+            val title = stringResource(id = item.titleResId)
             NavigationBarItem(
-                icon = { Icon(item.icon, contentDescription = item.title) },
-                //label = { Text(item.title) },
+                icon = { Icon(item.icon, contentDescription = title) },
                 selected = currentRoute == item.route,
                 onClick = {
                     navController.navigate(item.route) {

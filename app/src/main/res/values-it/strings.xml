@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">FamigliAB</string>
+    <string name="home">Home</string>
+    <string name="budgeting">Bilancio</string>
+    <string name="grocery_list">Lista Spesa</string>
+    <string name="passwords">Passwords</string>
+    <string name="documents">Documenti</string>
+    <string name="settings">Impostazioni</string>
+    <string name="greeting">Ciao Fab!</string>
+    <string name="share_passwords">Condividi Password</string>
+    <string name="passwords_saved_to_files">Password salvate su file</string>
+    <string name="error_saving_file">Errore nel salvataggio del file: %s</string>
+    <string name="passwords_file_not_found">File delle password non trovato</string>
+    <string name="share_or_save_passwords">Condividi o Salva Password</string>
+    <string name="share_with_other_apps">Condividi con altre app</string>
+    <string name="share_file">Condividi File</string>
+    <string name="save_to_files">Salva su File</string>
+    <string name="passwords_copied_to_clipboard">Password copiate negli appunti</string>
+    <string name="copy_to_clipboard">Copia negli appunti</string>
+    <string name="cancel">Annulla</string>
+    <string name="add_new_password">Aggiungi nuova password</string>
+    <string name="add_password">Aggiungi Password</string>
+    <string name="save">Salva</string>
+    <string name="title">Titolo</string>
+    <string name="password_field">Campo</string>
+    <string name="password_value">Valore</string>
+    <string name="url">URL</string>
+    <string name="notes">Note</string>
+    <string name="edit_password">Modifica Password</string>
+    <string name="delete">Elimina</string>
+    <string name="add_field">Aggiungi campo</string>
+</resources>

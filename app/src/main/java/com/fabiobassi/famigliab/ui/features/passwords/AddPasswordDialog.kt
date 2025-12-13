@@ -28,9 +28,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 
 @Composable
@@ -50,14 +52,14 @@ fun AddPasswordDialog(
                     .imePadding(),
             ) {
                 Text(
-                    text = "Add new password",
+                    text = stringResource(id = R.string.add_new_password),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
                 TextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Title") },
+                    label = { Text(stringResource(id = R.string.title)) },
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                     isError = title.isBlank()
                 )
@@ -75,34 +77,23 @@ fun AddPasswordDialog(
                                     TextField(
                                         value = pair.first,
                                         onValueChange = { fields[index] = it to pair.second },
-                                        label = { Text("Key") },
+                                        label = { Text(stringResource(id = R.string.password_field)) },
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                     TextField(
                                         value = pair.second,
                                         onValueChange = { fields[index] = pair.first to it },
-                                        label = { Text("Value") },
+                                        label = { Text(stringResource(id = R.string.password_value)) },
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                 }
                                 IconButton(onClick = { fields.removeAt(index) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Remove field")
+                                    Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.delete))
                                 }
                             }
                             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                         }
                     }
-                }
-
-                Button(
-                    onClick = { fields.add(Pair("", "")) },
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                    )
-                ) {
-                    Text("Add field")
                 }
 
                 Row(
@@ -112,7 +103,7 @@ fun AddPasswordDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel")
+                        Text(stringResource(id = R.string.cancel))
                     }
                     Button(
                         onClick = {
@@ -123,7 +114,7 @@ fun AddPasswordDialog(
                         enabled = title.isNotBlank() && fields.isNotEmpty() && fields.all { it.first.isNotBlank() && it.second.isNotBlank() },
                         modifier = Modifier.padding(start = 8.dp)
                     ) {
-                        Text("Save")
+                        Text(stringResource(id = R.string.save))
                     }
                 }
             }
