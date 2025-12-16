@@ -31,7 +31,7 @@ fun EditVoucherDialog(
 
     var fabVoucherCount by remember { mutableStateOf(fabVouchers?.numberUsed?.toString() ?: "0") }
     var sabVoucherCount by remember { mutableStateOf(sabVouchers?.numberUsed?.toString() ?: "0") }
-    var fabVoucherValue by remember { mutableStateOf(fabVouchers?.value?.toString() ?: "10,5") }
+    var fabVoucherValue by remember { mutableStateOf(fabVouchers?.value?.toString() ?: "10.5") }
     var sabVoucherValue by remember { mutableStateOf(sabVouchers?.value?.toString() ?: "8.0") }
 
     AlertDialog(
