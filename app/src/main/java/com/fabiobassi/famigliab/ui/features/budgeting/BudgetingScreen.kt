@@ -391,7 +391,8 @@ private fun SummarySection(
                     text = "${"%.2f".format(totalIncome)} €",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
+                    fontSize = 24.sp,
+                    color = Color(0xFF00aa00)
                 )
             }
         }
@@ -425,7 +426,8 @@ private fun SummarySection(
                     text = "${"%.2f".format(totalOutcome)} €",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
+                    fontSize = 24.sp,
+                    color = Color.Red
                 )
             }
         }
