@@ -83,6 +83,7 @@ fun BudgetingScreen(
     paddingValues: PaddingValues,
     viewModel: BudgetingViewModel = viewModel(),
 ) {
+    var showMonthSelectionPickerDialog by remember { mutableStateOf(false) }
     var showAddPaymentDialog by remember { mutableStateOf(false) }
     var showAddIncomeDialog by remember { mutableStateOf(false) }
     var showEditVoucherDialog by remember { mutableStateOf(false) }
@@ -96,12 +97,20 @@ fun BudgetingScreen(
     val csvFileManager = remember { CsvFileManager(context) }
     var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
 
+    if (showMonthSelectionPickerDialog) {
+        MonthSelectionPickerDialog(
+            onDismissRequest = { showMonthSelectionPickerDialog = false },
+            onConfirm = {month, year -> viewModel.setMonth(month, year)
+                showMonthSelectionPickerDialog = false
+            }
+        )
+    }
 
     if (showAddPaymentDialog) {
         AddPaymentDialog(
             onDismiss = { showAddPaymentDialog = false },
             onConfirm = {
-                date, description, amount, category, person ->
+                    date, description, amount, category, person ->
                 viewModel.addPayment(date, description, amount, category, person)
                 showAddPaymentDialog = false
             }
@@ -155,6 +164,7 @@ fun BudgetingScreen(
         vouchers = vouchers,
         currentDate = currentDate,
         showAllPayments = showAllPayments,
+        onShowMonthSelectionClick = { showMonthSelectionPickerDialog = true },
         onShowAllPaymentsClick = { showAllPayments = !showAllPayments },
         onPreviousMonthClick = viewModel::previousMonth,
         onNextMonthClick = viewModel::nextMonth,
@@ -186,6 +196,7 @@ fun BudgetingScreenContent(
     vouchers: List<Voucher>,
     currentDate: Date,
     showAllPayments: Boolean,
+    onShowMonthSelectionClick: () -> Unit,
     onShowAllPaymentsClick: () -> Unit,
     onPreviousMonthClick: () -> Unit,
     onNextMonthClick: () -> Unit,
@@ -231,6 +242,7 @@ fun BudgetingScreenContent(
             item {
                 MonthNavigation(
                     currentDate = currentDate,
+                    onMonthClick = onShowMonthSelectionClick,
                     onPreviousMonthClick = onPreviousMonthClick,
                     onNextMonthClick = onNextMonthClick
                 )
@@ -287,14 +299,14 @@ fun BudgetingScreenContent(
             FloatingActionButton(
                 onClick = {
                     onAddPaymentClick()
-                 },
+                },
             ) {
                 Icon(Icons.Filled.ShoppingCart, "Add new payment")
             }
             FloatingActionButton(
                 onClick = {
                     onAddIncomeClick()
-                 },
+                },
             ) {
                 Icon(Icons.Filled.AttachMoney, "Add new income")
             }
@@ -305,6 +317,7 @@ fun BudgetingScreenContent(
 @Composable
 private fun MonthNavigation(
     currentDate: Date,
+    onMonthClick: () -> Unit,
     onPreviousMonthClick: () -> Unit,
     onNextMonthClick: () -> Unit
 ) {
@@ -322,7 +335,8 @@ private fun MonthNavigation(
             text = monthFormat.format(currentDate).uppercase(),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.clickable(onClick = onMonthClick)
         )
         IconButton(onClick = onNextMonthClick) {
             Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month")
@@ -351,7 +365,7 @@ private fun SummarySection(
             shape = MaterialTheme.shapes.large,
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
 
-        ) {
+            ) {
             Column(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -514,7 +528,7 @@ private fun LastPaymentsSection(
                                 fontSize = 16.sp,
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = FontWeight.Bold,
-                                )
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "%.2f €".format(payment.amount),
@@ -951,6 +965,7 @@ fun BudgetingScreenPreview() {
         vouchers = mockVouchers,
         currentDate = Date(),
         showAllPayments = false,
+        onShowMonthSelectionClick = {},
         onShowAllPaymentsClick = {},
         onPreviousMonthClick = {},
         onNextMonthClick = {},

@@ -137,4 +137,13 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
         _currentDate.value = calendar.time
         loadDataForMonth(_currentDate.value)
     }
+
+    fun setMonth(year: Int, month: Int) {
+        val calendar = Calendar.getInstance()
+        calendar.time = _currentDate.value
+        calendar.set(Calendar.YEAR, year)
+        calendar.set(Calendar.MONTH, month)
+        _currentDate.value = calendar.time
+        loadDataForMonth(_currentDate.value)
+    }
 }
