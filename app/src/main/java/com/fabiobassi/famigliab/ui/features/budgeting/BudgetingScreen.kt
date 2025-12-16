@@ -27,6 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ManageSearch
+import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
@@ -48,7 +50,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
@@ -325,20 +326,50 @@ private fun MonthNavigation(
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = onPreviousMonthClick) {
+        IconButton(
+            onClick = onPreviousMonthClick,
+            modifier = Modifier.size(48.dp)
+        ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month")
         }
-        Text(
-            text = monthFormat.format(currentDate).uppercase(),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.clickable(onClick = onMonthClick)
-        )
-        IconButton(onClick = onNextMonthClick) {
+
+        IconButton(
+            onClick = onMonthClick,
+            modifier = Modifier.size(48.dp)
+        ) {
+            Icon(Icons.AutoMirrored.Filled.ManageSearch, contentDescription = "Select Month")
+        }
+
+        Box(
+            modifier = Modifier
+                .weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = monthFormat.format(currentDate)
+                    .uppercase()
+                    .replace(" ", "\n"),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp,
+            )
+        }
+
+        IconButton(
+            onClick = { /*TODO add annual report*/ },
+            modifier = Modifier.size(48.dp)
+        ) {
+            Icon(Icons.Filled.Assessment, contentDescription = "Annual Report")
+        }
+
+        IconButton(
+            onClick = onNextMonthClick,
+            modifier = Modifier.size(48.dp)
+        ) {
             Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month")
         }
     }

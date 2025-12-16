@@ -159,7 +159,7 @@ fun MainScreen() {
     ) { innerPadding ->
         NavHost(
             navController,
-            startDestination = BottomNavItem.Passwords.route
+            startDestination = BottomNavItem.Budgeting.route
         ) {
             composable(BottomNavItem.Home.route) { HomeScreen() }
             composable(BottomNavItem.Budgeting.route) { BudgetingScreen(innerPadding) }
