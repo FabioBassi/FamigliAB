@@ -30,6 +30,7 @@ fun SettingsScreen(paddingValues: PaddingValues) {
     val context = LocalContext.current
     var showPaswordResetDialog by remember { mutableStateOf(false) }
     var showImportPaymentCsvDialog by remember { mutableStateOf(false) }
+    var showDeleteAllDataDialog by remember { mutableStateOf(false) }
 
     val importPasswordsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -74,6 +75,15 @@ fun SettingsScreen(paddingValues: PaddingValues) {
         ) {
             Text("Import payment csv")
         }
+        TextButton(
+            onClick = { showDeleteAllDataDialog = true },
+            modifier = Modifier.padding(bottom = 16.dp)
+        ) {
+            Text(
+                text = "Delete all data",
+                color = MaterialTheme.colorScheme.error
+            )
+        }
         Text(
             text = "Grocery List",
             style = MaterialTheme.typography.headlineMedium,
@@ -116,6 +126,10 @@ fun SettingsScreen(paddingValues: PaddingValues) {
 
         if (showImportPaymentCsvDialog) {
             ImportPaymentsDialog(onDismissRequest = { showImportPaymentCsvDialog = false })
+        }
+
+        if (showDeleteAllDataDialog) {
+            DeleteAllDataDialog(onDismissRequest = { showDeleteAllDataDialog = false })
         }
 
         Text(
