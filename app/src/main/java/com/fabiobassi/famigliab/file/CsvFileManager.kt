@@ -18,7 +18,7 @@ enum class CsvFileType(val path: String) {
 class CsvFileManager(private val context: Context) {
 
     fun getFileForMonth(type: CsvFileType, date: Date): File {
-        val monthFormat = SimpleDateFormat("MMM_yy", Locale.getDefault())
+        val monthFormat = SimpleDateFormat("MMM_yy", Locale.US)
         val fileName = "${monthFormat.format(date).lowercase()}.csv"
         val subfolder = type.path
         val baseDir = File(context.getExternalFilesDir(null), "FamigliAB/Budgeting")

@@ -28,7 +28,7 @@ import java.io.FileOutputStream
 @Composable
 fun SettingsScreen(paddingValues: PaddingValues) {
     val context = LocalContext.current
-    var showConfirmationDialog by remember { mutableStateOf(false) }
+    var showPaswordResetDialog by remember { mutableStateOf(false) }
 
     val importPasswordsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -67,6 +67,12 @@ fun SettingsScreen(paddingValues: PaddingValues) {
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
+        TextButton(
+            onClick = { /*TODO create import month's payment csv dialog*/ },
+            modifier = Modifier.padding(bottom = 16.dp)
+        ) {
+            Text("Import payment csv")
+        }
         Text(
             text = "Grocery List",
             style = MaterialTheme.typography.headlineMedium,
@@ -80,27 +86,27 @@ fun SettingsScreen(paddingValues: PaddingValues) {
             modifier = Modifier.padding(bottom = 8.dp) // Adjusted padding for the button below
         )
         TextButton(
-            onClick = { showConfirmationDialog = true },
+            onClick = { showPaswordResetDialog = true },
             modifier = Modifier.padding(bottom = 16.dp)
         ) {
             Text("Import Passwords.json")
         }
 
-        if (showConfirmationDialog) {
+        if (showPaswordResetDialog) {
             AlertDialog(
-                onDismissRequest = { showConfirmationDialog = false },
+                onDismissRequest = { showPaswordResetDialog = false },
                 title = { Text("Confirm Import") },
                 text = { Text("Are you sure you want to import passwords? This will overwrite existing data.") },
                 confirmButton = {
                     TextButton(onClick = {
-                        showConfirmationDialog = false
+                        showPaswordResetDialog = false
                         importPasswordsLauncher.launch("application/json")
                     }) {
                         Text("Confirm")
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showConfirmationDialog = false }) {
+                    TextButton(onClick = { showPaswordResetDialog = false }) {
                         Text("Cancel")
                     }
                 }
