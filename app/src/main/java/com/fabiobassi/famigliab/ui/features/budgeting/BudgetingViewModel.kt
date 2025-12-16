@@ -33,9 +33,24 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun loadDataForMonth(date: Date) {
-        _payments.value = csvFileManager.readData(CsvFileType.PAYMENTS, date, Payment::fromCsvRow)
-        _incomes.value = csvFileManager.readData(CsvFileType.INCOMES, date, Income::fromCsvRow)
-        _vouchers.value = csvFileManager.readData(CsvFileType.VOUCHERS, date, Voucher::fromCsvRow)
+        val paymentsList = mutableListOf<Payment>()
+        val proxy = csvFileManager.readData(CsvFileType.PAYMENTS, date, Payment::fromCsvRow)
+        for (payment in proxy) {
+            paymentsList.add(payment)
+        }
+        _payments.value = paymentsList
+
+        val incomesList = mutableListOf<Income>()
+        for (income in csvFileManager.readData(CsvFileType.INCOMES, date, Income::fromCsvRow)) {
+            incomesList.add(income)
+        }
+        _incomes.value = incomesList
+
+        val vouchersList = mutableListOf<Voucher>()
+        for (voucher in csvFileManager.readData(CsvFileType.VOUCHERS, date, Voucher::fromCsvRow)) {
+            vouchersList.add(voucher)
+        }
+        _vouchers.value = vouchersList
     }
 
     fun addPayment(date: Date, description: String, amount: Double, category: Category, paidBy: Person) {

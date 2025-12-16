@@ -29,6 +29,7 @@ import java.io.FileOutputStream
 fun SettingsScreen(paddingValues: PaddingValues) {
     val context = LocalContext.current
     var showPaswordResetDialog by remember { mutableStateOf(false) }
+    var showImportPaymentCsvDialog by remember { mutableStateOf(false) }
 
     val importPasswordsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -68,7 +69,7 @@ fun SettingsScreen(paddingValues: PaddingValues) {
             modifier = Modifier.padding(bottom = 16.dp)
         )
         TextButton(
-            onClick = { /*TODO create import month's payment csv dialog*/ },
+            onClick = { showImportPaymentCsvDialog = true },
             modifier = Modifier.padding(bottom = 16.dp)
         ) {
             Text("Import payment csv")
@@ -111,6 +112,10 @@ fun SettingsScreen(paddingValues: PaddingValues) {
                     }
                 }
             )
+        }
+
+        if (showImportPaymentCsvDialog) {
+            ImportPaymentsDialog(onDismissRequest = { showImportPaymentCsvDialog = false })
         }
 
         Text(
