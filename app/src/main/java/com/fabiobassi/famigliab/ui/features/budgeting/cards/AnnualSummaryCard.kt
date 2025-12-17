@@ -95,6 +95,44 @@ fun AnnualSummaryCard(
                 )
             }
         }
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.large,
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "ANNUAL NET",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Fab: ${"%.2f".format(totalIncomes[1]-totalExpenses[1])} € " +
+                            "(${"%.2f".format((totalIncomes[1]-totalExpenses[1]) / 12.0)} €)",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 20.sp
+                )
+                Text(
+                    text = "Sab: ${"%.2f".format(totalIncomes[2]-totalExpenses[2])} € " +
+                            "(${"%.2f".format((totalIncomes[2]-totalExpenses[2]) / 12.0)} €)",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 20.sp
+                )
+                Text(
+                    text = "Tot: ${"%.2f".format(totalIncomes[0]-totalExpenses[0])} € " +
+                            "(${"%.2f".format((totalIncomes[0]-totalExpenses[0]) / 12.0)} €)",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    color = Color.Blue
+                )
+            }
+        }
     }
 }
 

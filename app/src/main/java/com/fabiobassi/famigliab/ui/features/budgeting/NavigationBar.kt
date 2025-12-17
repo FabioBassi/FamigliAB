@@ -48,10 +48,10 @@ fun NavigationBar(
         ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month")
         }
-
         IconButton(
             onClick = onMonthClick,
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(48.dp),
+            enabled = !isAnnualReport
         ) {
             Icon(Icons.AutoMirrored.Filled.ManageSearch, contentDescription = "Select Month")
         }

@@ -35,6 +35,7 @@ import com.fabiobassi.famigliab.data.Voucher
 import com.fabiobassi.famigliab.file.CsvFileManager
 import com.fabiobassi.famigliab.file.CsvFileType
 import com.fabiobassi.famigliab.ui.features.budgeting.cards.AnnualCategoryExpensesCard
+import com.fabiobassi.famigliab.ui.features.budgeting.cards.AnnualMonthRecapCard
 import com.fabiobassi.famigliab.ui.features.budgeting.cards.AnnualSummaryCard
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.AddIncomeDialog
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.AddPaymentDialog
@@ -281,6 +282,9 @@ fun BudgetingScreenContent(
                         colors = categoryColors
                     )
                 }
+                item {
+                    AnnualMonthRecapCard()
+                }
             } else {
                 item {
                     SummaryCard(
@@ -398,7 +402,7 @@ fun BudgetingScreenPreview() {
         vouchers = mockVouchers,
         currentDate = Date(),
         showAllPayments = false,
-        showAnnualReport = false,
+        showAnnualReport = true,
         onShowMonthSelectionClick = {},
         onShowAllPaymentsClick = {},
         onAnnualReportClick = {},
