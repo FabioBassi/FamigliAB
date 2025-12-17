@@ -1,4 +1,4 @@
-package com.fabiobassi.famigliab.ui.features.budgeting
+package com.fabiobassi.famigliab.ui.features.budgeting.dialogs
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable

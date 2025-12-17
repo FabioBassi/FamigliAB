@@ -1,4 +1,4 @@
-package com.fabiobassi.famigliab.ui.features.budgeting
+package com.fabiobassi.famigliab.ui.features.budgeting.dialogs
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

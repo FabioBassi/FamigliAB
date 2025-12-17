@@ -2,28 +2,16 @@ package com.fabiobassi.famigliab.ui.features.budgeting
 
 import android.content.Context
 import android.content.Intent
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -31,18 +19,12 @@ import androidx.compose.material.icons.automirrored.filled.ManageSearch
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,13 +32,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,6 +47,17 @@ import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Voucher
 import com.fabiobassi.famigliab.file.CsvFileManager
 import com.fabiobassi.famigliab.file.CsvFileType
+import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.AddIncomeDialog
+import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.AddPaymentDialog
+import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.EditVoucherDialog
+import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.IncomeDialog
+import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.MonthSelectionPickerDialog
+import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.DeleteConfirmationDialog
+import com.fabiobassi.famigliab.ui.features.budgeting.cards.CategoryExpensesCard
+import com.fabiobassi.famigliab.ui.features.budgeting.cards.LastPaymentsCard
+import com.fabiobassi.famigliab.ui.features.budgeting.cards.ShareCard
+import com.fabiobassi.famigliab.ui.features.budgeting.cards.SummaryCard
+import com.fabiobassi.famigliab.ui.features.budgeting.cards.VoucherSummaryCard
 import com.fabiobassi.famigliab.ui.theme.categoryColors
 import java.io.File
 import java.text.SimpleDateFormat
@@ -76,7 +65,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
-import kotlin.math.min
 
 
 @Composable
@@ -101,7 +89,8 @@ fun BudgetingScreen(
     if (showMonthSelectionPickerDialog) {
         MonthSelectionPickerDialog(
             onDismissRequest = { showMonthSelectionPickerDialog = false },
-            onConfirm = {month, year -> viewModel.setMonth(month, year)
+            onConfirm = { month, year ->
+                viewModel.setMonth(month, year)
                 showMonthSelectionPickerDialog = false
             }
         )
@@ -110,8 +99,7 @@ fun BudgetingScreen(
     if (showAddPaymentDialog) {
         AddPaymentDialog(
             onDismiss = { showAddPaymentDialog = false },
-            onConfirm = {
-                    date, description, amount, category, person ->
+            onConfirm = { date, description, amount, category, person ->
                 viewModel.addPayment(date, description, amount, category, person)
                 showAddPaymentDialog = false
             }
@@ -249,7 +237,7 @@ fun BudgetingScreenContent(
                 )
             }
             item {
-                SummarySection(
+                SummaryCard(
                     totalIncomeFab = totalIncomeFab,
                     totalIncomeSab = totalIncomeSab,
                     totalIncome = totalIncome,
@@ -261,7 +249,7 @@ fun BudgetingScreenContent(
             }
 
             item {
-                LastPaymentsSection(
+                LastPaymentsCard(
                     payments = monthlyPayments,
                     colors = categoryColors,
                     showAllPayments = showAllPayments,
@@ -272,17 +260,17 @@ fun BudgetingScreenContent(
 
             if (!showAllPayments) {
                 item {
-                    ExpensesSummary(
+                    CategoryExpensesCard(
                         paymentsByCategory = paymentsByCategory,
                         colors = categoryColors
                     )
                 }
 
                 item {
-                    VoucherSummarySection(vouchers = vouchers, onClick = onVoucherCardClick)
+                    VoucherSummaryCard(vouchers = vouchers, onClick = onVoucherCardClick)
                 }
                 item {
-                    ShareSection(
+                    ShareCard(
                         onSharePaymentsClick = onSharePaymentsClick,
                         onShareIncomesClick = onShareIncomesClick,
                         onShareVouchersClick = onShareVouchersClick
@@ -374,578 +362,6 @@ private fun MonthNavigation(
         }
     }
 }
-
-@Composable
-private fun SummarySection(
-    totalIncomeFab: Double,
-    totalIncomeSab: Double,
-    totalIncome: Double,
-    totalOutcomeFab: Double,
-    totalOutcomeSab: Double,
-    totalOutcome: Double,
-    onIncomeCardClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Card(
-            modifier = Modifier
-                .weight(1f)
-                .clickable { onIncomeCardClick() },
-            shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-
-            ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "INCOME",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = "Fab: ${"%.2f".format(totalIncomeFab)} €",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = "Sab: ${"%.2f".format(totalIncomeSab)} €",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = "${"%.2f".format(totalIncome)} €",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = Color(0xFF00aa00)
-                )
-            }
-        }
-        Card(
-            modifier = Modifier.weight(1f),
-            shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "EXPENSES",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = "Fab: ${"%.2f".format(totalOutcomeFab)} €",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = "Sab: ${"%.2f".format(totalOutcomeSab)} €",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = "${"%.2f".format(totalOutcome)} €",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = Color.Red
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun LastPaymentsSection(
-    payments: List<Payment>,
-    colors: Map<String, Color>,
-    showAllPayments: Boolean,
-    onShowAllPaymentsClick: () -> Unit,
-    onPaymentLongClick: (Payment) -> Unit,
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = if (showAllPayments) "ALL PAYMENTS" else "LAST PAYMENTS",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Start),
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (payments.isNotEmpty()) {
-                val dateFormat = remember { SimpleDateFormat("dd/MM", Locale.getDefault()) }
-
-                val n = if (showAllPayments) payments.size else 3
-                payments.sortedByDescending { it.date }.take(n).forEach { payment ->
-                    // single payment single row
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 2.dp)
-                            .combinedClickable(
-                                onClick = { },
-                                onLongClick = { onPaymentLongClick(payment) },
-                            )
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = dateFormat.format(payment.date),
-                                style = MaterialTheme.typography.bodySmall,
-                                fontSize = 12.sp
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box {
-                                val color = colors[payment.category.name] ?: Color.DarkGray
-                                Text(
-                                    text = payment.category.name.lowercase().replaceFirstChar { it.titlecase() },
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        shadow = Shadow(
-                                            color = if (isSystemInDarkTheme()) Color.Black else Color.LightGray,
-                                            offset = Offset(2f, 2f),
-                                            blurRadius = 5f
-                                        )
-                                    ),
-                                    modifier = Modifier
-                                        .background(
-                                            color = color.copy(),
-                                            shape = RoundedCornerShape(25)
-                                        )
-                                        .padding(horizontal = 6.dp, vertical = 2.dp),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = payment.paidBy.name,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.End
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(2.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = payment.description,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.weight(0.7f),
-                                maxLines = 1,
-                                fontSize = 16.sp,
-                                overflow = TextOverflow.Ellipsis,
-                                fontWeight = FontWeight.Bold,
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "%.2f €".format(payment.amount),
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.SemiBold,
-                                textAlign = TextAlign.End,
-                                modifier = Modifier.weight(0.3f)
-                            )
-                        }
-                    }
-                    //Spacer(modifier = Modifier.height(2.dp))
-                }
-            } else {
-                Text(
-                    text = "No payments recorded yet.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-            }
-            Spacer(modifier = Modifier.height(2.dp))
-            Button(
-                onClick = onShowAllPaymentsClick,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (showAllPayments) "Hide All Payments" else "View All Monthly Payments")
-            }
-        }
-    }
-}
-
-@Composable
-private fun ExpensesSummary(
-    paymentsByCategory: Map<Category, List<Payment>>,
-    colors: Map<String, Color>
-) {
-    val categoryTotals = remember(paymentsByCategory) {
-        Category.entries.associateWith { category ->
-            paymentsByCategory[category]?.sumOf { it.amount } ?: 0.0
-        }
-    }
-    val totalExpenses = remember(categoryTotals) { categoryTotals.values.sum() }
-
-    val animationProgress = remember { Animatable(0f) }
-
-    LaunchedEffect(key1 = totalExpenses) {
-        animationProgress.snapTo(0f)
-        animationProgress.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 1500)
-        )
-    }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            // Title
-            Text(
-                text = "EXPENSES BY CATEGORY",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Start),
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "CATEGORY",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.4f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    softWrap = false
-                )
-                Text(
-                    text = "FAB",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.16f),
-                    textAlign = TextAlign.End
-                )
-                Text(
-                    text = "SAB",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.16f),
-                    textAlign = TextAlign.End
-                )
-                Text(
-                    text = "TOTAL",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.28f),
-                    textAlign = TextAlign.End
-                )
-            }
-            // Body
-            Category.entries.sortedBy { it.name }.forEach { category ->
-                val payments = paymentsByCategory[category] ?: emptyList()
-                val totalFab = payments.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
-                val totalSab = payments.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
-                val total = totalFab + totalSab
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        modifier = Modifier.weight(1.4f), // Adjusted weight for the category column
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = category.name.lowercase().replaceFirstChar { it.titlecase() },
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                shadow = Shadow(
-                                    color = if (isSystemInDarkTheme()) Color.Black else Color.LightGray,
-                                    offset = Offset(2f, 2f),
-                                    blurRadius = 5f
-                                )
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    color = (colors[category.name] ?: Color.DarkGray).copy(),
-                                    shape = RoundedCornerShape(25)
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontSize = 12.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            softWrap = false
-                        )
-                    }
-                    Text(
-                        text = "%.2f€".format(totalFab),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1.16f),
-                        textAlign = TextAlign.End,
-                        fontSize = 10.sp
-                    )
-                    Text(
-                        text = "%.2f€".format(totalSab),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1.16f),
-                        textAlign = TextAlign.End,
-                        fontSize = 10.sp
-                    )
-                    Text(
-                        text = "%.2f€".format(total),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1.28f),
-                        textAlign = TextAlign.End
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            if (totalExpenses > 0) {
-                Canvas(modifier = Modifier
-                    .size(200.dp)
-                    .align(Alignment.CenterHorizontally)) {
-                    val totalAngleToDraw = 360f * animationProgress.value
-                    var startAngle = -90f
-                    var drawnAngle = 0f
-
-                    Category.entries.sortedBy { it.name }.forEach { category ->
-                        if (drawnAngle >= totalAngleToDraw) return@forEach
-
-                        val total = categoryTotals[category] ?: 0.0
-                        if (total > 0) {
-                            val sweepAngleForCategory = (total / totalExpenses).toFloat() * 360f
-                            val angleToDraw = min(sweepAngleForCategory, totalAngleToDraw - drawnAngle)
-
-                            drawArc(
-                                color = colors[category.name] ?: Color.LightGray,
-                                startAngle = startAngle,
-                                sweepAngle = angleToDraw,
-                                useCenter = true
-                            )
-                            startAngle += sweepAngleForCategory
-                            drawnAngle += sweepAngleForCategory
-                        }
-                    }
-                }
-            } else {
-                Text("No expense data to display.", modifier = Modifier.align(Alignment.CenterHorizontally))
-            }
-        }
-    }
-}
-
-@Composable
-private fun VoucherSummarySection(vouchers: List<Voucher>, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = MaterialTheme.shapes.large,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = "VOUCHERS USED",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (vouchers.isNotEmpty()) {
-                val fabVouchers = vouchers.filter { it.whose == Person.FAB }
-                val sabVouchers = vouchers.filter { it.whose == Person.SAB }
-
-                val totalFabVouchersCount = fabVouchers.sumOf { it.numberUsed }
-                val totalFabVouchersValue = fabVouchers.sumOf { it.value * it.numberUsed }
-                val totalSabVouchersCount = sabVouchers.sumOf { it.numberUsed }
-                val totalSabVouchersValue = sabVouchers.sumOf { it.value * it.numberUsed }
-                val totalVouchersCount = totalFabVouchersCount + totalSabVouchersCount
-                val totalVouchersValue = totalFabVouchersValue + totalSabVouchersValue
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Fab:",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "$totalFabVouchersCount vouchers (%.2f €)".format(totalFabVouchersValue),
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.End
-                    )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Sab:",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "$totalSabVouchersCount vouchers (%.2f €)".format(totalSabVouchersValue),
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.End
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Total:",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "$totalVouchersCount vouchers (%.2f €)".format(totalVouchersValue),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.End
-                    )
-                }
-            } else {
-                Text(
-                    text = "No vouchers used yet, tap to add.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ShareSection(
-    onSharePaymentsClick: () -> Unit,
-    onShareIncomesClick: () -> Unit,
-    onShareVouchersClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = "SHARE CSV FILES",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = onSharePaymentsClick,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Payments",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        softWrap = false
-                    )
-                }
-                Button(
-                    onClick = onShareIncomesClick,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Incomes",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        softWrap = false
-                    )
-                }
-                Button(
-                    onClick = onShareVouchersClick,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Vouchers",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        softWrap = false
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun DeleteConfirmationDialog(
-    payment: Payment,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Delete Payment") },
-        text = { Text("Are you sure you want to delete this payment?\n'${payment.description}' of ${payment.amount}€") },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text("Delete")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
 private fun shareFile(context: Context, file: File) {
     val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
     val intent = Intent(Intent.ACTION_SEND).apply {

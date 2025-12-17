@@ -1,7 +1,5 @@
-package com.fabiobassi.famigliab.ui.features.budgeting
+package com.fabiobassi.famigliab.ui.features.budgeting.dialogs
 
-import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

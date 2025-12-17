@@ -1,4 +1,4 @@
-package com.fabiobassi.famigliab.ui.features.budgeting
+package com.fabiobassi.famigliab.ui.features.budgeting.dialogs
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +43,7 @@ fun MonthSelectionPickerDialog(
     val months = (0..11).map {
         val cal = Calendar.getInstance()
         cal.set(Calendar.MONTH, it)
-        cal.getDisplayName(Calendar.MONTH, Calendar.LONG, java.util.Locale.getDefault()) ?: ""
+        cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()) ?: ""
     }
 
     Dialog(onDismissRequest = onDismissRequest) {
