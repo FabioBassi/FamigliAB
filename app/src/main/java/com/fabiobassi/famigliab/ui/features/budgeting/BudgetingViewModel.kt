@@ -28,6 +28,9 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
     private val _currentDate = MutableStateFlow(Date())
     val currentDate: StateFlow<Date> = _currentDate
 
+    private val _isAnnualReport = MutableStateFlow(false)
+    val isAnnualReport: StateFlow<Boolean> = _isAnnualReport
+
     init {
         loadDataForMonth(_currentDate.value)
     }
@@ -51,6 +54,33 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
             vouchersList.add(voucher)
         }
         _vouchers.value = vouchersList
+    }
+
+    private fun loadDataForYear(date: Date) {
+        val calendar = Calendar.getInstance()
+        calendar.time = date
+        val year = calendar.get(Calendar.YEAR)
+
+        val allPayments = mutableListOf<Payment>()
+        val allIncomes = mutableListOf<Income>()
+
+        for (month in 0..11) {
+            calendar.set(year, month, 1)
+            val monthDate = calendar.time
+            allPayments.addAll(csvFileManager.readData(CsvFileType.PAYMENTS, monthDate, Payment::fromCsvRow))
+            allIncomes.addAll(csvFileManager.readData(CsvFileType.INCOMES, monthDate, Income::fromCsvRow))
+        }
+        _payments.value = allPayments
+        _incomes.value = allIncomes
+    }
+
+    fun toggleAnnualReport() {
+        _isAnnualReport.value = !_isAnnualReport.value
+        if (_isAnnualReport.value) {
+            loadDataForYear(_currentDate.value)
+        } else {
+            loadDataForMonth(_currentDate.value)
+        }
     }
 
     fun addPayment(date: Date, description: String, amount: Double, category: Category, paidBy: Person) {
@@ -143,7 +173,11 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
         calendar.time = _currentDate.value
         calendar.add(Calendar.YEAR, 1)
         _currentDate.value = calendar.time
-        loadDataForMonth(_currentDate.value)
+        if (_isAnnualReport.value) {
+            loadDataForYear(_currentDate.value)
+        } else {
+            loadDataForMonth(_currentDate.value)
+        }
     }
 
     fun previousYear() {
@@ -151,10 +185,15 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
         calendar.time = _currentDate.value
         calendar.add(Calendar.YEAR, -1)
         _currentDate.value = calendar.time
-        loadDataForMonth(_currentDate.value)
+        if (_isAnnualReport.value) {
+            loadDataForYear(_currentDate.value)
+        } else {
+            loadDataForMonth(_currentDate.value)
+        }
     }
 
     fun setMonth(year: Int, month: Int) {
+        _isAnnualReport.value = false
         val calendar = Calendar.getInstance()
         calendar.time = _currentDate.value
         calendar.set(Calendar.YEAR, year)

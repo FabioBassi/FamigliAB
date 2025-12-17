@@ -13,6 +13,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -44,15 +45,19 @@ fun VoucherSummaryCard(vouchers: List<Voucher>, onClick: () -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
 
             if (vouchers.isNotEmpty()) {
-                val fabVouchers = vouchers.filter { it.whose == Person.FAB }
-                val sabVouchers = vouchers.filter { it.whose == Person.SAB }
+                val (voucherCounts, voucherValues) = remember(vouchers) {
+                    val fabVouchers = vouchers.filter { it.whose == Person.FAB }
+                    val sabVouchers = vouchers.filter { it.whose == Person.SAB }
 
-                val totalFabVouchersCount = fabVouchers.sumOf { it.numberUsed }
-                val totalFabVouchersValue = fabVouchers.sumOf { it.value * it.numberUsed }
-                val totalSabVouchersCount = sabVouchers.sumOf { it.numberUsed }
-                val totalSabVouchersValue = sabVouchers.sumOf { it.value * it.numberUsed }
-                val totalVouchersCount = totalFabVouchersCount + totalSabVouchersCount
-                val totalVouchersValue = totalFabVouchersValue + totalSabVouchersValue
+                    val fabVouchersCount = fabVouchers.sumOf { it.numberUsed }
+                    val sabVouchersCount = sabVouchers.sumOf { it.numberUsed }
+                    val counts = listOf(fabVouchersCount + sabVouchersCount, fabVouchersCount, sabVouchersCount)
+
+                    val fabVouchersValue = fabVouchers.sumOf { it.value * it.numberUsed }
+                    val sabVouchersValue = sabVouchers.sumOf { it.value * it.numberUsed }
+                    val values = listOf(fabVouchersValue + sabVouchersValue, fabVouchersValue, sabVouchersValue)
+                    counts to values
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -65,7 +70,7 @@ fun VoucherSummaryCard(vouchers: List<Voucher>, onClick: () -> Unit) {
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "$totalFabVouchersCount vouchers (%.2f €)".format(totalFabVouchersValue),
+                        text = "${voucherCounts[1]} vouchers (%.2f €)".format(voucherValues[1]),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.End
                     )
@@ -81,7 +86,7 @@ fun VoucherSummaryCard(vouchers: List<Voucher>, onClick: () -> Unit) {
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "$totalSabVouchersCount vouchers (%.2f €)".format(totalSabVouchersValue),
+                        text = "${voucherCounts[2]} vouchers (%.2f €)".format(voucherValues[2]),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.End
                     )
@@ -98,7 +103,7 @@ fun VoucherSummaryCard(vouchers: List<Voucher>, onClick: () -> Unit) {
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "$totalVouchersCount vouchers (%.2f €)".format(totalVouchersValue),
+                        text = "${voucherCounts[0]} vouchers (%.2f €)".format(voucherValues[0]),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.End

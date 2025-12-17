@@ -6,24 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.ManageSearch
-import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,11 +23,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.data.Category
@@ -47,6 +34,8 @@ import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Voucher
 import com.fabiobassi.famigliab.file.CsvFileManager
 import com.fabiobassi.famigliab.file.CsvFileType
+import com.fabiobassi.famigliab.ui.features.budgeting.cards.AnnualCategoryExpensesCard
+import com.fabiobassi.famigliab.ui.features.budgeting.cards.AnnualSummaryCard
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.AddIncomeDialog
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.AddPaymentDialog
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.EditVoucherDialog
@@ -60,10 +49,8 @@ import com.fabiobassi.famigliab.ui.features.budgeting.cards.SummaryCard
 import com.fabiobassi.famigliab.ui.features.budgeting.cards.VoucherSummaryCard
 import com.fabiobassi.famigliab.ui.theme.categoryColors
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 import java.util.UUID
 
 
@@ -81,9 +68,9 @@ fun BudgetingScreen(
     val incomes by viewModel.incomes.collectAsState()
     val vouchers by viewModel.vouchers.collectAsState()
     val currentDate by viewModel.currentDate.collectAsState()
+    val isAnnualReport by viewModel.isAnnualReport.collectAsState()
     val context = LocalContext.current
     var showAllPayments by remember { mutableStateOf(false) }
-    var showAnnualReport by remember { mutableStateOf(false) }
     val csvFileManager = remember { CsvFileManager(context) }
     var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
 
@@ -154,19 +141,19 @@ fun BudgetingScreen(
         vouchers = vouchers,
         currentDate = currentDate,
         showAllPayments = showAllPayments,
-        showAnnualReport = showAnnualReport,
+        showAnnualReport = isAnnualReport,
         onShowMonthSelectionClick = { showMonthSelectionPickerDialog = true },
         onShowAllPaymentsClick = { showAllPayments = !showAllPayments },
-        onAnnualReportClick = { showAnnualReport = !showAnnualReport },
+        onAnnualReportClick = viewModel::toggleAnnualReport,
         onPreviousMonthClick = {
-            if (showAnnualReport) {
+            if (isAnnualReport) {
                 viewModel.previousYear()
             } else {
                 viewModel.previousMonth()
             }
         },
         onNextMonthClick = {
-            if (showAnnualReport) {
+            if (isAnnualReport) {
                 viewModel.nextYear()
             } else {
                 viewModel.nextMonth()
@@ -215,33 +202,51 @@ fun BudgetingScreenContent(
     onIncomeCardClick: () -> Unit,
     onVoucherCardClick: () -> Unit,
 ) {
-    val paymentsForPeriod = remember(payments, currentDate, showAnnualReport) {
-        val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
-        val selectedYear = selectedMonthCal.get(Calendar.YEAR)
-        if (showAnnualReport) {
-            payments.filter { payment ->
-                val itemCalendar = Calendar.getInstance()
-                itemCalendar.time = payment.date
-                itemCalendar.get(Calendar.YEAR) == selectedYear
-            }
-        } else {
-            val selectedMonth = selectedMonthCal.get(Calendar.MONTH)
+    val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
+    val selectedYear = selectedMonthCal.get(Calendar.YEAR)
+    val selectedMonth = selectedMonthCal.get(Calendar.MONTH)
+
+    val paymentsForMonth = remember(payments, currentDate) {
+        payments.filter { payment ->
             val itemCalendar = Calendar.getInstance()
-            payments.filter { payment ->
-                itemCalendar.time = payment.date
-                itemCalendar.get(Calendar.MONTH) == selectedMonth && itemCalendar.get(Calendar.YEAR) == selectedYear
-            }
+            itemCalendar.time = payment.date
+            itemCalendar.get(Calendar.MONTH) == selectedMonth && itemCalendar.get(Calendar.YEAR) == selectedYear
         }
     }
 
-    val totalPaymentsFab = paymentsForPeriod.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
-    val totalPaymentsSab = paymentsForPeriod.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
-    val totalPayments = totalPaymentsFab + totalPaymentsSab
+    val paymentsForYear = remember(payments, currentDate) {
+        payments.filter { payment ->
+            val itemCalendar = Calendar.getInstance()
+            itemCalendar.time = payment.date
+            itemCalendar.get(Calendar.YEAR) == selectedYear
+        }
+    }
 
-    val totalIncomeFab = incomes.filter { it.paidTo == Person.FAB }.sumOf { it.amount }
-    val totalIncomeSab = incomes.filter { it.paidTo == Person.SAB }.sumOf { it.amount }
-    val totalIncome = totalIncomeFab + totalIncomeSab
+    val totalExpenses = remember(paymentsForMonth) {
+        val totalFab = paymentsForMonth.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
+        val totalSab = paymentsForMonth.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
+        listOf(totalFab + totalSab, totalFab, totalSab)
+    }
 
+    val totalIncomes = remember(incomes) {
+        val totalFab = incomes.filter { it.paidTo == Person.FAB }.sumOf { it.amount }
+        val totalSab = incomes.filter { it.paidTo == Person.SAB }.sumOf { it.amount }
+        listOf(totalFab + totalSab, totalFab, totalSab)
+    }
+
+    val annualTotalExpenses = remember(paymentsForYear) {
+        val totalFab = paymentsForYear.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
+        val totalSab = paymentsForYear.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
+        listOf(totalFab + totalSab, totalFab, totalSab)
+    }
+
+    val annualTotalIncomes = remember(incomes) {
+        val totalFab = incomes.filter { it.paidTo == Person.FAB }.sumOf { it.amount }
+        val totalSab = incomes.filter { it.paidTo == Person.SAB }.sumOf { it.amount }
+        listOf(totalFab + totalSab, totalFab, totalSab)
+    }
+
+    val paymentsForPeriod = if (showAnnualReport) paymentsForYear else paymentsForMonth
     val paymentsByCategory = paymentsForPeriod.groupBy { it.category }
 
     Box(
@@ -254,7 +259,7 @@ fun BudgetingScreenContent(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item {
-                MonthNavigation(
+                NavigationBar(
                     currentDate = currentDate,
                     onMonthClick = onShowMonthSelectionClick,
                     onPreviousMonthClick = onPreviousMonthClick,
@@ -263,15 +268,24 @@ fun BudgetingScreenContent(
                     isAnnualReport = showAnnualReport
                 )
             }
-            if (!showAnnualReport) {
+            if (showAnnualReport) {
+                item {
+                    AnnualSummaryCard(
+                        totalIncomes = annualTotalIncomes,
+                        totalExpenses = annualTotalExpenses,
+                    )
+                }
+                item {
+                    AnnualCategoryExpensesCard(
+                        paymentsByCategory = paymentsByCategory,
+                        colors = categoryColors
+                    )
+                }
+            } else {
                 item {
                     SummaryCard(
-                        totalIncomeFab = totalIncomeFab,
-                        totalIncomeSab = totalIncomeSab,
-                        totalIncome = totalIncome,
-                        totalOutcomeFab = totalPaymentsFab,
-                        totalOutcomeSab = totalPaymentsSab,
-                        totalOutcome = totalPayments,
+                        totalIncomes = totalIncomes,
+                        totalExpenses = totalExpenses,
                         onIncomeCardClick = onIncomeCardClick,
                     )
                 }
@@ -332,69 +346,6 @@ fun BudgetingScreenContent(
     }
 }
 
-@Composable
-private fun MonthNavigation(
-    currentDate: Date,
-    onMonthClick: () -> Unit,
-    onPreviousMonthClick: () -> Unit,
-    onNextMonthClick: () -> Unit,
-    onAnnualReportClick: () -> Unit,
-    isAnnualReport: Boolean
-) {
-    val monthFormat = remember(isAnnualReport) {
-        SimpleDateFormat(if (isAnnualReport) "yyyy" else "MMMM yyyy", Locale.getDefault())
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(
-            onClick = onPreviousMonthClick,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month")
-        }
-
-        IconButton(
-            onClick = onMonthClick,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(Icons.AutoMirrored.Filled.ManageSearch, contentDescription = "Select Month")
-        }
-
-        Box(
-            modifier = Modifier
-                .weight(1f),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = monthFormat.format(currentDate)
-                    .uppercase()
-                    .replace(" ", "\n"),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center,
-                lineHeight = 22.sp,
-            )
-        }
-
-        IconButton(
-            onClick = onAnnualReportClick,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(Icons.Filled.Assessment, contentDescription = "Annual Report")
-        }
-
-        IconButton(
-            onClick = onNextMonthClick,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month")
-        }
-    }
-}
 private fun shareFile(context: Context, file: File) {
     val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
     val intent = Intent(Intent.ACTION_SEND).apply {
