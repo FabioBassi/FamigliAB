@@ -29,10 +29,15 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Payment
+import com.fabiobassi.famigliab.data.Person
+import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
+import com.fabiobassi.famigliab.ui.theme.categoryColors
+import java.util.Date
 import kotlin.math.min
 
 @Composable
@@ -75,70 +80,13 @@ fun AnnualCategoryExpensesCard(
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "CATEGORY",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.4f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    softWrap = false
-                )
-                Text(
-                    text = "TOTAL",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.28f),
-                    textAlign = TextAlign.End
-                )
-            }
-            // Body
             Category.entries.sortedBy { it.name }.forEach { category ->
                 val payments = paymentsByCategory[category] ?: emptyList()
-                val total = payments.sumOf { it.amount }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        modifier = Modifier.weight(1.4f), // Adjusted weight for the category column
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = category.name.lowercase().replaceFirstChar { it.titlecase() },
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                shadow = Shadow(
-                                    color = if (isSystemInDarkTheme()) Color.Black else Color.LightGray,
-                                    offset = Offset(2f, 2f),
-                                    blurRadius = 5f
-                                )
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    color = (colors[category.name] ?: Color.DarkGray).copy(),
-                                    shape = RoundedCornerShape(25)
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontSize = 12.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            softWrap = false
-                        )
-                    }
-                    Text(
-                        text = "%.2f€".format(total),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1.28f),
-                        textAlign = TextAlign.End
-                    )
-                }
+                val totalFab = payments.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
+                val totalSab = payments.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
+                val total = totalFab + totalSab
+                val percentage = (total * 100.0) / totalExpenses
+                AnnualCategoryItem(category, totalFab, totalSab, total, percentage, colors)
             }
 
             Spacer(Modifier.height(16.dp))
@@ -174,5 +122,26 @@ fun AnnualCategoryExpensesCard(
                 Text("No expense data to display.", modifier = Modifier.align(Alignment.CenterHorizontally))
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun AnnualCategoryExpensesCardPreview() {
+    val samplePayments = listOf(
+        Payment(date = Date(), description = "T-Shirt", amount = 25.0, paidBy = Person.FAB, category = Category.ABBIGLIAMENTO),
+        Payment(date = Date(), description = "Jeans", amount = 75.0, paidBy = Person.SAB, category = Category.ABBIGLIAMENTO),
+        Payment(date = Date(), description = "Electricity bill", amount = 100.0, paidBy = Person.FAB, category = Category.BOLLETTE),
+        Payment(date = Date(), description = "Groceries", amount = 50.0, paidBy = Person.SAB, category = Category.CIBO),
+        Payment(date = Date(), description = "Dinner out", amount = 60.0, paidBy = Person.FAB, category = Category.RISTORAZIONE),
+        Payment(date = Date(), description = "Gas", amount = 50.0, paidBy = Person.SAB, category = Category.MACCHINA),
+        Payment(date = Date(), description = "Cinema", amount = 20.0, paidBy = Person.FAB, category = Category.SVAGO),
+    )
+    val paymentsByCategory = samplePayments.groupBy { it.category }
+    FamigliABTheme {
+        AnnualCategoryExpensesCard(
+            paymentsByCategory = paymentsByCategory,
+            colors = categoryColors
+        )
     }
 }
