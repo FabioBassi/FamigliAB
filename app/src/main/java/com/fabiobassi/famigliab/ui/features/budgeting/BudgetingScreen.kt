@@ -83,6 +83,7 @@ fun BudgetingScreen(
     val currentDate by viewModel.currentDate.collectAsState()
     val context = LocalContext.current
     var showAllPayments by remember { mutableStateOf(false) }
+    var showAnnualReport by remember { mutableStateOf(false) }
     val csvFileManager = remember { CsvFileManager(context) }
     var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
 
@@ -153,10 +154,24 @@ fun BudgetingScreen(
         vouchers = vouchers,
         currentDate = currentDate,
         showAllPayments = showAllPayments,
+        showAnnualReport = showAnnualReport,
         onShowMonthSelectionClick = { showMonthSelectionPickerDialog = true },
         onShowAllPaymentsClick = { showAllPayments = !showAllPayments },
-        onPreviousMonthClick = viewModel::previousMonth,
-        onNextMonthClick = viewModel::nextMonth,
+        onAnnualReportClick = { showAnnualReport = !showAnnualReport },
+        onPreviousMonthClick = {
+            if (showAnnualReport) {
+                viewModel.previousYear()
+            } else {
+                viewModel.previousMonth()
+            }
+        },
+        onNextMonthClick = {
+            if (showAnnualReport) {
+                viewModel.nextYear()
+            } else {
+                viewModel.nextMonth()
+            }
+        },
         onAddPaymentClick = { showAddPaymentDialog = true },
         onAddIncomeClick = { showAddIncomeDialog = true },
         onSharePaymentsClick = {
@@ -185,8 +200,10 @@ fun BudgetingScreenContent(
     vouchers: List<Voucher>,
     currentDate: Date,
     showAllPayments: Boolean,
+    showAnnualReport: Boolean,
     onShowMonthSelectionClick: () -> Unit,
     onShowAllPaymentsClick: () -> Unit,
+    onAnnualReportClick: () -> Unit,
     onPreviousMonthClick: () -> Unit,
     onNextMonthClick: () -> Unit,
     onAddPaymentClick: () -> Unit,
@@ -198,26 +215,34 @@ fun BudgetingScreenContent(
     onIncomeCardClick: () -> Unit,
     onVoucherCardClick: () -> Unit,
 ) {
-    val monthlyPayments = remember(payments, currentDate) {
+    val paymentsForPeriod = remember(payments, currentDate, showAnnualReport) {
         val selectedMonthCal = Calendar.getInstance().apply { time = currentDate }
-        val selectedMonth = selectedMonthCal.get(Calendar.MONTH)
         val selectedYear = selectedMonthCal.get(Calendar.YEAR)
-        val itemCalendar = Calendar.getInstance()
-        payments.filter { payment ->
-            itemCalendar.time = payment.date
-            itemCalendar.get(Calendar.MONTH) == selectedMonth && itemCalendar.get(Calendar.YEAR) == selectedYear
+        if (showAnnualReport) {
+            payments.filter { payment ->
+                val itemCalendar = Calendar.getInstance()
+                itemCalendar.time = payment.date
+                itemCalendar.get(Calendar.YEAR) == selectedYear
+            }
+        } else {
+            val selectedMonth = selectedMonthCal.get(Calendar.MONTH)
+            val itemCalendar = Calendar.getInstance()
+            payments.filter { payment ->
+                itemCalendar.time = payment.date
+                itemCalendar.get(Calendar.MONTH) == selectedMonth && itemCalendar.get(Calendar.YEAR) == selectedYear
+            }
         }
     }
 
-    val totalPaymentsFab = monthlyPayments.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
-    val totalPaymentsSab = monthlyPayments.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
+    val totalPaymentsFab = paymentsForPeriod.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
+    val totalPaymentsSab = paymentsForPeriod.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
     val totalPayments = totalPaymentsFab + totalPaymentsSab
 
     val totalIncomeFab = incomes.filter { it.paidTo == Person.FAB }.sumOf { it.amount }
     val totalIncomeSab = incomes.filter { it.paidTo == Person.SAB }.sumOf { it.amount }
     val totalIncome = totalIncomeFab + totalIncomeSab
 
-    val paymentsByCategory = monthlyPayments.groupBy { it.category }
+    val paymentsByCategory = paymentsForPeriod.groupBy { it.category }
 
     Box(
         modifier = Modifier
@@ -233,48 +258,52 @@ fun BudgetingScreenContent(
                     currentDate = currentDate,
                     onMonthClick = onShowMonthSelectionClick,
                     onPreviousMonthClick = onPreviousMonthClick,
-                    onNextMonthClick = onNextMonthClick
+                    onNextMonthClick = onNextMonthClick,
+                    onAnnualReportClick = onAnnualReportClick,
+                    isAnnualReport = showAnnualReport
                 )
             }
-            item {
-                SummaryCard(
-                    totalIncomeFab = totalIncomeFab,
-                    totalIncomeSab = totalIncomeSab,
-                    totalIncome = totalIncome,
-                    totalOutcomeFab = totalPaymentsFab,
-                    totalOutcomeSab = totalPaymentsSab,
-                    totalOutcome = totalPayments,
-                    onIncomeCardClick = onIncomeCardClick,
-                )
-            }
-
-            item {
-                LastPaymentsCard(
-                    payments = monthlyPayments,
-                    colors = categoryColors,
-                    showAllPayments = showAllPayments,
-                    onShowAllPaymentsClick = onShowAllPaymentsClick,
-                    onPaymentLongClick = onPaymentLongClick,
-                )
-            }
-
-            if (!showAllPayments) {
+            if (!showAnnualReport) {
                 item {
-                    CategoryExpensesCard(
-                        paymentsByCategory = paymentsByCategory,
-                        colors = categoryColors
+                    SummaryCard(
+                        totalIncomeFab = totalIncomeFab,
+                        totalIncomeSab = totalIncomeSab,
+                        totalIncome = totalIncome,
+                        totalOutcomeFab = totalPaymentsFab,
+                        totalOutcomeSab = totalPaymentsSab,
+                        totalOutcome = totalPayments,
+                        onIncomeCardClick = onIncomeCardClick,
                     )
                 }
 
                 item {
-                    VoucherSummaryCard(vouchers = vouchers, onClick = onVoucherCardClick)
-                }
-                item {
-                    ShareCard(
-                        onSharePaymentsClick = onSharePaymentsClick,
-                        onShareIncomesClick = onShareIncomesClick,
-                        onShareVouchersClick = onShareVouchersClick
+                    LastPaymentsCard(
+                        payments = paymentsForPeriod,
+                        colors = categoryColors,
+                        showAllPayments = showAllPayments,
+                        onShowAllPaymentsClick = onShowAllPaymentsClick,
+                        onPaymentLongClick = onPaymentLongClick,
                     )
+                }
+
+                if (!showAllPayments) {
+                    item {
+                        CategoryExpensesCard(
+                            paymentsByCategory = paymentsByCategory,
+                            colors = categoryColors
+                        )
+                    }
+
+                    item {
+                        VoucherSummaryCard(vouchers = vouchers, onClick = onVoucherCardClick)
+                    }
+                    item {
+                        ShareCard(
+                            onSharePaymentsClick = onSharePaymentsClick,
+                            onShareIncomesClick = onShareIncomesClick,
+                            onShareVouchersClick = onShareVouchersClick
+                        )
+                    }
                 }
             }
         }
@@ -308,9 +337,13 @@ private fun MonthNavigation(
     currentDate: Date,
     onMonthClick: () -> Unit,
     onPreviousMonthClick: () -> Unit,
-    onNextMonthClick: () -> Unit
+    onNextMonthClick: () -> Unit,
+    onAnnualReportClick: () -> Unit,
+    isAnnualReport: Boolean
 ) {
-    val monthFormat = remember { SimpleDateFormat("MMMM yyyy", Locale.getDefault()) }
+    val monthFormat = remember(isAnnualReport) {
+        SimpleDateFormat(if (isAnnualReport) "yyyy" else "MMMM yyyy", Locale.getDefault())
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -348,7 +381,7 @@ private fun MonthNavigation(
         }
 
         IconButton(
-            onClick = { /*TODO add annual report*/ },
+            onClick = onAnnualReportClick,
             modifier = Modifier.size(48.dp)
         ) {
             Icon(Icons.Filled.Assessment, contentDescription = "Annual Report")
@@ -414,8 +447,10 @@ fun BudgetingScreenPreview() {
         vouchers = mockVouchers,
         currentDate = Date(),
         showAllPayments = false,
+        showAnnualReport = false,
         onShowMonthSelectionClick = {},
         onShowAllPaymentsClick = {},
+        onAnnualReportClick = {},
         onPreviousMonthClick = {},
         onNextMonthClick = {},
         onAddPaymentClick = {},

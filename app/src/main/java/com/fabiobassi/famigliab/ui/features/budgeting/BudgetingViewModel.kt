@@ -138,6 +138,22 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
         loadDataForMonth(_currentDate.value)
     }
 
+    fun nextYear() {
+        val calendar = Calendar.getInstance()
+        calendar.time = _currentDate.value
+        calendar.add(Calendar.YEAR, 1)
+        _currentDate.value = calendar.time
+        loadDataForMonth(_currentDate.value)
+    }
+
+    fun previousYear() {
+        val calendar = Calendar.getInstance()
+        calendar.time = _currentDate.value
+        calendar.add(Calendar.YEAR, -1)
+        _currentDate.value = calendar.time
+        loadDataForMonth(_currentDate.value)
+    }
+
     fun setMonth(year: Int, month: Int) {
         val calendar = Calendar.getInstance()
         calendar.time = _currentDate.value
