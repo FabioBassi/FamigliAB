@@ -16,11 +16,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Payment
 import com.fabiobassi.famigliab.data.Person
+import com.fabiobassi.famigliab.data.SettingsDataStore
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -43,6 +50,22 @@ fun PaymentRow(
     colors: Map<String, Color>,
     onPaymentLongClick: (Payment) -> Unit,
 ) {
+    val context = LocalContext.current
+    val settingsDataStore = remember { SettingsDataStore(context) }
+    val personColorHex by settingsDataStore.getColorFor(payment.paidBy.name)
+        .collectAsState(initial = "")
+
+    val personColor = remember(personColorHex) {
+        try {
+            if (personColorHex.isNotEmpty()) {
+                Color(android.graphics.Color.parseColor(personColorHex))
+            } else {
+                Color.Unspecified
+            }
+        } catch (e: Exception) {
+            Color.Unspecified
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -85,12 +108,27 @@ fun PaymentRow(
                 )
             }
             Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = payment.paidBy.name,
-                style = MaterialTheme.typography.bodySmall,
+            Box(
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.End
-            )
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                val strokeTextStyle = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 12.sp,
+                    drawStyle = Stroke(width = 2f, join = StrokeJoin.Round)
+                )
+                val fillTextStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)
+
+                Text(
+                    text = payment.paidBy.name,
+                    style = strokeTextStyle,
+                    color = Color.Black,
+                )
+                Text(
+                    text = payment.paidBy.name,
+                    style = fillTextStyle,
+                    color = personColor,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(2.dp))

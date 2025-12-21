@@ -11,11 +11,16 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fabiobassi.famigliab.data.SettingsDataStore
 
 @Composable
 fun SummaryCard(
@@ -23,6 +28,34 @@ fun SummaryCard(
     totalExpenses: List<Double>,
     onIncomeCardClick: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val settingsDataStore = remember { SettingsDataStore(context) }
+    val fabColorHex by settingsDataStore.getColorFor("Fab").collectAsState(initial = "")
+    val sabColorHex by settingsDataStore.getColorFor("Sab").collectAsState(initial = "")
+
+    val fabColor = remember(fabColorHex) {
+        try {
+            if (fabColorHex.isNotEmpty()) {
+                Color(android.graphics.Color.parseColor(fabColorHex))
+            } else {
+                Color.Unspecified
+            }
+        } catch (e: Exception) {
+            Color.Unspecified
+        }
+    }
+    val sabColor = remember(sabColorHex) {
+        try {
+            if (sabColorHex.isNotEmpty()) {
+                Color(android.graphics.Color.parseColor(sabColorHex))
+            } else {
+                Color.Unspecified
+            }
+        } catch (e: Exception) {
+            Color.Unspecified
+        }
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -49,12 +82,14 @@ fun SummaryCard(
                 Text(
                     text = "Fab: ${"%.2f".format(totalIncomes[1])} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    color = fabColor
                 )
                 Text(
                     text = "Sab: ${"%.2f".format(totalIncomes[2])} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    color = sabColor
                 )
                 Text(
                     text = "${"%.2f".format(totalIncomes[0])} €",
@@ -84,12 +119,14 @@ fun SummaryCard(
                 Text(
                     text = "Fab: ${"%.2f".format(totalExpenses[1])} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    color = fabColor
                 )
                 Text(
                     text = "Sab: ${"%.2f".format(totalExpenses[2])} €",
                     style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    color = sabColor
                 )
                 Text(
                     text = "${"%.2f".format(totalExpenses[0])} €",

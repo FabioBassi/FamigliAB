@@ -402,7 +402,7 @@ fun BudgetingScreenPreview() {
         vouchers = mockVouchers,
         currentDate = Date(),
         showAllPayments = false,
-        showAnnualReport = true,
+        showAnnualReport = false,
         onShowMonthSelectionClick = {},
         onShowAllPaymentsClick = {},
         onAnnualReportClick = {},
