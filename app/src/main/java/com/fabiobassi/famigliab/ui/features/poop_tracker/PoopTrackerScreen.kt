@@ -57,22 +57,14 @@ fun PoopTrackerScreen(paddingValues: PaddingValues) {
         ) {
             Text(text = "Poop Tracker", fontSize = 24.sp)
             PoopChartCard(poopChartData = poopChartData)
-            Row(
+            Slider(
+                value = (30f - dayOffset.toFloat()),
+                onValueChange = { dayOffset = (30 - it.toInt()) },
+                valueRange = 0f..30f,
+                steps = 29,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = "Days ago: $dayOffset")
-                Slider(
-                    value = dayOffset.toFloat(),
-                    onValueChange = { dayOffset = it.toInt() },
-                    valueRange = 0f..30f,
-                    steps = 29,
-                    modifier = Modifier.fillMaxWidth(0.8f)
-                )
-            }
+            )
             LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
                 items(poopEntries) { entry ->
                     PoopEntryItem(entry = entry)

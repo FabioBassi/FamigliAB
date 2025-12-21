@@ -1,4 +1,4 @@
-package com.fabiobassi.famigliab.ui.features.settings
+package com.fabiobassi.famigliab.ui.features.settings.dialogs
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.AlertDialog

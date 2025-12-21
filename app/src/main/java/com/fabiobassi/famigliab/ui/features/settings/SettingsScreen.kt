@@ -1,5 +1,6 @@
 package com.fabiobassi.famigliab.ui.features.settings
 
+import android.provider.OpenableColumns
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,6 +32,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fabiobassi.famigliab.data.SettingsDataStore
+import com.fabiobassi.famigliab.ui.features.settings.dialogs.ColorSettingDialog
+import com.fabiobassi.famigliab.ui.features.settings.dialogs.ConfirmDeletePoopTrackerDataDialog
+import com.fabiobassi.famigliab.ui.features.settings.dialogs.ConfirmImportPasswordsDialog
+import com.fabiobassi.famigliab.ui.features.settings.dialogs.ConfirmImportPoopEntriesDialog
+import com.fabiobassi.famigliab.ui.features.settings.dialogs.DeleteAllBudgetingDataDialog
+import com.fabiobassi.famigliab.ui.features.settings.dialogs.ImportPaymentsDialog
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 import java.io.File
 import java.io.FileOutputStream
@@ -42,7 +48,8 @@ fun SettingsScreen(paddingValues: PaddingValues) {
     val settingsDataStore = remember { SettingsDataStore(context) }
     var showPasswordResetDialog by remember { mutableStateOf(false) }
     var showImportPaymentCsvDialog by remember { mutableStateOf(false) }
-    var showDeleteAllDataDialog by remember { mutableStateOf(false) }
+    var showImportPoopEntriesDialog by remember { mutableStateOf(false) }
+    var showDeleteAllBudgetingDataDialog by remember { mutableStateOf(false) }
     var showDeletePoopTrackerCsvDialog by remember { mutableStateOf(false) }
     var showColorSettingDialog by remember { mutableStateOf(false) }
     var personToSetColorFor by remember { mutableStateOf<String?>(null) }
@@ -88,6 +95,47 @@ fun SettingsScreen(paddingValues: PaddingValues) {
             } catch (e: Exception) {
                 Toast.makeText(context, "Error importing passwords: ${e.message}", Toast.LENGTH_LONG).show()
                 e.printStackTrace()
+            }
+        }
+    }
+
+    val importPoopEntriesLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        uri?.let {
+            val contentResolver = context.contentResolver
+            val mimeType = contentResolver.getType(it)
+            var fileName: String? = null
+            contentResolver.query(it, null, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val displayNameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (displayNameIndex != -1) {
+                        fileName = cursor.getString(displayNameIndex)
+                    }
+                }
+            }
+
+            if (mimeType == "text/csv" || mimeType == "text/comma-separated-values" || fileName?.endsWith(".csv", ignoreCase = true) == true) {
+                try {
+                    context.contentResolver.openInputStream(it)?.use { inputStream ->
+                        val poopFile =
+                            File(context.getExternalFilesDir("FamigliAB/PoopTracker"), "poop_entries.csv")
+                        FileOutputStream(poopFile).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                        Toast.makeText(context, "Poop entries imported successfully!", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(
+                        context,
+                        "Error importing poop entries: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    e.printStackTrace()
+                }
+            } else {
+                Toast.makeText(context, "Invalid file type. Please select a CSV file.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -157,11 +205,11 @@ fun SettingsScreen(paddingValues: PaddingValues) {
             Text("Import payment csv")
         }
         TextButton(
-            onClick = { showDeleteAllDataDialog = true },
+            onClick = { showDeleteAllBudgetingDataDialog = true },
             modifier = Modifier.padding(bottom = 16.dp),
         ) {
             Text(
-                text = "Delete all data",
+                text = "Delete all budgeting data",
                 color = MaterialTheme.colorScheme.error,
             )
         }
@@ -171,6 +219,12 @@ fun SettingsScreen(paddingValues: PaddingValues) {
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp),
         )
+        TextButton(
+            onClick = { showImportPoopEntriesDialog = true },
+            modifier = Modifier.padding(bottom = 16.dp),
+        ) {
+            Text("Import poop_entries.csv")
+        }
         TextButton(
             onClick = { showDeletePoopTrackerCsvDialog = true },
             modifier = Modifier.padding(bottom = 16.dp),
@@ -190,26 +244,23 @@ fun SettingsScreen(paddingValues: PaddingValues) {
             onClick = { showPasswordResetDialog = true },
             modifier = Modifier.padding(bottom = 16.dp),
         ) {
-            Text("Import Passwords.json")
+            Text("Import passwords.json")
         }
 
         if (showPasswordResetDialog) {
-            AlertDialog(
+            ConfirmImportPasswordsDialog(
                 onDismissRequest = { showPasswordResetDialog = false },
-                title = { Text("Confirm Import") },
-                text = { Text("Are you sure you want to import passwords? This will overwrite existing data.") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showPasswordResetDialog = false
-                        importPasswordsLauncher.launch("application/json")
-                    }) {
-                        Text("Confirm")
-                    }
+                onConfirm = {
+                    importPasswordsLauncher.launch("application/json")
                 },
-                dismissButton = {
-                    TextButton(onClick = { showPasswordResetDialog = false }) {
-                        Text("Cancel")
-                    }
+            )
+        }
+
+        if (showImportPoopEntriesDialog) {
+            ConfirmImportPoopEntriesDialog(
+                onDismissRequest = { showImportPoopEntriesDialog = false },
+                onConfirm = {
+                    importPoopEntriesLauncher.launch(arrayOf("text/csv", "text/comma-separated-values"))
                 },
             )
         }
@@ -218,37 +269,27 @@ fun SettingsScreen(paddingValues: PaddingValues) {
             ImportPaymentsDialog(onDismissRequest = { showImportPaymentCsvDialog = false })
         }
 
-        if (showDeleteAllDataDialog) {
-            DeleteAllDataDialog(onDismissRequest = { showDeleteAllDataDialog = false })
+        if (showDeleteAllBudgetingDataDialog) {
+            DeleteAllBudgetingDataDialog(onDismissRequest = {
+                showDeleteAllBudgetingDataDialog = false
+            })
         }
 
         if (showDeletePoopTrackerCsvDialog) {
-            AlertDialog(
+            ConfirmDeletePoopTrackerDataDialog(
                 onDismissRequest = { showDeletePoopTrackerCsvDialog = false },
-                title = { Text("Confirm Deletion") },
-                text = { Text("Are you sure you want to delete the poop tracker data?") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showDeletePoopTrackerCsvDialog = false
-                        try {
-                            val poopFile = File(context.getExternalFilesDir("FamigliAB/PoopTracker"), "poop_entries.csv")
-                            if (poopFile.exists()) {
-                                poopFile.delete()
-                                Toast.makeText(context, "Poop tracker data deleted successfully!", Toast.LENGTH_SHORT).show()
-                            } else {
-                                Toast.makeText(context, "No poop tracker data found.", Toast.LENGTH_SHORT).show()
-                            }
-                        } catch (e: Exception) {
-                            Toast.makeText(context, "Error deleting poop tracker data: ${e.message}", Toast.LENGTH_LONG).show()
-                            e.printStackTrace()
+                onConfirm = {
+                    try {
+                        val poopFile = File(context.getExternalFilesDir("FamigliAB/PoopTracker"), "poop_entries.csv")
+                        if (poopFile.exists()) {
+                            poopFile.delete()
+                            Toast.makeText(context, "Poop tracker data deleted successfully!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "No poop tracker data found.", Toast.LENGTH_SHORT).show()
                         }
-                    }) {
-                        Text("Confirm")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDeletePoopTrackerCsvDialog = false }) {
-                        Text("Cancel")
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Error deleting poop tracker data: ${e.message}", Toast.LENGTH_LONG).show()
+                        e.printStackTrace()
                     }
                 },
             )
