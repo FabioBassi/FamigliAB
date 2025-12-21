@@ -60,7 +60,7 @@ fun AddPoopDialog(
 
     var date by remember { mutableStateOf(dateFormatter.format(Date())) }
     var hour by remember { mutableStateOf(timeFormatter.format(Date())) }
-    var quality by remember { mutableStateOf("Normal") }
+    var quality by remember { mutableStateOf("Good") }
     var selectedPerson by remember { mutableStateOf(Person.FAB) }
     val people = Person.entries.toTypedArray()
     var isQualityExpanded by remember { mutableStateOf(false) }

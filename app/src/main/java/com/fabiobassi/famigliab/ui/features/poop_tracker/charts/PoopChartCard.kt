@@ -1,4 +1,4 @@
-package com.fabiobassi.famigliab.ui.features.poop_tracker
+package com.fabiobassi.famigliab.ui.features.poop_tracker.charts
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -8,9 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.fabiobassi.famigliab.data.Person
+import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopChartData
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
@@ -48,7 +47,7 @@ fun PoopChartCard(
                 .firstOrNull()
                 ?.keys
                 ?.elementAtOrNull(value.toInt())
-                ?.substringBefore("/") // dd/MM/yy → dd
+                ?.substringBefore("/") // dd/MM/yyyy → dd
                 ?: ""
         }
 
