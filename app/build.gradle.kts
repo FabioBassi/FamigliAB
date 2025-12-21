@@ -61,5 +61,10 @@ dependencies {
     // kotlin-csv
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.9.3")
 
+    // Vico for charts
+    implementation(libs.vico.core)
+    implementation(libs.vico.compose)
+    implementation(libs.vico.compose.m3)
+
     //ksp("androidx.room:room-compiler:2.5.0")
 }

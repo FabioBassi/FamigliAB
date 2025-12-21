@@ -19,19 +19,26 @@ enum class CsvFileType(val path: String) {
 class CsvFileManager(private val context: Context) {
 
     fun getFileForMonth(type: CsvFileType, date: Date): File {
-        val fileName = if (type == CsvFileType.POOP_ENTRIES) {
-            "poop_entries.csv"
-        } else {
-            val monthFormat = SimpleDateFormat("MMM_yy", Locale.US)
-            "${monthFormat.format(date).lowercase()}.csv"
+        val fileName = when (type) {
+            CsvFileType.POOP_ENTRIES -> "poop_entries.csv"
+            else -> {
+                val monthFormat = SimpleDateFormat("MMM_yy", Locale.US)
+                "${monthFormat.format(date).lowercase()}.csv"
+            }
         }
-        val subfolder = type.path
-        val baseDir = File(context.getExternalFilesDir(null), "FamigliAB")
-        val typeDir = File(baseDir, subfolder)
-        if (!typeDir.exists()) {
-            typeDir.mkdirs()
+
+        val baseDir = context.getExternalFilesDir(null) ?: context.filesDir
+
+        val directoryPath = when (type) {
+            CsvFileType.POOP_ENTRIES -> "FamigliAB/PoopTracker"
+            else -> "FamigliAB/Budgeting/${type.path}"
         }
-        return File(typeDir, fileName)
+        val directory = File(baseDir, directoryPath)
+
+        if (!directory.exists()) {
+            directory.mkdirs()
+        }
+        return File(directory, fileName)
     }
 
     fun <T : CsvData> writeData(type: CsvFileType, date: Date, data: List<T>) {
