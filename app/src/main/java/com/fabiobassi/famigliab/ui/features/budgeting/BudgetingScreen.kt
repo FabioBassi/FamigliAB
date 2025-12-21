@@ -35,6 +35,8 @@ import com.fabiobassi.famigliab.data.Voucher
 import com.fabiobassi.famigliab.file.CsvFileManager
 import com.fabiobassi.famigliab.file.CsvFileType
 import com.fabiobassi.famigliab.ui.features.budgeting.cards.AnnualCategoryExpensesCard
+import com.fabiobassi.famigliab.ui.features.budgeting.cards.AnnualGraph
+import com.fabiobassi.famigliab.ui.features.budgeting.cards.AnnualMonthRecap
 import com.fabiobassi.famigliab.ui.features.budgeting.cards.AnnualSummaryCard
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.AddIncomeDialog
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.AddPaymentDialog
@@ -276,10 +278,16 @@ fun BudgetingScreenContent(
                     )
                 }
                 item {
+                    AnnualGraph()
+                }
+                item {
                     AnnualCategoryExpensesCard(
                         paymentsByCategory = paymentsByCategory,
                         colors = categoryColors
                     )
+                }
+                item {
+                    AnnualMonthRecap()
                 }
             } else {
                 item {
