@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.PoopChartCard
 
 @Composable
 fun PoopTrackerScreen(paddingValues: PaddingValues) {
@@ -90,8 +91,8 @@ fun PoopTrackerScreen(paddingValues: PaddingValues) {
         if (showDialog) {
             AddPoopDialog(
                 onDismiss = { showDialog = false },
-                onSave = { date, hour, quantity, quality, person ->
-                    viewModel.addPoopEntry(date, hour, quantity, quality, person)
+                onSave = { date, hour, quality, person ->
+                    viewModel.addPoopEntry(date, hour, quality, person)
                     showDialog = false
                 }
             )

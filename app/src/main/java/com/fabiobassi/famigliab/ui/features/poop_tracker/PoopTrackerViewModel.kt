@@ -1,6 +1,5 @@
 package com.fabiobassi.famigliab.ui.features.poop_tracker
 
-import android.app.Application
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -67,7 +66,7 @@ class PoopTrackerViewModel(
 
             val result = mutableMapOf<Person, Map<String, Int>>()
 
-            for (person in Person.values()) {
+            for (person in Person.entries) {
                 val personEntries = entriesByPerson[person] ?: emptyList()
                 val personMap = lastDays.toMutableMap()
                 personEntries.forEach { entry ->
@@ -90,12 +89,11 @@ class PoopTrackerViewModel(
         }
     }
 
-    fun addPoopEntry(date: String, hour: String, quantity: String, quality: String, person: Person) {
+    fun addPoopEntry(date: String, hour: String, quality: String, person: Person) {
         viewModelScope.launch {
             val newEntry = PoopEntry(
                 date = date,
                 hour = hour,
-                quantity = quantity,
                 quality = quality,
                 person = person
             )

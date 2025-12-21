@@ -41,6 +41,7 @@ import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.core.graphics.toColorInt
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -58,7 +59,7 @@ fun PaymentRow(
     val personColor = remember(personColorHex) {
         try {
             if (personColorHex.isNotEmpty()) {
-                Color(android.graphics.Color.parseColor(personColorHex))
+                Color(personColorHex.toColorInt())
             } else {
                 Color.Unspecified
             }

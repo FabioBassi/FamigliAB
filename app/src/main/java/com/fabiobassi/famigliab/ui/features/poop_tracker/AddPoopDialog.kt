@@ -29,15 +29,20 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 import com.fabiobassi.famigliab.data.Person
+import com.fabiobassi.famigliab.data.SettingsDataStore
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -47,7 +52,7 @@ import java.util.Locale
 @Composable
 fun AddPoopDialog(
     onDismiss: () -> Unit,
-    onSave: (String, String, String, String, Person) -> Unit
+    onSave: (String, String, String, Person) -> Unit
 ) {
     val calendar = Calendar.getInstance()
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
@@ -55,11 +60,9 @@ fun AddPoopDialog(
 
     var date by remember { mutableStateOf(dateFormatter.format(Date())) }
     var hour by remember { mutableStateOf(timeFormatter.format(Date())) }
-    var quantity by remember { mutableStateOf("Normal") }
     var quality by remember { mutableStateOf("Normal") }
     var selectedPerson by remember { mutableStateOf(Person.FAB) }
     val people = Person.entries.toTypedArray()
-    var isQuantityExpanded by remember { mutableStateOf(false) }
     var isQualityExpanded by remember { mutableStateOf(false) }
 
     var showDatePicker by remember { mutableStateOf(false) }
@@ -71,9 +74,7 @@ fun AddPoopDialog(
         initialMinute = calendar.get(Calendar.MINUTE),
         is24Hour = true
     )
-
-    val quantityOptions = listOf("Scarce", "Normal", "Abundant")
-    val qualityOptions = listOf("Bad", "Normal", "Good")
+    val qualityOptions = listOf("Good", "Bad")
 
     if (showDatePicker) {
         DatePickerDialog(
@@ -133,6 +134,29 @@ fun AddPoopDialog(
         title = { Text("Log Poop 💩") },
         text = {
             Column {
+                Row(Modifier.fillMaxWidth()) {
+                    people.forEach { person ->
+                        Row(
+                            Modifier
+                                .selectable(
+                                    selected = (person == selectedPerson),
+                                    onClick = { selectedPerson = person }
+                                )
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (person == selectedPerson),
+                                onClick = { selectedPerson = person },
+                            )
+                            Text(
+                                text = person.name,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = date,
                     onValueChange = { },
@@ -156,58 +180,6 @@ fun AddPoopDialog(
                         }
                     }
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(Modifier.fillMaxWidth()) {
-                    people.forEach { person ->
-                        Row(
-                            Modifier
-                                .selectable(
-                                    selected = (person == selectedPerson),
-                                    onClick = { selectedPerson = person }
-                                )
-                                .padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = (person == selectedPerson),
-                                onClick = { selectedPerson = person }
-                            )
-                            Text(
-                                text = person.name,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                ExposedDropdownMenuBox(
-                    expanded = isQuantityExpanded,
-                    onExpandedChange = { isQuantityExpanded = it }
-                ) {
-                    TextField(
-                        value = quantity,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Quantity") },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = isQuantityExpanded)
-                        },
-                        modifier = Modifier.menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = isQuantityExpanded,
-                        onDismissRequest = { isQuantityExpanded = false })
-                    {
-                        quantityOptions.forEach {
-                            DropdownMenuItem(
-                                text = { Text(it) },
-                                onClick = {
-                                    quantity = it
-                                    isQuantityExpanded = false
-                                })
-                        }
-                    }
-                }
                 Spacer(modifier = Modifier.height(8.dp))
                 ExposedDropdownMenuBox(
                     expanded = isQualityExpanded,
@@ -241,7 +213,7 @@ fun AddPoopDialog(
         },
         confirmButton = {
             Button(onClick = {
-                onSave(date, hour, quantity, quality, selectedPerson)
+                onSave(date, hour, quality, selectedPerson)
             }) {
                 Text("Save")
             }
@@ -257,5 +229,5 @@ fun AddPoopDialog(
 @Preview(showBackground = true)
 @Composable
 fun AddPoopDialogPreview() {
-    AddPoopDialog(onDismiss = {}, onSave = { _, _, _, _, _ -> })
+    AddPoopDialog(onDismiss = {}, onSave = { _, _, _, _ -> })
 }

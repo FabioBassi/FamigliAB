@@ -38,6 +38,11 @@ fun PoopEntryItem(entry: PoopEntry) {
     Card(modifier = Modifier.padding(vertical = 4.dp)) {
         Column(modifier = Modifier.padding(8.dp)) {
             Row {
+                
+                Text(
+                    text = "${entry.date} - ${entry.hour}",
+                    modifier = Modifier.weight(4f),
+                )
                 Text(
                     text = entry.person.name,
                     modifier = Modifier
@@ -54,13 +59,7 @@ fun PoopEntryItem(entry: PoopEntry) {
                         Color.Black
                     }
                 )
-                Text(
-                    text = "${entry.date} - ${entry.hour}",
-                    modifier = Modifier.weight(4f),
-                    textAlign = TextAlign.End
-                )
             }
-            Text("Quantity: ${entry.quantity}, Quality: ${entry.quality}")
         }
     }
 }
@@ -72,7 +71,6 @@ fun PoopEntryItemPreview() {
         entry = PoopEntry(
             date = "27/10/2025",
             hour = "12:00",
-            quantity = "Normal",
             quality = "Good",
             person = Person.FAB
         )
