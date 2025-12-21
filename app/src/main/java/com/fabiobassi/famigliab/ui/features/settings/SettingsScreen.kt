@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 import java.io.File
 import java.io.FileOutputStream
@@ -31,6 +32,7 @@ fun SettingsScreen(paddingValues: PaddingValues) {
     var showPaswordResetDialog by remember { mutableStateOf(false) }
     var showImportPaymentCsvDialog by remember { mutableStateOf(false) }
     var showDeleteAllDataDialog by remember { mutableStateOf(false) }
+    var showDeletePoopTrackerCsvDialog by remember { mutableStateOf(false) }
 
     val importPasswordsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -85,11 +87,20 @@ fun SettingsScreen(paddingValues: PaddingValues) {
             )
         }
         Text(
-            text = "Grocery List",
+            text = "Poop tracker",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
+        TextButton(
+            onClick = { showDeletePoopTrackerCsvDialog = true },
+            modifier = Modifier.padding(bottom = 16.dp)
+        ) {
+            Text(
+                text = "Delete all data",
+                color = MaterialTheme.colorScheme.error
+            )
+        }
         Text(
             text = "Passwords",
             style = MaterialTheme.typography.headlineMedium,
@@ -130,6 +141,38 @@ fun SettingsScreen(paddingValues: PaddingValues) {
 
         if (showDeleteAllDataDialog) {
             DeleteAllDataDialog(onDismissRequest = { showDeleteAllDataDialog = false })
+        }
+
+        if (showDeletePoopTrackerCsvDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeletePoopTrackerCsvDialog = false },
+                title = { Text("Confirm Deletion") },
+                text = { Text("Are you sure you want to delete the poop tracker data?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDeletePoopTrackerCsvDialog = false
+                        try {
+                            val poopFile = File(context.getExternalFilesDir("FamigliAB/PoopTracker"), "poop_entries.csv")
+                            if (poopFile.exists()) {
+                                poopFile.delete()
+                                Toast.makeText(context, "Poop tracker data deleted successfully!", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "No poop tracker data found.", Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Error deleting poop tracker data: ${e.message}", Toast.LENGTH_LONG).show()
+                            e.printStackTrace()
+                        }
+                    }) {
+                        Text("Confirm")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeletePoopTrackerCsvDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
 
         Text(

@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Description
@@ -13,7 +12,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,7 +39,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.fabiobassi.famigliab.ui.features.budgeting.BudgetingScreen
 import com.fabiobassi.famigliab.ui.features.documents.DocumentsScreen
-import com.fabiobassi.famigliab.ui.features.grocerylist.GroceryListScreen
+import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopTrackerScreen
 import com.fabiobassi.famigliab.ui.features.home.HomeScreen
 import com.fabiobassi.famigliab.ui.features.passwords.PasswordsScreen
 import com.fabiobassi.famigliab.ui.features.settings.SettingsScreen
@@ -61,6 +59,7 @@ import android.widget.Toast
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.material.icons.filled.AirlineSeatLegroomNormal
 
 
 class MainActivity : ComponentActivity() {
@@ -78,7 +77,7 @@ class MainActivity : ComponentActivity() {
 sealed class BottomNavItem(val titleResId: Int, val icon: ImageVector, val route: String) {
     object Home : BottomNavItem(R.string.home, Icons.Default.Home, "home")
     object Budgeting : BottomNavItem(R.string.budgeting, Icons.Default.Analytics, "budgeting")
-    object GroceryList : BottomNavItem(R.string.grocery_list, Icons.Default.ShoppingCart, "grocery_list")
+    object GroceryList : BottomNavItem(R.string.poop_tracker, Icons.Default.AirlineSeatLegroomNormal, "grocery_list")
     object Passwords : BottomNavItem(R.string.passwords, Icons.Default.Lock, "passwords")
     object Documents : BottomNavItem(R.string.documents, Icons.Default.Description, "documents")
     object Settings : BottomNavItem(R.string.settings, Icons.Default.Settings, "settings")
@@ -163,7 +162,7 @@ fun MainScreen() {
         ) {
             composable(BottomNavItem.Home.route) { HomeScreen() }
             composable(BottomNavItem.Budgeting.route) { BudgetingScreen(innerPadding) }
-            composable(BottomNavItem.GroceryList.route) { GroceryListScreen() }
+            composable(BottomNavItem.GroceryList.route) { PoopTrackerScreen(innerPadding) }
             composable(BottomNavItem.Passwords.route) { PasswordsScreen(innerPadding) }
             composable(BottomNavItem.Documents.route) { DocumentsScreen() }
             composable(BottomNavItem.Settings.route) { SettingsScreen(innerPadding) }

@@ -12,16 +12,21 @@ import java.util.Locale
 enum class CsvFileType(val path: String) {
     PAYMENTS("Payments"),
     INCOMES("Incomes"),
-    VOUCHERS("Vouchers")
+    VOUCHERS("Vouchers"),
+    POOP_ENTRIES("PoopTracker")
 }
 
 class CsvFileManager(private val context: Context) {
 
     fun getFileForMonth(type: CsvFileType, date: Date): File {
-        val monthFormat = SimpleDateFormat("MMM_yy", Locale.US)
-        val fileName = "${monthFormat.format(date).lowercase()}.csv"
+        val fileName = if (type == CsvFileType.POOP_ENTRIES) {
+            "poop_entries.csv"
+        } else {
+            val monthFormat = SimpleDateFormat("MMM_yy", Locale.US)
+            "${monthFormat.format(date).lowercase()}.csv"
+        }
         val subfolder = type.path
-        val baseDir = File(context.getExternalFilesDir(null), "FamigliAB/Budgeting")
+        val baseDir = File(context.getExternalFilesDir(null), "FamigliAB")
         val typeDir = File(baseDir, subfolder)
         if (!typeDir.exists()) {
             typeDir.mkdirs()
@@ -30,6 +35,11 @@ class CsvFileManager(private val context: Context) {
     }
 
     fun <T : CsvData> writeData(type: CsvFileType, date: Date, data: List<T>) {
+        val file = getFileForMonth(type, date)
+        data.writeToCsv(file)
+    }
+
+    fun <T : CsvData> appendData(type: CsvFileType, date: Date, data: T) {
         val file = getFileForMonth(type, date)
         data.writeToCsv(file)
     }
