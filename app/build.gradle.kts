@@ -55,6 +55,9 @@ dependencies {
     // 🧭 Navigation (optional but useful)
     implementation(libs.androidx.navigation.compose)
 
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
     // Kotlinx Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 

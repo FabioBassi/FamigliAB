@@ -1,6 +1,5 @@
 package com.fabiobassi.famigliab.ui.features.settings
 
-import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fabiobassi.famigliab.data.SettingsDataStore
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 import java.io.File
 import java.io.FileOutputStream
@@ -38,9 +39,7 @@ import java.io.FileOutputStream
 @Composable
 fun SettingsScreen(paddingValues: PaddingValues) {
     val context = LocalContext.current
-    val sharedPreferences = remember {
-        context.getSharedPreferences("color_prefs", Context.MODE_PRIVATE)
-    }
+    val settingsDataStore = remember { SettingsDataStore(context) }
     var showPasswordResetDialog by remember { mutableStateOf(false) }
     var showImportPaymentCsvDialog by remember { mutableStateOf(false) }
     var showDeleteAllDataDialog by remember { mutableStateOf(false) }
@@ -48,19 +47,27 @@ fun SettingsScreen(paddingValues: PaddingValues) {
     var showColorSettingDialog by remember { mutableStateOf(false) }
     var personToSetColorFor by remember { mutableStateOf<String?>(null) }
 
-    val (fabColorHex, setFabColorHex) = remember { mutableStateOf(sharedPreferences.getString("fab_color", null)) }
-    val (sabColorHex, setSabColorHex) = remember { mutableStateOf(sharedPreferences.getString("sab_color", null)) }
+    val fabColorHex by settingsDataStore.getColorFor("Fab").collectAsState(initial = "")
+    val sabColorHex by settingsDataStore.getColorFor("Sab").collectAsState(initial = "")
 
     val fabColor = remember(fabColorHex) {
         try {
-            fabColorHex?.let { Color(android.graphics.Color.parseColor(it)) } ?: Color.Transparent
+            if (fabColorHex.isNotEmpty()) {
+                Color(android.graphics.Color.parseColor(fabColorHex))
+            } else {
+                Color.Transparent
+            }
         } catch (e: Exception) {
             Color.Transparent
         }
     }
     val sabColor = remember(sabColorHex) {
         try {
-            sabColorHex?.let { Color(android.graphics.Color.parseColor(it)) } ?: Color.Transparent
+            if (sabColorHex.isNotEmpty()) {
+                Color(android.graphics.Color.parseColor(sabColorHex))
+            } else {
+                Color.Transparent
+            }
         } catch (e: Exception) {
             Color.Transparent
         }
@@ -251,11 +258,7 @@ fun SettingsScreen(paddingValues: PaddingValues) {
             personToSetColorFor?.let {
                 ColorSettingDialog(
                     person = it,
-                    onDismissRequest = {
-                        showColorSettingDialog = false
-                        setFabColorHex(sharedPreferences.getString("fab_color", null))
-                        setSabColorHex(sharedPreferences.getString("sab_color", null))
-                    },
+                    onDismissRequest = { showColorSettingDialog = false },
                 )
             }
         }
