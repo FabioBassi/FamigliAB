@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fabiobassi.famigliab.data.SettingsDataStore
+import androidx.core.graphics.toColorInt
 
 @Composable
 fun SummaryCard(
@@ -36,7 +37,7 @@ fun SummaryCard(
     val fabColor = remember(fabColorHex) {
         try {
             if (fabColorHex.isNotEmpty()) {
-                Color(android.graphics.Color.parseColor(fabColorHex))
+                Color(fabColorHex.toColorInt())
             } else {
                 Color.Unspecified
             }
@@ -47,7 +48,7 @@ fun SummaryCard(
     val sabColor = remember(sabColorHex) {
         try {
             if (sabColorHex.isNotEmpty()) {
-                Color(android.graphics.Color.parseColor(sabColorHex))
+                Color(sabColorHex.toColorInt())
             } else {
                 Color.Unspecified
             }
@@ -77,7 +78,7 @@ fun SummaryCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.primary
+                    color = Color(0xFF00aa00)
                 )
                 Text(
                     text = "Fab: ${"%.2f".format(totalIncomes[1])} €",
@@ -96,7 +97,7 @@ fun SummaryCard(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = Color(0xFF00aa00)
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -114,7 +115,7 @@ fun SummaryCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.primary
+                    color = Color.Red
                 )
                 Text(
                     text = "Fab: ${"%.2f".format(totalExpenses[1])} €",
@@ -133,7 +134,7 @@ fun SummaryCard(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = Color.Red
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
