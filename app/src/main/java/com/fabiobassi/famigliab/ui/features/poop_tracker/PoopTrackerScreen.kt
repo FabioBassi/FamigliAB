@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
@@ -36,12 +35,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun PoopTrackerScreen(paddingValues: PaddingValues) {
     val viewModel: PoopTrackerViewModel = viewModel(factory = PoopTrackerViewModel.Factory)
     val poopEntries by viewModel.poopEntries.collectAsState()
-    val poopEntriesByDay by viewModel.poopEntriesByDay.collectAsState()
+    val poopChartData by viewModel.poopChartData.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
-    var daysToShow by remember { mutableIntStateOf(7) }
+    var dayOffset by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(daysToShow) {
-        viewModel.loadPoopEntries(daysToShow)
+    LaunchedEffect(dayOffset) {
+        viewModel.loadPoopEntries(dayOffset)
     }
 
     Box(
@@ -56,7 +55,7 @@ fun PoopTrackerScreen(paddingValues: PaddingValues) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(text = "Poop Tracker", fontSize = 24.sp)
-            PoopChartCard(poopEntriesByDay = poopEntriesByDay)
+            PoopChartCard(poopChartData = poopChartData)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -64,24 +63,18 @@ fun PoopTrackerScreen(paddingValues: PaddingValues) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "Days: $daysToShow")
+                Text(text = "Days ago: $dayOffset")
                 Slider(
-                    value = daysToShow.toFloat(),
-                    onValueChange = { daysToShow = it.toInt() },
-                    valueRange = 7f..30f,
-                    steps = 22,
+                    value = dayOffset.toFloat(),
+                    onValueChange = { dayOffset = it.toInt() },
+                    valueRange = 0f..30f,
+                    steps = 29,
                     modifier = Modifier.fillMaxWidth(0.8f)
                 )
             }
             LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
                 items(poopEntries) { entry ->
-                    Card(modifier = Modifier.padding(vertical = 4.dp)) {
-                        Column(modifier = Modifier.padding(8.dp)) {
-                            Text("Person: ${entry.person.name}")
-                            Text("Date: ${entry.date}, Hour: ${entry.hour}")
-                            Text("Quantity: ${entry.quantity}, Quality: ${entry.quality}")
-                        }
-                    }
+                    PoopEntryItem(entry = entry)
                 }
             }
         }

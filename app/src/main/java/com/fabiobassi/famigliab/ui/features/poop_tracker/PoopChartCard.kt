@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.fabiobassi.famigliab.data.Person
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
@@ -16,16 +17,22 @@ import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.core.axis.AxisPosition
 import com.patrykandpatrick.vico.core.axis.formatter.AxisValueFormatter
+import com.patrykandpatrick.vico.core.chart.line.LineChart
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
 
 @Composable
-fun PoopChartCard(poopEntriesByDay: Map<Person, Map<String, Int>>) {
+fun PoopChartCard(
+    poopChartData: PoopChartData?,
+) {
+    if (poopChartData == null) return
     val chartEntryModelProducer = remember { ChartEntryModelProducer() }
+
+    val poopEntriesByDay = poopChartData.entriesByDay
 
     LaunchedEffect(poopEntriesByDay) {
         if (poopEntriesByDay.isNotEmpty()) {
-            val entries = poopEntriesByDay.map { (person, entries) ->
+            val entries = poopEntriesByDay.map { (_, entries) ->
                 entries.values.mapIndexed { index, value ->
                     entryOf(index.toFloat(), value.toFloat())
                 }
@@ -34,10 +41,27 @@ fun PoopChartCard(poopEntriesByDay: Map<Person, Map<String, Int>>) {
         }
     }
 
+    // X axis: show only day number
     val bottomAxisValueFormatter =
         AxisValueFormatter<AxisPosition.Horizontal.Bottom> { value, _ ->
-            poopEntriesByDay.values.firstOrNull()?.keys?.elementAtOrNull(value.toInt()) ?: ""
+            poopEntriesByDay.values
+                .firstOrNull()
+                ?.keys
+                ?.elementAtOrNull(value.toInt())
+                ?.substringBefore("/") // dd/MM/yy → dd
+                ?: ""
         }
+
+    // Y axis: integers only
+    val startAxisValueFormatter =
+        AxisValueFormatter<AxisPosition.Vertical.Start> { value, _ ->
+            value.toInt().toString()
+        }
+
+    val lineSpec = listOf(
+        LineChart.LineSpec(lineColor = poopChartData.fabColor.hashCode()),
+        LineChart.LineSpec(lineColor = poopChartData.sabColor.hashCode()),
+    )
 
     Card(
         modifier = Modifier
@@ -47,9 +71,13 @@ fun PoopChartCard(poopEntriesByDay: Map<Person, Map<String, Int>>) {
     ) {
         if (poopEntriesByDay.isNotEmpty()) {
             Chart(
-                chart = lineChart(),
+                chart = lineChart(
+                    lines = lineSpec,
+                ),
                 chartModelProducer = chartEntryModelProducer,
-                startAxis = startAxis(),
+                startAxis = startAxis(
+                    valueFormatter = startAxisValueFormatter,
+                ),
                 bottomAxis = bottomAxis(
                     valueFormatter = bottomAxisValueFormatter,
                 ),

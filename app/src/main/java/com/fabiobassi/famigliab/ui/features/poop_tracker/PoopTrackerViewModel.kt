@@ -1,35 +1,47 @@
 package com.fabiobassi.famigliab.ui.features.poop_tracker
 
 import android.app.Application
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.PoopEntry
+import com.fabiobassi.famigliab.data.SettingsDataStore
 import com.fabiobassi.famigliab.file.CsvFileManager
 import com.fabiobassi.famigliab.file.CsvFileType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class PoopTrackerViewModel(private val csvFileManager: CsvFileManager) : ViewModel() {
+data class PoopChartData(
+    val entriesByDay: Map<Person, Map<String, Int>>,
+    val fabColor: Color,
+    val sabColor: Color
+)
+
+class PoopTrackerViewModel(
+    private val csvFileManager: CsvFileManager,
+    private val settingsDataStore: SettingsDataStore
+) : ViewModel() {
 
     private val _poopEntries = MutableStateFlow<List<PoopEntry>>(emptyList())
     val poopEntries: StateFlow<List<PoopEntry>> = _poopEntries.asStateFlow()
 
-    private val _poopEntriesByDay = MutableStateFlow<Map<Person, Map<String, Int>>>(emptyMap())
-    val poopEntriesByDay: StateFlow<Map<Person, Map<String, Int>>> = _poopEntriesByDay.asStateFlow()
+    private val _poopChartData = MutableStateFlow<PoopChartData?>(null)
+    val poopChartData: StateFlow<PoopChartData?> = _poopChartData.asStateFlow()
 
-    private var currentDays: Int = 7
+    private var currentDayOffset: Int = 0
 
-    fun loadPoopEntries(days: Int = currentDays) {
-        currentDays = days
+    fun loadPoopEntries(dayOffset: Int = currentDayOffset) {
+        currentDayOffset = dayOffset
         viewModelScope.launch {
             val allEntries = csvFileManager.readData(
                 type = CsvFileType.POOP_ENTRIES,
@@ -42,8 +54,9 @@ class PoopTrackerViewModel(private val csvFileManager: CsvFileManager) : ViewMod
             val dateFormat = SimpleDateFormat("dd/MM", Locale.getDefault())
             val today = calendar.time
             val lastDays = mutableMapOf<String, Int>()
+            val windowSize = 7
 
-            for (i in (days - 1) downTo 0) {
+            for (i in (dayOffset + windowSize - 1) downTo dayOffset) {
                 calendar.time = today
                 calendar.add(Calendar.DAY_OF_YEAR, -i)
                 val day = dateFormat.format(calendar.time)
@@ -67,7 +80,13 @@ class PoopTrackerViewModel(private val csvFileManager: CsvFileManager) : ViewMod
                 result[person] = personMap
             }
 
-            _poopEntriesByDay.value = result
+            val fabColorHex = settingsDataStore.getColorFor(Person.FAB.name).first()
+            val sabColorHex = settingsDataStore.getColorFor(Person.SAB.name).first()
+
+            val fabColor = if (fabColorHex.isNotEmpty()) Color(android.graphics.Color.parseColor(fabColorHex)) else Color.Blue
+            val sabColor = if (sabColorHex.isNotEmpty()) Color(android.graphics.Color.parseColor(sabColorHex)) else Color.Red
+
+            _poopChartData.value = PoopChartData(result, fabColor, sabColor)
         }
     }
 
@@ -94,7 +113,8 @@ class PoopTrackerViewModel(private val csvFileManager: CsvFileManager) : ViewMod
             ): T {
                 val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
                 return PoopTrackerViewModel(
-                    CsvFileManager(application.applicationContext)
+                    CsvFileManager(application.applicationContext),
+                    SettingsDataStore(application.applicationContext)
                 ) as T
             }
         }
