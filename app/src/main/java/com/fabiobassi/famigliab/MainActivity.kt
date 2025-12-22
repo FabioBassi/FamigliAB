@@ -39,7 +39,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.fabiobassi.famigliab.ui.features.budgeting.BudgetingScreen
 import com.fabiobassi.famigliab.ui.features.documents.DocumentsScreen
-import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopTrackerScreen
+import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopTrackerScreenContainer
 import com.fabiobassi.famigliab.ui.features.home.HomeScreen
 import com.fabiobassi.famigliab.ui.features.passwords.PasswordsScreen
 import com.fabiobassi.famigliab.ui.features.settings.SettingsScreen
@@ -162,7 +162,7 @@ fun MainScreen() {
         ) {
             composable(BottomNavItem.Home.route) { HomeScreen() }
             composable(BottomNavItem.Budgeting.route) { BudgetingScreen(innerPadding) }
-            composable(BottomNavItem.GroceryList.route) { PoopTrackerScreen(innerPadding) }
+            composable(BottomNavItem.GroceryList.route) { PoopTrackerScreenContainer(innerPadding) }
             composable(BottomNavItem.Passwords.route) { PasswordsScreen(innerPadding) }
             composable(BottomNavItem.Documents.route) { DocumentsScreen() }
             composable(BottomNavItem.Settings.route) { SettingsScreen(innerPadding) }

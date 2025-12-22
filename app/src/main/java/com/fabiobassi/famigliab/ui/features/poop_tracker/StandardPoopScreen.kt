@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,7 +37,10 @@ import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.PoopChartCard
 
 @Composable
-fun PoopTrackerScreen(paddingValues: PaddingValues) {
+fun StandardPoopScreen(
+    paddingValues: PaddingValues,
+    onSwitchToStatistics: () -> Unit,
+) {
     val viewModel: PoopTrackerViewModel = viewModel(factory = PoopTrackerViewModel.Factory)
     val poopEntries by viewModel.poopEntries.collectAsState()
     val poopChartData by viewModel.poopChartData.collectAsState()
@@ -110,6 +114,9 @@ fun PoopTrackerScreen(paddingValues: PaddingValues) {
                 modifier = Modifier
                     .fillMaxWidth()
             )
+            Button(onClick = onSwitchToStatistics) {
+                Text("View general statistics and graphs")
+            }
             LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
                 items(poopEntries) { entry ->
                     PoopEntryItem(entry = entry, onDelete = { viewModel.deletePoopEntry(entry) })
@@ -139,6 +146,6 @@ fun PoopTrackerScreen(paddingValues: PaddingValues) {
 
 @Preview(showBackground = true)
 @Composable
-fun PoopTrackerScreenPreview() {
-    PoopTrackerScreen(PaddingValues())
+fun StandardPoopScreenPreview() {
+    StandardPoopScreen(PaddingValues(), onSwitchToStatistics = {})
 }
