@@ -67,7 +67,7 @@ fun PoopTrackerScreen(paddingValues: PaddingValues) {
             )
             LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
                 items(poopEntries) { entry ->
-                    PoopEntryItem(entry = entry)
+                    PoopEntryItem(entry = entry, onDelete = { viewModel.deletePoopEntry(entry) })
                 }
             }
         }

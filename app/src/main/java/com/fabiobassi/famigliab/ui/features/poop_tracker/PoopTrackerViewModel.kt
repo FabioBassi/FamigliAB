@@ -102,6 +102,19 @@ class PoopTrackerViewModel(
         }
     }
 
+    fun deletePoopEntry(entry: PoopEntry) {
+        viewModelScope.launch {
+            val allEntries = csvFileManager.readData(
+                type = CsvFileType.POOP_ENTRIES,
+                date = Date(),
+                creator = PoopEntry.Companion::fromCsvRow
+            )
+            val updatedEntries = allEntries.filter { it != entry }
+            csvFileManager.writeData(CsvFileType.POOP_ENTRIES, Date(), updatedEntries)
+            loadPoopEntries()
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
