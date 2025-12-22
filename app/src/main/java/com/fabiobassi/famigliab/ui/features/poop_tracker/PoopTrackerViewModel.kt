@@ -1,6 +1,7 @@
 package com.fabiobassi.famigliab.ui.features.poop_tracker
 
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -47,7 +48,14 @@ class PoopTrackerViewModel(
                 date = Date(),
                 creator = PoopEntry.Companion::fromCsvRow
             )
-            _poopEntries.value = allEntries
+            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            _poopEntries.value = allEntries.sortedByDescending {
+                try {
+                    dateTimeFormat.parse("${it.date} ${it.hour}")
+                } catch (e: Exception) {
+                    Date(0)
+                }
+            }
 
             val calendar = Calendar.getInstance()
             val dateFormat = SimpleDateFormat("dd/MM", Locale.getDefault())
@@ -70,7 +78,8 @@ class PoopTrackerViewModel(
                 val personEntries = entriesByPerson[person] ?: emptyList()
                 val personMap = lastDays.toMutableMap()
                 personEntries.forEach { entry ->
-                    val entryDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(entry.date)
+                    val entryDate =
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(entry.date)
                     val entryDay = dateFormat.format(entryDate)
                     if (personMap.containsKey(entryDay)) {
                         personMap[entryDay] = personMap[entryDay]!! + 1
@@ -82,8 +91,8 @@ class PoopTrackerViewModel(
             val fabColorHex = settingsDataStore.getColorFor(Person.FAB.name).first()
             val sabColorHex = settingsDataStore.getColorFor(Person.SAB.name).first()
 
-            val fabColor = if (fabColorHex.isNotEmpty()) Color(android.graphics.Color.parseColor(fabColorHex)) else Color.Blue
-            val sabColor = if (sabColorHex.isNotEmpty()) Color(android.graphics.Color.parseColor(sabColorHex)) else Color.Red
+            val fabColor = if (fabColorHex.isNotEmpty()) Color(fabColorHex.toColorInt()) else Color.Blue
+            val sabColor = if (sabColorHex.isNotEmpty()) Color(sabColorHex.toColorInt()) else Color.Red
 
             _poopChartData.value = PoopChartData(result, fabColor, sabColor)
         }
@@ -97,7 +106,21 @@ class PoopTrackerViewModel(
                 quality = quality,
                 person = person
             )
-            csvFileManager.appendData(CsvFileType.POOP_ENTRIES, Date(), newEntry)
+            val allEntries = csvFileManager.readData(
+                type = CsvFileType.POOP_ENTRIES,
+                date = Date(),
+                creator = PoopEntry.Companion::fromCsvRow
+            )
+            val updatedEntries = allEntries + newEntry
+            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            val sortedEntries = updatedEntries.sortedByDescending {
+                try {
+                    dateTimeFormat.parse("${it.date} ${it.hour}")
+                } catch (e: Exception) {
+                    Date(0)
+                }
+            }
+            csvFileManager.writeData(CsvFileType.POOP_ENTRIES, Date(), sortedEntries)
             loadPoopEntries()
         }
     }
@@ -110,7 +133,15 @@ class PoopTrackerViewModel(
                 creator = PoopEntry.Companion::fromCsvRow
             )
             val updatedEntries = allEntries.filter { it != entry }
-            csvFileManager.writeData(CsvFileType.POOP_ENTRIES, Date(), updatedEntries)
+            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            val sortedEntries = updatedEntries.sortedByDescending {
+                try {
+                    dateTimeFormat.parse("${it.date} ${it.hour}")
+                } catch (e: Exception) {
+                    Date(0)
+                }
+            }
+            csvFileManager.writeData(CsvFileType.POOP_ENTRIES, Date(), sortedEntries)
             loadPoopEntries()
         }
     }
@@ -122,7 +153,8 @@ class PoopTrackerViewModel(
                 modelClass: Class<T>,
                 extras: CreationExtras
             ): T {
-                val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
+                val application =
+                    checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
                 return PoopTrackerViewModel(
                     CsvFileManager(application.applicationContext),
                     SettingsDataStore(application.applicationContext)
