@@ -12,9 +12,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -35,6 +38,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.PoopChartCard
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun StandardPoopScreen(
@@ -46,6 +52,7 @@ fun StandardPoopScreen(
     val poopChartData by viewModel.poopChartData.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     var dayOffset by remember { mutableIntStateOf(0) }
+    var displayedMonth by remember { mutableStateOf(YearMonth.now()) }
 
     LaunchedEffect(dayOffset) {
         viewModel.loadPoopEntries(dayOffset)
@@ -117,8 +124,34 @@ fun StandardPoopScreen(
             Button(onClick = onSwitchToStatistics) {
                 Text("View general statistics and graphs")
             }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = { displayedMonth = displayedMonth.minusMonths(1) }) {
+                    Icon(Icons.Filled.KeyboardArrowLeft, contentDescription = "Previous month")
+                }
+                Text(
+                    text = displayedMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                IconButton(onClick = { displayedMonth = displayedMonth.plusMonths(1) }) {
+                    Icon(Icons.Filled.KeyboardArrowRight, contentDescription = "Next month")
+                }
+            }
             LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
-                items(poopEntries) { entry ->
+                val currentMonthEntries = poopEntries.filter {
+                    try {
+                        val entryDate = LocalDate.parse(it.date, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                        entryDate.monthValue == displayedMonth.monthValue && entryDate.year == displayedMonth.year
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+                items(currentMonthEntries) { entry ->
                     PoopEntryItem(entry = entry, onDelete = { viewModel.deletePoopEntry(entry) })
                 }
             }
