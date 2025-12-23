@@ -34,6 +34,13 @@ data class CumulativePoopChartData(
     val year: Int,
 )
 
+data class MonthlyPoopChartData(
+    val entries: Map<Person, List<Pair<String, Int>>>,
+    val fabColor: Color,
+    val sabColor: Color,
+    val year: Int,
+)
+
 class PoopTrackerViewModel(
     private val csvFileManager: CsvFileManager,
     private val settingsDataStore: SettingsDataStore
@@ -48,6 +55,9 @@ class PoopTrackerViewModel(
     private val _cumulativePoopChartData = MutableStateFlow<CumulativePoopChartData?>(null)
     val cumulativePoopChartData: StateFlow<CumulativePoopChartData?> =
         _cumulativePoopChartData.asStateFlow()
+
+    private val _monthlyPoopChartData = MutableStateFlow<MonthlyPoopChartData?>(null)
+    val monthlyPoopChartData: StateFlow<MonthlyPoopChartData?> = _monthlyPoopChartData.asStateFlow()
 
     private var currentDayOffset: Int = 0
     private val _selectedYear = MutableStateFlow(Calendar.getInstance().get(Calendar.YEAR))
@@ -111,6 +121,7 @@ class PoopTrackerViewModel(
             _poopChartData.value = PoopChartData(result, fabColor, sabColor)
 
             val cumulativeResult = mutableMapOf<Person, List<Pair<String, Int>>>()
+            val monthlyResult = mutableMapOf<Person, List<Pair<String, Int>>>()
             val monthFormat = SimpleDateFormat("MMM yyyy", Locale.getDefault())
             val dateParseFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
@@ -148,10 +159,22 @@ class PoopTrackerViewModel(
                     month to cumulativeCount
                 }
                 cumulativeResult[person] = cumulativeEntries
+
+                val monthlyEntries = allMonths.map { month ->
+                    month to (monthCounts[month] ?: 0)
+                }
+                monthlyResult[person] = monthlyEntries
             }
 
             _cumulativePoopChartData.value = CumulativePoopChartData(
                 entries = cumulativeResult,
+                fabColor = fabColor,
+                sabColor = sabColor,
+                year = year,
+            )
+
+            _monthlyPoopChartData.value = MonthlyPoopChartData(
+                entries = monthlyResult,
                 fabColor = fabColor,
                 sabColor = sabColor,
                 year = year,

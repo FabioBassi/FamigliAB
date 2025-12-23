@@ -33,7 +33,7 @@ import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
 
 @Composable
-fun CumulativePoopChartCard(
+fun CumulativeYearlyPoopChartCard(
     cumulativePoopChartData: CumulativePoopChartData?,
     onChangeYear: (Int) -> Unit,
 ) {

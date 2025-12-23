@@ -30,4 +30,5 @@
     <string name="delete">Delete</string>
     <string name="add_field">Add field</string>
     <string name="cumulative_poop_chart_title">Cumulative Poops in the Current Year</string>
+    <string name="monthly_poop_chart_title">Monthly Poops in the Current Year</string>
 </resources>

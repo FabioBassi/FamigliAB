@@ -17,7 +17,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
-import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.CumulativePoopChartCard
+import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.CumulativeYearlyPoopChartCard
+import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.MonthlyPoopChartCard
 
 @Composable
 fun StatisticsPoopScreen(
@@ -26,6 +27,7 @@ fun StatisticsPoopScreen(
     viewModel: PoopTrackerViewModel = viewModel(factory = PoopTrackerViewModel.Factory),
 ) {
     val cumulativePoopChartData by viewModel.cumulativePoopChartData.collectAsState()
+    val monthlyPoopChartData by viewModel.monthlyPoopChartData.collectAsState()
 
     Column(
         modifier = Modifier
@@ -39,8 +41,17 @@ fun StatisticsPoopScreen(
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        CumulativePoopChartCard(
+        CumulativeYearlyPoopChartCard(
             cumulativePoopChartData = cumulativePoopChartData,
+            onChangeYear = viewModel::changeYear,
+        )
+        Text(
+            text = stringResource(R.string.monthly_poop_chart_title),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+        )
+        MonthlyPoopChartCard(
+            monthlyPoopChartData = monthlyPoopChartData,
             onChangeYear = viewModel::changeYear,
         )
         Button(onClick = onSwitchToStandard) {
