@@ -29,4 +29,9 @@
     <string name="edit_password">Modifica Password</string>
     <string name="delete">Elimina</string>
     <string name="add_field">Aggiungi campo</string>
+    <string name="cumulative_poop_chart_title">Cacche accomulate</string>
+    <string name="monthly_poop_chart_title">Cacche mensili</string>
+    <string name="monthly_summary_table_title">Resoconto mensile</string>
+    <string name="mean_monthly_summary_table_title">Cacche medie giornaliere</string>
+    <string name="average_monthly_poop_chart_title">Media giornaliera di cacche</string>
 </resources>

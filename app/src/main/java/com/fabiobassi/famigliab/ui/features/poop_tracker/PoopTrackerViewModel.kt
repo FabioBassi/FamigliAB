@@ -41,6 +41,13 @@ data class MonthlyPoopChartData(
     val year: Int,
 )
 
+data class AverageMonthlyPoopChartData(
+    val entries: Map<Person, List<Pair<String, Float>>>,
+    val fabColor: Color,
+    val sabColor: Color,
+    val year: Int,
+)
+
 class PoopTrackerViewModel(
     private val csvFileManager: CsvFileManager,
     private val settingsDataStore: SettingsDataStore
@@ -58,6 +65,11 @@ class PoopTrackerViewModel(
 
     private val _monthlyPoopChartData = MutableStateFlow<MonthlyPoopChartData?>(null)
     val monthlyPoopChartData: StateFlow<MonthlyPoopChartData?> = _monthlyPoopChartData.asStateFlow()
+
+    private val _averageMonthlyPoopChartData =
+        MutableStateFlow<AverageMonthlyPoopChartData?>(null)
+    val averageMonthlyPoopChartData: StateFlow<AverageMonthlyPoopChartData?> =
+        _averageMonthlyPoopChartData.asStateFlow()
 
     private var currentDayOffset: Int = 0
     private val _selectedYear = MutableStateFlow(Calendar.getInstance().get(Calendar.YEAR))
@@ -175,6 +187,30 @@ class PoopTrackerViewModel(
 
             _monthlyPoopChartData.value = MonthlyPoopChartData(
                 entries = monthlyResult,
+                fabColor = fabColor,
+                sabColor = sabColor,
+                year = year,
+            )
+
+            val averageMonthlyResult = mutableMapOf<Person, List<Pair<String, Float>>>()
+            val monthDateParseFormat = SimpleDateFormat("MMM yyyy", Locale.getDefault())
+
+            for (person in Person.entries) {
+                val personMonthlyEntries = monthlyResult[person] ?: emptyList()
+
+                val averageEntries = personMonthlyEntries.map { (monthString, poopCount) ->
+                    val monthDate = monthDateParseFormat.parse(monthString)
+                    val cal = Calendar.getInstance()
+                    cal.time = monthDate
+                    val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+                    val average = if (daysInMonth > 0) poopCount.toFloat() / daysInMonth else 0f
+                    monthString to average
+                }
+                averageMonthlyResult[person] = averageEntries
+            }
+
+            _averageMonthlyPoopChartData.value = AverageMonthlyPoopChartData(
+                entries = averageMonthlyResult,
                 fabColor = fabColor,
                 sabColor = sabColor,
                 year = year,
