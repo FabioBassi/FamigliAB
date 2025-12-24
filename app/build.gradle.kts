@@ -56,13 +56,13 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     // DataStore
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation(libs.androidx.datastore.preferences)
 
     // Kotlinx Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation(libs.kotlinx.serialization.json)
 
     // kotlin-csv
-    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.9.3")
+    implementation(libs.kotlin.csv.jvm)
 
     // Vico for charts
     implementation(libs.vico.core)
