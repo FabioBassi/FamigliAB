@@ -7,8 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
@@ -38,15 +36,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.fabiobassi.famigliab.ui.features.budgeting.BudgetingScreen
-import com.fabiobassi.famigliab.ui.features.documents.DocumentsScreen
 import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopTrackerScreenContainer
-import com.fabiobassi.famigliab.ui.features.home.HomeScreen
 import com.fabiobassi.famigliab.ui.features.passwords.PasswordsScreen
 import com.fabiobassi.famigliab.ui.features.settings.SettingsScreen
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 import java.io.File
-
-// New imports
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.material3.AlertDialog
@@ -75,11 +69,9 @@ class MainActivity : ComponentActivity() {
 }
 
 sealed class BottomNavItem(val titleResId: Int, val icon: ImageVector, val route: String) {
-    object Home : BottomNavItem(R.string.home, Icons.Default.Home, "home")
     object Budgeting : BottomNavItem(R.string.budgeting, Icons.Default.Analytics, "budgeting")
     object GroceryList : BottomNavItem(R.string.poop_tracker, Icons.Default.AirlineSeatLegroomNormal, "grocery_list")
     object Passwords : BottomNavItem(R.string.passwords, Icons.Default.Lock, "passwords")
-    object Documents : BottomNavItem(R.string.documents, Icons.Default.Description, "documents")
     object Settings : BottomNavItem(R.string.settings, Icons.Default.Settings, "settings")
 }
 
@@ -92,11 +84,9 @@ fun MainScreen() {
     val clipboardManager = LocalClipboardManager.current
 
     val items = listOf(
-        BottomNavItem.Home,
         BottomNavItem.Budgeting,
         BottomNavItem.GroceryList,
         BottomNavItem.Passwords,
-        BottomNavItem.Documents,
         BottomNavItem.Settings
     )
 
@@ -132,7 +122,7 @@ fun MainScreen() {
             MediumTopAppBar(
                 title = {
                     Text(
-                        text = if (currentScreen?.route == BottomNavItem.Home.route) stringResource(id = R.string.greeting) else currentScreen?.titleResId?.let { stringResource(id = it) } ?: "",
+                        text = currentScreen?.titleResId?.let { stringResource(id = it) } ?: "",
                         fontWeight = FontWeight.Bold,
                     )
                 },
@@ -160,11 +150,9 @@ fun MainScreen() {
             navController,
             startDestination = BottomNavItem.Budgeting.route
         ) {
-            composable(BottomNavItem.Home.route) { HomeScreen() }
             composable(BottomNavItem.Budgeting.route) { BudgetingScreen(innerPadding) }
             composable(BottomNavItem.GroceryList.route) { PoopTrackerScreenContainer(innerPadding) }
             composable(BottomNavItem.Passwords.route) { PasswordsScreen(innerPadding) }
-            composable(BottomNavItem.Documents.route) { DocumentsScreen() }
             composable(BottomNavItem.Settings.route) { SettingsScreen(innerPadding) }
         }
 
