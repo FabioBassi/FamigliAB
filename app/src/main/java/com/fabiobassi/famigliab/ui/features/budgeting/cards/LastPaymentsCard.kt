@@ -28,6 +28,7 @@ fun LastPaymentsCard(
     colors: Map<String, Color>,
     showAllPayments: Boolean,
     onShowAllPaymentsClick: () -> Unit,
+    onPaymentClick: (Payment) -> Unit,
     onPaymentLongClick: (Payment) -> Unit,
 ) {
     Card(
@@ -57,6 +58,7 @@ fun LastPaymentsCard(
                         payment = payment,
                         dateFormat = dateFormat,
                         colors = colors,
+                        onPaymentClick = onPaymentClick,
                         onPaymentLongClick = onPaymentLongClick
                     )
                 }

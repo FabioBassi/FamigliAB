@@ -107,6 +107,38 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    fun updatePayment(oldPayment: Payment, newPayment: Payment) {
+        val oldDate = oldPayment.date
+        val newDate = newPayment.date
+
+        val oldCal = Calendar.getInstance().apply { time = oldDate }
+        val newCal = Calendar.getInstance().apply { time = newDate }
+
+        val sameMonth = oldCal.get(Calendar.MONTH) == newCal.get(Calendar.MONTH) &&
+                oldCal.get(Calendar.YEAR) == newCal.get(Calendar.YEAR)
+
+        if (sameMonth) {
+            val monthPayments = csvFileManager.readData(CsvFileType.PAYMENTS, oldDate, Payment::fromCsvRow).toMutableList()
+            val index = monthPayments.indexOfFirst { it.id == oldPayment.id }
+            if (index != -1) {
+                monthPayments[index] = newPayment
+                csvFileManager.writeData(CsvFileType.PAYMENTS, oldDate, monthPayments)
+            }
+        } else {
+            val oldMonthPayments = csvFileManager.readData(CsvFileType.PAYMENTS, oldDate, Payment::fromCsvRow).filter { it.id != oldPayment.id }
+            csvFileManager.writeData(CsvFileType.PAYMENTS, oldDate, oldMonthPayments)
+
+            val newMonthPayments = csvFileManager.readData(CsvFileType.PAYMENTS, newDate, Payment::fromCsvRow) + newPayment
+            csvFileManager.writeData(CsvFileType.PAYMENTS, newDate, newMonthPayments)
+        }
+
+        if (_isAnnualReport.value) {
+            loadDataForYear(_currentDate.value)
+        } else {
+            loadDataForMonth(_currentDate.value)
+        }
+    }
+
     fun deletePayment(paymentId: String) {
         val updatedPayments = _payments.value.filter { it.id != paymentId }
         _payments.value = updatedPayments

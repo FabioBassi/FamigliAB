@@ -40,6 +40,7 @@ import com.fabiobassi.famigliab.ui.features.budgeting.cards.AnnualMonthRecap
 import com.fabiobassi.famigliab.ui.features.budgeting.cards.AnnualSummaryCard
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.AddIncomeDialog
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.AddPaymentDialog
+import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.EditPaymentDialog
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.EditVoucherDialog
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.IncomeDialog
 import com.fabiobassi.famigliab.ui.features.budgeting.dialogs.MonthSelectionPickerDialog
@@ -75,6 +76,7 @@ fun BudgetingScreen(
     var showAllPayments by remember { mutableStateOf(false) }
     val csvFileManager = remember { CsvFileManager(context) }
     var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
+    var paymentToEdit by remember { mutableStateOf<Payment?>(null) }
 
     if (showMonthSelectionPickerDialog) {
         MonthSelectionPickerDialog(
@@ -92,6 +94,24 @@ fun BudgetingScreen(
             onConfirm = { date, description, amount, category, person ->
                 viewModel.addPayment(date, description, amount, category, person)
                 showAddPaymentDialog = false
+            }
+        )
+    }
+
+    paymentToEdit?.let { payment ->
+        EditPaymentDialog(
+            payment = payment,
+            onDismiss = { paymentToEdit = null },
+            onConfirm = { date, description, amount, category, person ->
+                val updatedPayment = payment.copy(
+                    date = date,
+                    description = description,
+                    amount = amount,
+                    category = category,
+                    paidBy = person
+                )
+                viewModel.updatePayment(payment, updatedPayment)
+                paymentToEdit = null
             }
         )
     }
@@ -175,6 +195,7 @@ fun BudgetingScreen(
             val file = csvFileManager.getFileForMonth(CsvFileType.VOUCHERS, currentDate)
             shareFile(context, file)
         },
+        onPaymentClick = { paymentToEdit = it },
         onPaymentLongClick = { paymentToDelete = it },
         onIncomeCardClick = { showIncomeDialog = true },
         onVoucherCardClick = { showEditVoucherDialog = true },
@@ -200,6 +221,7 @@ fun BudgetingScreenContent(
     onSharePaymentsClick: () -> Unit,
     onShareIncomesClick: () -> Unit,
     onShareVouchersClick: () -> Unit,
+    onPaymentClick: (Payment) -> Unit,
     onPaymentLongClick: (Payment) -> Unit,
     onIncomeCardClick: () -> Unit,
     onVoucherCardClick: () -> Unit,
@@ -304,6 +326,7 @@ fun BudgetingScreenContent(
                         colors = categoryColors,
                         showAllPayments = showAllPayments,
                         onShowAllPaymentsClick = onShowAllPaymentsClick,
+                        onPaymentClick = onPaymentClick,
                         onPaymentLongClick = onPaymentLongClick,
                     )
                 }
@@ -417,6 +440,7 @@ fun BudgetingScreenPreview() {
         onSharePaymentsClick = {},
         onShareIncomesClick = {},
         onShareVouchersClick = {},
+        onPaymentClick = {},
         onPaymentLongClick = {},
         onIncomeCardClick = {},
         onVoucherCardClick = {},

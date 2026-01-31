@@ -49,6 +49,7 @@ fun PaymentRow(
     payment: Payment,
     dateFormat: SimpleDateFormat,
     colors: Map<String, Color>,
+    onPaymentClick: (Payment) -> Unit,
     onPaymentLongClick: (Payment) -> Unit,
 ) {
     val context = LocalContext.current
@@ -72,7 +73,7 @@ fun PaymentRow(
             .fillMaxWidth()
             .padding(vertical = 2.dp)
             .combinedClickable(
-                onClick = { },
+                onClick = { onPaymentClick(payment) },
                 onLongClick = { onPaymentLongClick(payment) },
             )
     ) {
@@ -173,6 +174,7 @@ fun PaymentRowPreview() {
             ),
             dateFormat = SimpleDateFormat("dd/MM", Locale.getDefault()),
             colors = mapOf(Category.CIBO.name to Color.Red),
+            onPaymentClick = {},
             onPaymentLongClick = {}
         )
     }
