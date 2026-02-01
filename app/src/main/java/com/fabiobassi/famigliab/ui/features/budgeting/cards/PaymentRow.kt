@@ -83,7 +83,7 @@ fun PaymentRow(
             Text(
                 text = dateFormat.format(payment.date),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = payment.category.name.take(3).uppercase(),

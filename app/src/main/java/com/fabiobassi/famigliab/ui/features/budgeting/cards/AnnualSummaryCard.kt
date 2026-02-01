@@ -151,7 +151,7 @@ private fun SummarySection(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,
-                    color = MaterialTheme.colorScheme.primary
+                    color = onContainerColor
                 )
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
@@ -159,12 +159,12 @@ private fun SummarySection(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         fontSize = 22.sp,
-                        color = MaterialTheme.colorScheme.primary
+                        color = onContainerColor
                     )
                     Text(
                         text = "avg: ${"%.2f".format(totalValue / 12.0)} €/mo",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                        color = onContainerColor
                     )
                 }
             }

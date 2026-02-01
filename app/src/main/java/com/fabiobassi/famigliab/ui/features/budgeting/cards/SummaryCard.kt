@@ -61,7 +61,7 @@ fun SummaryCard(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        SummaryMiniCard(
+        SummaryCard(
             modifier = Modifier.weight(1f),
             title = "INCOME",
             fabValue = totalIncomes[1],
@@ -73,7 +73,7 @@ fun SummaryCard(
             onContainerColor = MaterialTheme.colorScheme.onPrimaryContainer,
             onClick = onIncomeCardClick
         )
-        SummaryMiniCard(
+        SummaryCard(
             modifier = Modifier.weight(1f),
             title = "EXPENSES",
             fabValue = totalExpenses[1],
@@ -88,7 +88,7 @@ fun SummaryCard(
 }
 
 @Composable
-private fun SummaryMiniCard(
+private fun SummaryCard(
     modifier: Modifier = Modifier,
     title: String,
     fabValue: Double,
@@ -116,9 +116,8 @@ private fun SummaryMiniCard(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = onContainerColor.copy(alpha = 0.8f)
             )
             
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {

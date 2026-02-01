@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.ManageSearch
+import androidx.compose.material.icons.filled.AreaChart
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -77,7 +78,7 @@ fun NavigationBar(
             onClick = onAnnualReportClick,
             modifier = Modifier.size(48.dp)
         ) {
-            Icon(Icons.Filled.Assessment, contentDescription = "Annual Report")
+            Icon(Icons.Filled.AreaChart, contentDescription = "Annual Report")
         }
 
         IconButton(
