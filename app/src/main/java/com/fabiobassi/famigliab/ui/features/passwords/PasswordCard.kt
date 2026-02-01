@@ -63,9 +63,9 @@ fun PasswordCard(
             if (item.arguments.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     item.arguments.forEachIndexed { index, (key, value) ->
-                        Row(
+                        Column (
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
                                 text = key,
