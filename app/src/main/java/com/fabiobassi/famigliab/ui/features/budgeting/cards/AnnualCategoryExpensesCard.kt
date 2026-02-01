@@ -70,8 +70,9 @@ fun AnnualCategoryExpensesCard(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Expenses by Category",
-                style = MaterialTheme.typography.titleLarge,
+                text = "EXPENSES BY CATEGORY",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
 

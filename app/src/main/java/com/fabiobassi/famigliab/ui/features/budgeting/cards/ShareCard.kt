@@ -52,7 +52,6 @@ fun ShareCard(
                     text = "SHARE DATA (CSV)",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }

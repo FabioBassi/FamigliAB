@@ -65,7 +65,6 @@ fun AnnualGraph(
                 text = "ANNUAL TREND",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.onSurface
             )
 

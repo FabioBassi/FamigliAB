@@ -54,7 +54,6 @@ fun VoucherSummaryCard(vouchers: List<Voucher>, onClick: () -> Unit) {
                     text = "VOUCHERS USED",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }

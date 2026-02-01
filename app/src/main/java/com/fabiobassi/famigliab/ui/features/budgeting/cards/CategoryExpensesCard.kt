@@ -84,7 +84,6 @@ fun CategoryExpensesCard(
                     text = "EXPENSES BY CATEGORY",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }

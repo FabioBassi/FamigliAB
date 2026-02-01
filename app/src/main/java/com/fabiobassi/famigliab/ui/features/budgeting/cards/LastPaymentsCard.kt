@@ -62,7 +62,6 @@ fun LastPaymentsCard(
                     text = if (showAllPayments) "ALL PAYMENTS" else "LAST PAYMENTS",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }

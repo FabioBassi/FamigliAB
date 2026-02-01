@@ -176,23 +176,33 @@ fun IncomeItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = "Paid to ${income.paidTo.name}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = personColor,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(top = 4.dp)
-                        .background(personColor.copy(alpha = 0.1f), MaterialTheme.shapes.extraSmall)
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = income.paidTo.name,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = personColor,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .background(personColor.copy(alpha = 0.1f), MaterialTheme.shapes.extraSmall)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .weight(1f)
+                    )
+                    Text(
+                        text = "%.2f €".format(income.amount),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(3f)
+                    )
+                }
             }
-            Text(
-                text = "%.2f €".format(income.amount),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary
-            )
         }
     }
 }
