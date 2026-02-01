@@ -4,20 +4,45 @@ import android.provider.OpenableColumns
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AirlineSeatLegroomNormal
+import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,7 +51,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -140,177 +167,233 @@ fun SettingsScreen(paddingValues: PaddingValues) {
         }
     }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues) // Apply outer padding here
-            .padding(16.dp), // Apply inner padding for content spacing
+            .padding(paddingValues),
+        contentPadding = PaddingValues(16.dp)
     ) {
-        Text(
-            text = "General",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 16.dp),
-        ) {
-            TextButton(
-                onClick = {
-                    personToSetColorFor = "Fab"
-                    showColorSettingDialog = true
-                },
-            ) {
-                Text("Set Fab color")
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .background(fabColor)
-                    .border(1.dp, Color.Black),
-            )
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 16.dp),
-        ) {
-            TextButton(
-                onClick = {
-                    personToSetColorFor = "Sab"
-                    showColorSettingDialog = true
-                },
-            ) {
-                Text("Set Sab color")
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .background(sabColor)
-                    .border(1.dp, Color.Black),
-            )
-        }
-        Text(
-            text = "Budgeting",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
-        TextButton(
-            onClick = { showImportPaymentCsvDialog = true },
-            modifier = Modifier.padding(bottom = 16.dp),
-        ) {
-            Text("Import payment csv")
-        }
-        TextButton(
-            onClick = { showDeleteAllBudgetingDataDialog = true },
-            modifier = Modifier.padding(bottom = 16.dp),
-        ) {
-            Text(
-                text = "Delete all budgeting data",
-                color = MaterialTheme.colorScheme.error,
-            )
-        }
-        Text(
-            text = "Poop tracker",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
-        TextButton(
-            onClick = { showImportPoopEntriesDialog = true },
-            modifier = Modifier.padding(bottom = 16.dp),
-        ) {
-            Text("Import poop_entries.csv")
-        }
-        TextButton(
-            onClick = { showDeletePoopTrackerCsvDialog = true },
-            modifier = Modifier.padding(bottom = 16.dp),
-        ) {
-            Text(
-                text = "Delete all data",
-                color = MaterialTheme.colorScheme.error,
-            )
-        }
-        Text(
-            text = "Passwords",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp), // Adjusted padding for the button below
-        )
-        TextButton(
-            onClick = { showPasswordResetDialog = true },
-            modifier = Modifier.padding(bottom = 16.dp),
-        ) {
-            Text("Import passwords.json")
-        }
-
-        if (showPasswordResetDialog) {
-            ConfirmImportPasswordsDialog(
-                onDismissRequest = { showPasswordResetDialog = false },
-                onConfirm = {
-                    importPasswordsLauncher.launch("application/json")
-                },
-            )
-        }
-
-        if (showImportPoopEntriesDialog) {
-            ConfirmImportPoopEntriesDialog(
-                onDismissRequest = { showImportPoopEntriesDialog = false },
-                onConfirm = {
-                    importPoopEntriesLauncher.launch(arrayOf("text/csv", "text/comma-separated-values"))
-                },
-            )
-        }
-
-        if (showImportPaymentCsvDialog) {
-            ImportPaymentsDialog(onDismissRequest = { showImportPaymentCsvDialog = false })
-        }
-
-        if (showDeleteAllBudgetingDataDialog) {
-            DeleteAllBudgetingDataDialog(onDismissRequest = {
-                showDeleteAllBudgetingDataDialog = false
-            })
-        }
-
-        if (showDeletePoopTrackerCsvDialog) {
-            ConfirmDeletePoopTrackerDataDialog(
-                onDismissRequest = { showDeletePoopTrackerCsvDialog = false },
-                onConfirm = {
-                    try {
-                        val poopFile = File(context.getExternalFilesDir("FamigliAB/PoopTracker"), "poop_entries.csv")
-                        if (poopFile.exists()) {
-                            poopFile.delete()
-                            Toast.makeText(context, "Poop tracker data deleted successfully!", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "No poop tracker data found.", Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "Error deleting poop tracker data: ${e.message}", Toast.LENGTH_LONG).show()
-                        e.printStackTrace()
-                    }
-                },
-            )
-        }
-
-        if (showColorSettingDialog) {
-            personToSetColorFor?.let {
-                ColorSettingDialog(
-                    person = it,
-                    onDismissRequest = { showColorSettingDialog = false },
+        item {
+            SettingsSection(title = "General", icon = Icons.Default.Settings) {
+                PreferenceItem(
+                    title = "Set Fab color",
+                    icon = Icons.Default.ColorLens,
+                    onClick = {
+                        personToSetColorFor = "Fab"
+                        showColorSettingDialog = true
+                    },
+                    trailing = { ColorPreview(fabColor) }
+                )
+                PreferenceDivider()
+                PreferenceItem(
+                    title = "Set Sab color",
+                    icon = Icons.Default.ColorLens,
+                    onClick = {
+                        personToSetColorFor = "Sab"
+                        showColorSettingDialog = true
+                    },
+                    trailing = { ColorPreview(sabColor) }
                 )
             }
         }
 
-        Text(
-            text = "Documents",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp),
+        item {
+            SettingsSection(title = "Budgeting", icon = Icons.Default.Analytics) {
+                PreferenceItem(
+                    title = "Import payment csv",
+                    icon = Icons.Default.FileUpload,
+                    onClick = { showImportPaymentCsvDialog = true }
+                )
+                PreferenceDivider()
+                PreferenceItem(
+                    title = "Delete all budgeting data",
+                    titleColor = MaterialTheme.colorScheme.error,
+                    icon = Icons.Default.DeleteForever,
+                    iconColor = MaterialTheme.colorScheme.error,
+                    onClick = { showDeleteAllBudgetingDataDialog = true }
+                )
+            }
+        }
+
+        item {
+            SettingsSection(title = "Poop tracker", icon = Icons.Default.AirlineSeatLegroomNormal) {
+                PreferenceItem(
+                    title = "Import poop_entries.csv",
+                    icon = Icons.Default.FileUpload,
+                    onClick = { showImportPoopEntriesDialog = true }
+                )
+                PreferenceDivider()
+                PreferenceItem(
+                    title = "Delete all data",
+                    titleColor = MaterialTheme.colorScheme.error,
+                    icon = Icons.Default.DeleteForever,
+                    iconColor = MaterialTheme.colorScheme.error,
+                    onClick = { showDeletePoopTrackerCsvDialog = true }
+                )
+            }
+        }
+
+        item {
+            SettingsSection(title = "Passwords", icon = Icons.Default.Lock) {
+                PreferenceItem(
+                    title = "Import passwords.json",
+                    icon = Icons.Default.Lock,
+                    onClick = { showPasswordResetDialog = true }
+                )
+            }
+        }
+    }
+
+    // Dialogs logic
+    if (showPasswordResetDialog) {
+        ConfirmImportPasswordsDialog(
+            onDismissRequest = { showPasswordResetDialog = false },
+            onConfirm = {
+                importPasswordsLauncher.launch("application/json")
+            },
         )
     }
+
+    if (showImportPoopEntriesDialog) {
+        ConfirmImportPoopEntriesDialog(
+            onDismissRequest = { showImportPoopEntriesDialog = false },
+            onConfirm = {
+                importPoopEntriesLauncher.launch(arrayOf("text/csv", "text/comma-separated-values"))
+            },
+        )
+    }
+
+    if (showImportPaymentCsvDialog) {
+        ImportPaymentsDialog(onDismissRequest = { showImportPaymentCsvDialog = false })
+    }
+
+    if (showDeleteAllBudgetingDataDialog) {
+        DeleteAllBudgetingDataDialog(onDismissRequest = {
+            showDeleteAllBudgetingDataDialog = false
+        })
+    }
+
+    if (showDeletePoopTrackerCsvDialog) {
+        ConfirmDeletePoopTrackerDataDialog(
+            onDismissRequest = { showDeletePoopTrackerCsvDialog = false },
+            onConfirm = {
+                try {
+                    val poopFile = File(context.getExternalFilesDir("FamigliAB/PoopTracker"), "poop_entries.csv")
+                    if (poopFile.exists()) {
+                        poopFile.delete()
+                        Toast.makeText(context, "Poop tracker data deleted successfully!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "No poop tracker data found.", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Error deleting poop tracker data: ${e.message}", Toast.LENGTH_LONG).show()
+                    e.printStackTrace()
+                }
+            },
+        )
+    }
+
+    if (showColorSettingDialog) {
+        personToSetColorFor?.let {
+            ColorSettingDialog(
+                person = it,
+                onDismissRequest = { showColorSettingDialog = false },
+            )
+        }
+    }
+}
+
+@Composable
+fun SettingsSection(
+    title: String,
+    icon: ImageVector,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(bottom = 24.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.outlinedCardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+        ) {
+            Column(content = content)
+        }
+    }
+}
+
+@Composable
+fun PreferenceItem(
+    title: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    titleColor: Color = MaterialTheme.colorScheme.onSurface,
+    iconColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    trailing: (@Composable () -> Unit)? = null
+) {
+    ListItem(
+        headlineContent = {
+            Text(
+                text = title,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        },
+        leadingContent = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor
+            )
+        },
+        trailingContent = trailing,
+        colors = ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
+        modifier = Modifier
+            .clickable { onClick() }
+    )
+}
+
+@Composable
+fun ColorPreview(color: Color) {
+    Box(
+        modifier = Modifier
+            .size(28.dp)
+            .clip(CircleShape)
+            .background(color)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+    )
+}
+
+@Composable
+fun PreferenceDivider() {
+    HorizontalDivider(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        thickness = 0.5.dp,
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    )
 }
 
 @Preview(showBackground = true)
