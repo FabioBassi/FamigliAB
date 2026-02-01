@@ -4,41 +4,56 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AirlineSeatLegroomNormal
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.fabiobassi.famigliab.ui.features.budgeting.BudgetingScreen
-import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopTrackerScreenContainer
 import com.fabiobassi.famigliab.ui.features.passwords.PasswordsScreen
+import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopTrackerScreenContainer
 import com.fabiobassi.famigliab.ui.features.settings.SettingsScreen
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
-import androidx.compose.ui.res.stringResource
-import androidx.compose.material.icons.filled.AirlineSeatLegroomNormal
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,83 +67,148 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-sealed class BottomNavItem(val titleResId: Int, val icon: ImageVector, val route: String) {
-    object Budgeting : BottomNavItem(R.string.budgeting, Icons.Default.Analytics, "budgeting")
-    object GroceryList : BottomNavItem(R.string.poop_tracker, Icons.Default.AirlineSeatLegroomNormal, "grocery_list")
-    object Passwords : BottomNavItem(R.string.passwords, Icons.Default.Lock, "passwords")
-    object Settings : BottomNavItem(R.string.settings, Icons.Default.Settings, "settings")
+sealed class NavItem(val titleResId: Int, val icon: ImageVector, val route: String) {
+    object Budgeting : NavItem(R.string.budgeting, Icons.Default.Analytics, "budgeting")
+    object GroceryList : NavItem(R.string.poop_tracker, Icons.Default.AirlineSeatLegroomNormal, "grocery_list")
+    object Passwords : NavItem(R.string.passwords, Icons.Default.Lock, "passwords")
+    object Settings : NavItem(R.string.settings, Icons.Default.Settings, "settings")
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
     val items = listOf(
-        BottomNavItem.Budgeting,
-        BottomNavItem.GroceryList,
-        BottomNavItem.Passwords,
-        BottomNavItem.Settings
+        NavItem.Budgeting,
+        NavItem.GroceryList,
+        NavItem.Passwords,
+        NavItem.Settings
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val currentScreen = items.find { it.route == currentRoute }
+    
+    val lazyListState = rememberLazyListState()
 
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            MediumTopAppBar(
-                title = {
-                    Text(
-                        text = currentScreen?.titleResId?.let { stringResource(id = it) } ?: "",
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    scrolledContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                scrollBehavior = scrollBehavior
-            )
-        },
-        bottomBar = { AppBottomNavigationBar(navController = navController, items = items) }
-    ) { innerPadding ->
-        NavHost(
-            navController,
-            startDestination = BottomNavItem.Budgeting.route
+    // Scroll to the selected item whenever the route changes
+    LaunchedEffect(currentRoute) {
+        val index = items.indexOfFirst { it.route == currentRoute }
+        if (index != -1) {
+            lazyListState.animateScrollToItem(index)
+        }
+    }
+
+    Scaffold { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primaryContainer)
         ) {
-            composable(BottomNavItem.Budgeting.route) { BudgetingScreen(innerPadding) }
-            composable(BottomNavItem.GroceryList.route) { PoopTrackerScreenContainer(innerPadding) }
-            composable(BottomNavItem.Passwords.route) { PasswordsScreen(innerPadding) }
-            composable(BottomNavItem.Settings.route) { SettingsScreen(innerPadding) }
+            // Merged Navigation and Title using LazyRow for auto-scrolling
+            LazyRow(
+                state = lazyListState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = innerPadding.calculateTopPadding() + 24.dp, bottom = 24.dp),
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                itemsIndexed(items) { _, item ->
+                    val selected = currentRoute == item.route
+                    PillNavigationItem(
+                        item = item,
+                        selected = selected,
+                        onClick = {
+                            if (!selected) {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                shadowElevation = 0.dp
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 16.dp)
+                ) {
+                    NavHost(
+                        navController,
+                        startDestination = NavItem.Budgeting.route
+                    ) {
+                        val screenPadding = PaddingValues(0.dp)
+                        composable(NavItem.Budgeting.route) { BudgetingScreen(screenPadding) }
+                        composable(NavItem.GroceryList.route) { PoopTrackerScreenContainer(screenPadding) }
+                        composable(NavItem.Passwords.route) { PasswordsScreen(screenPadding) }
+                        composable(NavItem.Settings.route) { SettingsScreen(screenPadding) }
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun AppBottomNavigationBar(navController: NavController, items: List<BottomNavItem>) {
-    NavigationBar {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
+fun PillNavigationItem(
+    item: NavItem,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "pillBackground"
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "pillContent"
+    )
+    val horizontalPadding by animateDpAsState(
+        targetValue = if (selected) 24.dp else 16.dp,
+        label = "pillPadding"
+    )
+    val height by animateDpAsState(
+        targetValue = if (selected) 56.dp else 44.dp,
+        label = "pillHeight"
+    )
+    val fontSize = if (selected) 20.sp else 14.sp
 
-        items.forEach { item ->
-            val title = stringResource(id = item.titleResId)
-            NavigationBarItem(
-                icon = { Icon(item.icon, contentDescription = title) },
-                selected = currentRoute == item.route,
-                onClick = {
-                    navController.navigate(item.route) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(28.dp),
+        color = backgroundColor,
+        contentColor = contentColor,
+        modifier = Modifier.height(height)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = horizontalPadding),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = item.icon,
+                contentDescription = null,
+                modifier = Modifier.size(if (selected) 24.dp else 18.dp)
+            )
+            Text(
+                text = stringResource(id = item.titleResId),
+                fontSize = fontSize,
+                fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleLarge
             )
         }
     }
