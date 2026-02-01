@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,14 +35,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.core.graphics.toColorInt
 import com.fabiobassi.famigliab.data.Income
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.SettingsDataStore
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun IncomeDialog(
     incomes: List<Income>,
@@ -63,40 +59,27 @@ fun IncomeDialog(
         )
     }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp),
-            shape = MaterialTheme.shapes.extraLarge,
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Payments,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(28.dp)
             )
-        ) {
+        },
+        title = {
+            Text(
+                text = "Income Details",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        text = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Payments,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Text(
-                        text = "Income Details",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
                 if (incomes.isEmpty()) {
                     Text(
                         text = "No income records found.",
@@ -110,7 +93,7 @@ fun IncomeDialog(
                 } else {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.weight(1f, fill = false)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         items(incomes) { income ->
                             IncomeItem(
@@ -120,16 +103,14 @@ fun IncomeDialog(
                         }
                     }
                 }
-
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text("Close", fontWeight = FontWeight.SemiBold)
-                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
             }
         }
-    }
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -178,28 +159,25 @@ fun IncomeItem(
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
                 ) {
                     Text(
                         text = income.paidTo.name,
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelMedium,
                         color = personColor,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
                         modifier = Modifier
-                            .padding(top = 4.dp)
-                            .background(personColor.copy(alpha = 0.1f), MaterialTheme.shapes.extraSmall)
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                            .weight(1f)
+                            .background(personColor.copy(alpha = 0.12f), MaterialTheme.shapes.extraSmall)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
                     )
                     Text(
                         text = "%.2f €".format(income.amount),
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.End,
-                        modifier = Modifier.weight(3f)
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -215,7 +193,7 @@ fun DeleteIncomeConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete Income Record", fontWeight = FontWeight.Bold) },
+        title = { Text("Delete Income Record") },
         text = {
             Text(
                 "Are you sure you want to permanently delete the income record for \"${income.description}\" (%.2f €)?".format(income.amount)
@@ -223,7 +201,7 @@ fun DeleteIncomeConfirmationDialog(
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Delete", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                Text("Delete", color = MaterialTheme.colorScheme.error)
             }
         },
         dismissButton = {

@@ -1,24 +1,33 @@
 package com.fabiobassi.famigliab.ui.features.budgeting.dialogs
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Payment
 import com.fabiobassi.famigliab.data.Person
@@ -55,64 +63,105 @@ fun EditPaymentDialog(
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = date.time)
     var isDatePickerDialogOpen by remember { mutableStateOf(false) }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(text = "Edit Payment")
-                TextButton(onClick = { isDatePickerDialogOpen = true }) {
-                    Text(dateString)
+    if (isDatePickerDialogOpen) {
+        DatePickerDialog(
+            onDismissRequest = { isDatePickerDialogOpen = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        val newDate = Date(it)
+                        date = newDate
+                        dateString = dateFormatter.format(newDate)
+                    }
+                    isDatePickerDialogOpen = false
+                }) {
+                    Text("OK")
                 }
-                TextField(
+            },
+            dismissButton = {
+                TextButton(onClick = { isDatePickerDialogOpen = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Edit Payment",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { isDatePickerDialogOpen = true }
+                ) {
+                    OutlinedTextField(
+                        value = dateString,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Date") },
+                        leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = false,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    )
+                }
+
+                OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Description") }
+                    label = { Text("Description") },
+                    leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
-                TextField(
+
+                OutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it },
                     label = { Text("Amount") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    suffix = { Text("€") }
                 )
-                if (isDatePickerDialogOpen) {
-                    DatePickerDialog(
-                        onDismissRequest = { isDatePickerDialogOpen = false },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                datePickerState.selectedDateMillis?.let {
-                                    val newDate = Date(it)
-                                    date = newDate
-                                    dateString = dateFormatter.format(newDate)
-                                }
-                                isDatePickerDialogOpen = false
-                            }) {
-                                Text("OK")
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { isDatePickerDialogOpen = false }) {
-                                Text("Cancel")
-                            }
-                        }
-                    ) {
-                        DatePicker(state = datePickerState)
-                    }
-                }
+
                 ExposedDropdownMenuBox(
                     expanded = expandedCategory,
                     onExpandedChange = { expandedCategory = !expandedCategory }
                 ) {
-                    TextField(
+                    OutlinedTextField(
                         value = selectedCategory.name,
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Category") },
+                        leadingIcon = { Icon(Icons.Default.Category, contentDescription = null) },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory)
                         },
-                        modifier = Modifier.menuAnchor()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expandedCategory,
@@ -129,19 +178,23 @@ fun EditPaymentDialog(
                         }
                     }
                 }
+
                 ExposedDropdownMenuBox(
                     expanded = expandedPerson,
                     onExpandedChange = { expandedPerson = !expandedPerson }
                 ) {
-                    TextField(
+                    OutlinedTextField(
                         value = selectedPerson.name,
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Person") },
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPerson)
                         },
-                        modifier = Modifier.menuAnchor()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = expandedPerson,
@@ -158,25 +211,24 @@ fun EditPaymentDialog(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancel")
-                    }
-                    Button(
-                        onClick = {
-                            amount = amount.replace(",", ".")
-                            onConfirm(date, description, amount.toDouble(), selectedCategory, selectedPerson)
-                        },
-                        enabled = description.isNotBlank() && amount.isNotBlank()
-                    ) {
-                        Text("Confirm")
-                    }
-                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val cleanAmount = amount.replace(",", ".")
+                    val amountDouble = cleanAmount.toDoubleOrNull() ?: 0.0
+                    onConfirm(date, description, amountDouble, selectedCategory, selectedPerson)
+                },
+                enabled = description.isNotBlank() && amount.isNotBlank() && amount.replace(",", ".").toDoubleOrNull() != null
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
             }
         }
-    }
+    )
 }

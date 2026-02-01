@@ -1,13 +1,21 @@
 package com.fabiobassi.famigliab.ui.features.budgeting.dialogs
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,46 +44,72 @@ fun EditVoucherDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Edit Vouchers") },
+        title = {
+            Text(
+                text = "Edit Vouchers",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
         text = {
-            Column {
-                TextField(
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text("Fab Vouchers", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
                     value = fabVoucherCount,
                     onValueChange = { fabVoucherCount = it },
-                    label = { Text("Fab Vouchers Used") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    label = { Text("Count") },
+                    leadingIcon = { Icon(Icons.Default.ConfirmationNumber, contentDescription = null) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(
+                OutlinedTextField(
                     value = fabVoucherValue,
                     onValueChange = { fabVoucherValue = it },
-                    label = { Text("Fab Voucher Value") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    label = { Text("Value") },
+                    leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    suffix = { Text("€") }
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                TextField(
+
+                Text("Sab Vouchers", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
                     value = sabVoucherCount,
                     onValueChange = { sabVoucherCount = it },
-                    label = { Text("Sab Vouchers Used") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    label = { Text("Count") },
+                    leadingIcon = { Icon(Icons.Default.ConfirmationNumber, contentDescription = null) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(
+                OutlinedTextField(
                     value = sabVoucherValue,
                     onValueChange = { sabVoucherValue = it },
-                    label = { Text("Sab Voucher Value") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    label = { Text("Value") },
+                    leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    suffix = { Text("€") }
                 )
             }
         },
         confirmButton = {
-            TextButton(onClick = {
-                val fabCount = fabVoucherCount.toIntOrNull() ?: 0
-                val sabCount = sabVoucherCount.toIntOrNull() ?: 0
-                val fabValue = fabVoucherValue.toDoubleOrNull() ?: 7.0
-                val sabValue = sabVoucherValue.toDoubleOrNull() ?: 7.0
-                onConfirm(fabCount, sabCount, fabValue, sabValue)
-            }) {
+            Button(
+                onClick = {
+                    val fabCount = fabVoucherCount.toIntOrNull() ?: 0
+                    val sabCount = sabVoucherCount.toIntOrNull() ?: 0
+                    val fabValue = fabVoucherValue.replace(",", ".").toDoubleOrNull() ?: 7.0
+                    val sabValue = sabVoucherValue.replace(",", ".").toDoubleOrNull() ?: 7.0
+                    onConfirm(fabCount, sabCount, fabValue, sabValue)
+                }
+            ) {
                 Text("Confirm")
             }
         },

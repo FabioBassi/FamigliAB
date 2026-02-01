@@ -2,27 +2,30 @@ package com.fabiobassi.famigliab.ui.features.budgeting.dialogs
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import java.util.Calendar
 import java.util.Locale
 
@@ -46,32 +49,38 @@ fun MonthSelectionPickerDialog(
         cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()) ?: ""
     }
 
-    Dialog(onDismissRequest = onDismissRequest) {
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.surface
-        ) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(
+                text = "Select Month and Year",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        text = {
             Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Select Month and Year", style = MaterialTheme.typography.titleLarge)
-
                 var yearExpanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(
                     expanded = yearExpanded,
                     onExpandedChange = { yearExpanded = !yearExpanded }
                 ) {
-                    TextField(
+                    OutlinedTextField(
                         value = selectedYear.toString(),
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Year") },
+                        leadingIcon = { Icon(Icons.Default.Event, contentDescription = null) },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = yearExpanded)
                         },
-                        modifier = Modifier.menuAnchor()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = yearExpanded,
@@ -94,15 +103,18 @@ fun MonthSelectionPickerDialog(
                     expanded = monthExpanded,
                     onExpandedChange = { monthExpanded = !monthExpanded }
                 ) {
-                    TextField(
+                    OutlinedTextField(
                         value = months[selectedMonth],
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Month") },
+                        leadingIcon = { Icon(Icons.Default.CalendarMonth, contentDescription = null) },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = monthExpanded)
                         },
-                        modifier = Modifier.menuAnchor()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = monthExpanded,
@@ -119,25 +131,22 @@ fun MonthSelectionPickerDialog(
                         }
                     }
                 }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Button(onClick = onDismissRequest) {
-                        Text("Cancel")
-                    }
-                    Button(
-                        onClick = {
-                            onConfirm(selectedYear, selectedMonth)
-                            onDismissRequest()
-                        },
-                        modifier = Modifier.padding(start = 8.dp)
-                    ) {
-                        Text("OK")
-                    }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onConfirm(selectedYear, selectedMonth)
+                    onDismissRequest()
                 }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Cancel")
             }
         }
-    }
+    )
 }
