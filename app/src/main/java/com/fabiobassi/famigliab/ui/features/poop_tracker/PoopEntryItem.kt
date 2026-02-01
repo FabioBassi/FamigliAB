@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,8 +31,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
+import androidx.compose.foundation.layout.Box
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.PoopEntry
 import com.fabiobassi.famigliab.data.SettingsDataStore
@@ -68,7 +69,6 @@ fun PoopEntryItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
             .combinedClickable(
                 onClick = { /* No-op */ },
                 onLongClick = { showDialog = true }
@@ -80,44 +80,55 @@ fun PoopEntryItem(
     ) {
         Row(
             modifier = Modifier
-                .padding(12.dp)
+                .padding(16.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Quality Icon
-            Icon(
-                imageVector = if (entry.quality == "Good") Icons.Default.SentimentSatisfiedAlt else Icons.Default.SentimentDissatisfied,
-                contentDescription = null,
-                tint = if (entry.quality == "Good") Color(0xFF4CAF50) else Color(0xFFF44336),
-                modifier = Modifier.size(28.dp)
-            )
+            // Quality Indicator
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = if (entry.quality == "Good") Color(0xFF4CAF50).copy(alpha = 0.1f) else Color(0xFFF44336).copy(alpha = 0.1f),
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = if (entry.quality == "Good") Icons.Default.SentimentSatisfiedAlt else Icons.Default.SentimentDissatisfied,
+                        contentDescription = null,
+                        tint = if (entry.quality == "Good") Color(0xFF4CAF50) else Color(0xFFF44336),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
 
             // Date and Time
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = entry.date,
-                    style = MaterialTheme.typography.bodyLarge,
+                    text = entry.hour,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = entry.hour,
-                    style = MaterialTheme.typography.labelSmall,
+                    text = entry.date,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             // Person Badge
-            Text(
-                text = entry.person.name,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = personColor,
-                modifier = Modifier
-                    .background(personColor.copy(alpha = 0.15f), MaterialTheme.shapes.extraSmall)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            )
+            Surface(
+                color = personColor.copy(alpha = 0.15f),
+                shape = MaterialTheme.shapes.extraLarge
+            ) {
+                Text(
+                    text = entry.person.name,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = personColor,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
         }
     }
 }
