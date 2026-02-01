@@ -313,8 +313,7 @@ fun BudgetingScreenContent(
                 }
                 item {
                     AnnualMonthRecap(
-                        payments = paymentsForYear,
-                        incomes = incomes
+
                     )
                 }
             } else {
