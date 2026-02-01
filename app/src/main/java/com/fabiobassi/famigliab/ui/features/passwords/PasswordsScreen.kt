@@ -95,7 +95,7 @@ fun PasswordsScreen(paddingValues: PaddingValues) {
             onClick = { showDialog = true },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 32.dp),
         ) {
             Icon(Icons.Filled.Add, stringResource(id = R.string.add_new_password))
         }
