@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -69,14 +70,15 @@ fun PaymentRow(
                 onClick = { onPaymentClick(payment) },
                 onLongClick = { onPaymentLongClick(payment) },
             )
-            .padding(vertical = 12.dp),
+            .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // Date and Category Icon/Badge
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 4.dp)
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier
+                .weight(0.25f)
         ) {
             Text(
                 text = dateFormat.format(payment.date),
@@ -88,7 +90,9 @@ fun PaymentRow(
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = categoryColor,
+                textAlign = TextAlign.Center,
                 modifier = Modifier
+                    .fillMaxWidth()
                     .background(categoryColor.copy(alpha = 0.15f), MaterialTheme.shapes.extraSmall)
                     .padding(horizontal = 4.dp, vertical = 2.dp)
             )
@@ -119,7 +123,9 @@ fun PaymentRow(
             text = "%.2f €".format(payment.amount),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(0.5f)
         )
     }
 }

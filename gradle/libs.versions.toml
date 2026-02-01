@@ -17,6 +17,7 @@ navigationCompose = "2.9.6"
 material3 = "1.4.0"
 uiText = "1.10.0"
 vico = "1.14.0"
+uiTextVersion = "1.10.2"
 
 [libraries]
 #noinspection SimilarGradleDependency
@@ -51,6 +52,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 vico-compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vico" }
 vico-compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "vico" }
 vico-core = { module = "com.patrykandpatrick.vico:core", version.ref = "vico" }
+androidx-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiTextVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
