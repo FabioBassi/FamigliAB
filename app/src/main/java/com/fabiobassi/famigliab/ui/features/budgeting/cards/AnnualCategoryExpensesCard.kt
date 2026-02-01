@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,10 +22,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.fabiobassi.famigliab.data.Category
 import com.fabiobassi.famigliab.data.Payment
 import com.fabiobassi.famigliab.data.Person
@@ -57,31 +59,31 @@ fun AnnualCategoryExpensesCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = MaterialTheme.shapes.extraLarge,
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "EXPENSES BY CATEGORY",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
+                text = "Expenses by Category",
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
             if (totalExpenses > 0) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Canvas(modifier = Modifier.size(160.dp)) {
+                    Canvas(modifier = Modifier.size(140.dp)) {
                         val totalAngleToDraw = 360f * animationProgress.value
                         var startAngle = -90f
                         var drawnAngle = 0f
@@ -107,24 +109,35 @@ fun AnnualCategoryExpensesCard(
                     }
                 }
 
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column {
                     Category.entries
                         .filter { (categoryTotals[it] ?: 0.0) > 0 }
                         .sortedByDescending { categoryTotals[it] ?: 0.0 }
-                        .forEach { category ->
+                        .forEachIndexed { index, category ->
                             val payments = paymentsByCategory[category] ?: emptyList()
                             val totalFab = payments.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
                             val totalSab = payments.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
                             val total = totalFab + totalSab
                             val percentage = (total * 100.0) / totalExpenses
+                            
                             AnnualCategoryItem(category, totalFab, totalSab, total, percentage, colors)
+                            
+                            if (index < Category.entries.count { (categoryTotals[it] ?: 0.0) > 0 } - 1) {
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    thickness = 0.5.dp,
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                )
+                            }
                         }
                 }
             } else {
                 Text(
                     "No expense data to display.",
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(vertical = 32.dp).align(Alignment.CenterHorizontally),
+                    modifier = Modifier
+                        .padding(vertical = 32.dp)
+                        .align(Alignment.CenterHorizontally),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
