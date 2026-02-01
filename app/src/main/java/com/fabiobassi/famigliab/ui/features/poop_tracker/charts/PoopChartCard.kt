@@ -1,14 +1,21 @@
 package com.fabiobassi.famigliab.ui.features.poop_tracker.charts
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopChartData
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
@@ -40,47 +47,57 @@ fun PoopChartCard(
         }
     }
 
-    // X axis: show only day number
     val bottomAxisValueFormatter =
         AxisValueFormatter<AxisPosition.Horizontal.Bottom> { value, _ ->
             poopEntriesByDay.values
                 .firstOrNull()
                 ?.keys
                 ?.elementAtOrNull(value.toInt())
-                ?.substringBefore("/") // dd/MM/yyyy → dd
-                ?: ""
+                ?.substringBefore("/") ?: ""
         }
 
-    // Y axis: integers only
     val startAxisValueFormatter =
         AxisValueFormatter<AxisPosition.Vertical.Start> { value, _ ->
             value.toInt().toString()
         }
 
     val lineSpec = listOf(
-        LineChart.LineSpec(lineColor = poopChartData.fabColor.hashCode()),
-        LineChart.LineSpec(lineColor = poopChartData.sabColor.hashCode()),
+        LineChart.LineSpec(lineColor = poopChartData.fabColor.toArgb()),
+        LineChart.LineSpec(lineColor = poopChartData.sabColor.toArgb()),
     )
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .padding(vertical = 8.dp)
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
     ) {
-        if (poopEntriesByDay.isNotEmpty()) {
-            Chart(
-                chart = lineChart(
-                    lines = lineSpec,
-                ),
-                chartModelProducer = chartEntryModelProducer,
-                startAxis = startAxis(
-                    valueFormatter = startAxisValueFormatter,
-                ),
-                bottomAxis = bottomAxis(
-                    valueFormatter = bottomAxisValueFormatter,
-                ),
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "WEEKLY ACTIVITY",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
+            
+            if (poopEntriesByDay.isNotEmpty()) {
+                Chart(
+                    chart = lineChart(
+                        lines = lineSpec,
+                    ),
+                    chartModelProducer = chartEntryModelProducer,
+                    startAxis = startAxis(
+                        valueFormatter = startAxisValueFormatter,
+                    ),
+                    bottomAxis = bottomAxis(
+                        valueFormatter = bottomAxisValueFormatter,
+                    ),
+                    modifier = Modifier.height(180.dp)
+                )
+            }
         }
     }
 }

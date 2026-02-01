@@ -1,38 +1,47 @@
 package com.fabiobassi.famigliab.ui.features.budgeting.dialogs
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.graphics.toColorInt
 import com.fabiobassi.famigliab.data.Income
 import com.fabiobassi.famigliab.data.Person
+import com.fabiobassi.famigliab.data.SettingsDataStore
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -59,29 +68,49 @@ fun IncomeDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(4.dp),
-            shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            shape = MaterialTheme.shapes.extraLarge,
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            )
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                Text(
-                    text = "Incomes",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-                if (incomes.isEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Payments,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
                     Text(
-                        text = "No incomes present",
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        text = "Income Details",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
                     )
                 }
-                else {
+
+                if (incomes.isEmpty()) {
+                    Text(
+                        text = "No income records found.",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.weight(1f, fill = false)
                     ) {
                         items(incomes) { income ->
                             IncomeItem(
@@ -90,14 +119,13 @@ fun IncomeDialog(
                             )
                         }
                     }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Button(onClick = onDismiss) {
-                            Text("Close")
-                        }
-                    }
+                }
+
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Close", fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -110,42 +138,63 @@ fun IncomeItem(
     income: Income,
     onLongClick: (Income) -> Unit
 ) {
-    Column(
+    val context = LocalContext.current
+    val settingsDataStore = remember { SettingsDataStore(context) }
+    val personColorHex by settingsDataStore.getColorFor(income.paidTo.name)
+        .collectAsState(initial = "")
+
+    val personColor = if (personColorHex.isNotEmpty()) {
+        Color(personColorHex.toColorInt())
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 2.dp)
             .combinedClickable(
                 onClick = {},
                 onLongClick = { onLongClick(income) }
-            )
-    ) {
-        Text(
-            text = income.description,
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
+            ),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
+    ) {
         Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = income.paidTo.name,
-                textAlign = TextAlign.Start,
-                fontSize = 16.sp,
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = income.description,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "Paid to ${income.paidTo.name}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = personColor,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .background(personColor.copy(alpha = 0.1f), MaterialTheme.shapes.extraSmall)
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
             Text(
                 text = "%.2f €".format(income.amount),
-                textAlign = TextAlign.End,
-                fontSize = 18.sp,
-                modifier = Modifier.weight(3f)
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
-
 }
 
 @Composable
@@ -156,11 +205,15 @@ fun DeleteIncomeConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete Income") },
-        text = { Text("Are you sure you want to delete this income?\n'${income.description}' of ${income.amount}€") },
+        title = { Text("Delete Income Record", fontWeight = FontWeight.Bold) },
+        text = {
+            Text(
+                "Are you sure you want to permanently delete the income record for \"${income.description}\" (%.2f €)?".format(income.amount)
+            )
+        },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Delete")
+                Text("Delete", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -175,9 +228,9 @@ fun DeleteIncomeConfirmationDialog(
 @Composable
 fun IncomeDialogPreview() {
     val mockIncomes = listOf(
-        Income("Stipendio", 2000.0, Person.FAB),
-        Income("Stipendio", 1500.0, Person.SAB),
-        Income("Bonus", 200.0, Person.FAB),
+        Income("Monthly Salary", 2450.0, Person.FAB),
+        Income("Freelance Project", 350.0, Person.SAB),
+        Income("Bonus", 100.0, Person.FAB),
     )
     IncomeDialog(
         incomes = mockIncomes,

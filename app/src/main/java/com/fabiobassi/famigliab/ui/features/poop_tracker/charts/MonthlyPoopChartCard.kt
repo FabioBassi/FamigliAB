@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -20,7 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.ui.features.poop_tracker.MonthlyPoopChartData
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
@@ -60,8 +63,7 @@ fun MonthlyPoopChartCard(
                 .firstOrNull()
                 ?.elementAtOrNull(value.toInt())
                 ?.first
-                ?.substringBefore(" ") // "MMM yyyy" -> "MMM"
-                ?: ""
+                ?.substringBefore(" ") ?: ""
         }
 
     val startAxisValueFormatter =
@@ -79,14 +81,43 @@ fun MonthlyPoopChartCard(
     }
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "MONTHLY FREQUENCY",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { onChangeYear(monthlyPoopChartData.year - 1) }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Previous year", tint = MaterialTheme.colorScheme.primary)
+                    }
+                    Text(
+                        text = monthlyPoopChartData.year.toString(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    IconButton(onClick = { onChangeYear(monthlyPoopChartData.year + 1) }) {
+                        Icon(Icons.Default.ArrowForward, contentDescription = "Next year", tint = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+
             if (monthlyPoopEntries.isNotEmpty()) {
                 Chart(
                     chart = lineChart(
@@ -99,24 +130,8 @@ fun MonthlyPoopChartCard(
                     bottomAxis = bottomAxis(
                         valueFormatter = bottomAxisValueFormatter,
                     ),
-                    modifier = Modifier.height(200.dp)
+                    modifier = Modifier.height(180.dp).padding(top = 16.dp)
                 )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { onChangeYear(monthlyPoopChartData.year - 1) }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Previous year")
-                }
-                Text(
-                    text = monthlyPoopChartData.year.toString(),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                IconButton(onClick = { onChangeYear(monthlyPoopChartData.year + 1) }) {
-                    Icon(Icons.Default.ArrowForward, contentDescription = "Next year")
-                }
             }
         }
     }

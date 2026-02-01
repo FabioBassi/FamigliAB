@@ -1,21 +1,17 @@
 package com.fabiobassi.famigliab.ui.features.budgeting.cards
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,75 +30,68 @@ fun AnnualCategoryItem(
     percentage: Double,
     colors: Map<String, Color>
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth()
+    val categoryColor = colors[category.name] ?: MaterialTheme.colorScheme.secondary
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = category.name.lowercase().replaceFirstChar { it.titlecase() },
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        shadow = Shadow(
-                            color = if (isSystemInDarkTheme()) Color.Black else Color.LightGray,
-                            offset = Offset(2f, 2f),
-                            blurRadius = 5f
-                        )
-                    ),
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
-                        .weight(2.5f)
                         .background(
-                            color = (colors[category.name] ?: Color.DarkGray).copy(),
-                            shape = RoundedCornerShape(25)
+                            color = categoryColor.copy(alpha = 0.2f),
+                            shape = MaterialTheme.shapes.small
                         )
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    fontSize = 18.sp,
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                    color = categoryColor,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    softWrap = false
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    text = "${"%.2f".format(percentage)} %",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.End,
-                    fontSize = 18.sp,
+                    text = "${"%.1f".format(percentage)}%",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Fab: ${"%.2f".format(totalFab)} €",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.End,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = "Sab: ${"%.2f".format(totalSab)} €",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.End,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = "Tot: ${"%.2f".format(total)} €",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.End,
-                    fontSize = 18.sp
-                )
-            }
+            Text(
+                text = "${"%.2f".format(total)} €",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.End,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Fab: ${"%.2f".format(totalFab)} €",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = "Sab: ${"%.2f".format(totalSab)} €",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

@@ -2,16 +2,19 @@ package com.fabiobassi.famigliab.ui.features.budgeting.cards
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -59,128 +62,141 @@ fun AnnualSummaryCard(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+        SummarySection(
+            title = "ANNUAL INCOME",
+            fabValue = totalIncomes[1],
+            sabValue = totalIncomes[2],
+            totalValue = totalIncomes[0],
+            fabColor = fabColor,
+            sabColor = sabColor,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            onContainerColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+
+        SummarySection(
+            title = "ANNUAL EXPENSES",
+            fabValue = totalExpenses[1],
+            sabValue = totalExpenses[2],
+            totalValue = totalExpenses[0],
+            fabColor = fabColor,
+            sabColor = sabColor,
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            onContainerColor = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+
+        SummarySection(
+            title = "ANNUAL NET",
+            fabValue = totalIncomes[1] - totalExpenses[1],
+            sabValue = totalIncomes[2] - totalExpenses[2],
+            totalValue = totalIncomes[0] - totalExpenses[0],
+            fabColor = fabColor,
+            sabColor = sabColor,
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            onContainerColor = MaterialTheme.colorScheme.onTertiaryContainer
+        )
+    }
+}
+
+@Composable
+private fun SummarySection(
+    title: String,
+    fabValue: Double,
+    sabValue: Double,
+    totalValue: Double,
+    fabColor: Color,
+    sabColor: Color,
+    containerColor: Color,
+    onContainerColor: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = containerColor
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "ANNUAL INCOME",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = "Fab: ${"%.2f".format(totalIncomes[1])} €\t(${"%.2f".format(totalIncomes[1] / 12.0)} €)",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 20.sp,
-                    color = fabColor
-                )
-                Text(
-                    text = "Sab: ${"%.2f".format(totalIncomes[2])} €\t(${"%.2f".format(totalIncomes[2] / 12.0)} €)",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 20.sp,
-                    color = sabColor
-                )
-                Text(
-                    text = "Tot: ${"%.2f".format(totalIncomes[0])} €\t(${"%.2f".format(totalIncomes[0] / 12.0)} €)",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                color = onContainerColor
+            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                SummaryRow(label = "Fab", value = fabValue, color = fabColor)
+                SummaryRow(label = "Sab", value = sabValue, color = sabColor)
             }
-        }
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                thickness = 1.dp,
+                color = onContainerColor.copy(alpha = 0.12f)
             )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
             ) {
                 Text(
-                    text = "ANNUAL EXPENSES",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = "Total",
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-                Text(
-                    text = "Fab: ${"%.2f".format(totalExpenses[1])} € (${"%.2f".format(totalExpenses[1] / 12.0)} €)",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 20.sp,
-                    color = fabColor
-                )
-                Text(
-                    text = "Sab: ${"%.2f".format(totalExpenses[2])} € (${"%.2f".format(totalExpenses[2] / 12.0)} €)",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 20.sp,
-                    color = sabColor
-                )
-                Text(
-                    text = "Tot: ${"%.2f".format(totalExpenses[0])} € (${"%.2f".format(totalExpenses[0] / 12.0)} €)",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
+                    fontSize = 22.sp,
                     color = MaterialTheme.colorScheme.primary
                 )
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "${"%.2f".format(totalValue)} €",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "avg: ${"%.2f".format(totalValue / 12.0)} €/mo",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                    )
+                }
             }
         }
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer
+    }
+}
+
+@Composable
+private fun SummaryRow(label: String, value: Double, color: Color) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            fontSize = 18.sp,
+            color = color
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "${"%.2f".format(value)} €",
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 18.sp,
+                color = color
             )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "ANNUAL NET",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-                Text(
-                    text = "Fab: ${"%.2f".format(totalIncomes[1]-totalExpenses[1])} € " +
-                            "(${"%.2f".format((totalIncomes[1]-totalExpenses[1]) / 12.0)} €)",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 20.sp,
-                    color = fabColor
-                )
-                Text(
-                    text = "Sab: ${"%.2f".format(totalIncomes[2]-totalExpenses[2])} € " +
-                            "(${"%.2f".format((totalIncomes[2]-totalExpenses[2]) / 12.0)} €)",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 20.sp,
-                    color = sabColor
-                )
-                Text(
-                    text = "Tot: ${"%.2f".format(totalIncomes[0]-totalExpenses[0])} € " +
-                            "(${"%.2f".format((totalIncomes[0]-totalExpenses[0]) / 12.0)} €)",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+            Text(
+                text = " (${"%.2f".format(value / 12.0)} €)",
+                style = MaterialTheme.typography.bodySmall,
+                color = color.copy(alpha = 0.6f)
+            )
         }
     }
 }

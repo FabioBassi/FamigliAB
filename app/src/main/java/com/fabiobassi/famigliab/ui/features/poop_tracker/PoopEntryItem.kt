@@ -1,19 +1,21 @@
-
 package com.fabiobassi.famigliab.ui.features.poop_tracker
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ThumbDown
-import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.SentimentDissatisfied
+import androidx.compose.material.icons.filled.SentimentSatisfiedAlt
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,11 +26,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.PoopEntry
@@ -57,53 +59,70 @@ fun PoopEntryItem(
         )
     }
 
-    val backgroundColor = if (personColorHex.isNotEmpty()) {
+    val personColor = if (personColorHex.isNotEmpty()) {
         Color(personColorHex.toColorInt())
     } else {
-        Color.Transparent
+        MaterialTheme.colorScheme.primary
     }
+
     Card(
         modifier = Modifier
+            .fillMaxWidth()
             .padding(vertical = 4.dp)
             .combinedClickable(
                 onClick = { /* No-op */ },
                 onLongClick = { showDialog = true }
-            )
+            ),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (entry.quality == "Good")
-                    Icon(Icons.Filled.ThumbUp, contentDescription = "Good poop")
-                else
-                    Icon(Icons.Filled.ThumbDown, contentDescription = "Bad poop")
-                Spacer(modifier = Modifier.weight(0.1f))
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Quality Icon
+            Icon(
+                imageVector = if (entry.quality == "Good") Icons.Default.SentimentSatisfiedAlt else Icons.Default.SentimentDissatisfied,
+                contentDescription = null,
+                tint = if (entry.quality == "Good") Color(0xFF4CAF50) else Color(0xFFF44336),
+                modifier = Modifier.size(28.dp)
+            )
+
+            // Date and Time
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "${entry.date} - ${entry.hour}",
-                    modifier = Modifier.weight(4f),
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    text = entry.date,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = entry.person.name,
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(
-                            color = backgroundColor,
-                            shape = CircleShape,
-                        )
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                    textAlign = TextAlign.Center,
-                    color = if (backgroundColor != Color.Transparent && backgroundColor.luminance() < 0.5f) {
-                        Color.White
-                    } else {
-                        Color.Black
-                    }
+                    text = entry.hour,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            // Person Badge
+            Text(
+                text = entry.person.name,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.ExtraBold,
+                color = personColor,
+                modifier = Modifier
+                    .background(personColor.copy(alpha = 0.15f), MaterialTheme.shapes.extraSmall)
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            )
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun PoopEntryItemPreview() {
     PoopEntryItem(

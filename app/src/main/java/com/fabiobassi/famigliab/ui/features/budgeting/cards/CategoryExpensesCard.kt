@@ -4,7 +4,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -23,9 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,149 +57,148 @@ fun CategoryExpensesCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Title
             Text(
                 text = "EXPENSES BY CATEGORY",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Start),
+                fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "CATEGORY",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.4f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    softWrap = false
-                )
-                Text(
-                    text = "FAB",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.16f),
-                    textAlign = TextAlign.End
-                )
-                Text(
-                    text = "SAB",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.16f),
-                    textAlign = TextAlign.End
-                )
-                Text(
-                    text = "TOTAL",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1.28f),
-                    textAlign = TextAlign.End
-                )
-            }
-            // Body
-            Category.entries.sortedBy { it.name }.forEach { category ->
-                val payments = paymentsByCategory[category] ?: emptyList()
-                val totalFab = payments.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
-                val totalSab = payments.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
-                val total = totalFab + totalSab
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        modifier = Modifier.weight(1.4f), // Adjusted weight for the category column
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = category.name.lowercase().replaceFirstChar { it.titlecase() },
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                shadow = Shadow(
-                                    color = if (isSystemInDarkTheme()) Color.Black else Color.LightGray,
-                                    offset = Offset(2f, 2f),
-                                    blurRadius = 5f
-                                )
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    color = (colors[category.name] ?: Color.DarkGray).copy(),
-                                    shape = RoundedCornerShape(25)
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontSize = 12.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            softWrap = false
-                        )
-                    }
-                    Text(
-                        text = "%.2f€".format(totalFab),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1.16f),
-                        textAlign = TextAlign.End,
-                        fontSize = 10.sp
-                    )
-                    Text(
-                        text = "%.2f€".format(totalSab),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1.16f),
-                        textAlign = TextAlign.End,
-                        fontSize = 10.sp
-                    )
-                    Text(
-                        text = "%.2f€".format(total),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1.28f),
-                        textAlign = TextAlign.End
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
 
             if (totalExpenses > 0) {
-                Canvas(modifier = Modifier
-                    .size(200.dp)
-                    .align(Alignment.CenterHorizontally)) {
-                    val totalAngleToDraw = 360f * animationProgress.value
-                    var startAngle = -90f
-                    var drawnAngle = 0f
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Canvas(modifier = Modifier.size(120.dp)) {
+                        val totalAngleToDraw = 360f * animationProgress.value
+                        var startAngle = -90f
+                        var drawnAngle = 0f
 
-                    Category.entries.sortedBy { it.name }.forEach { category ->
-                        if (drawnAngle >= totalAngleToDraw) return@forEach
+                        Category.entries.sortedByDescending { categoryTotals[it] ?: 0.0 }.forEach { category ->
+                            if (drawnAngle >= totalAngleToDraw) return@forEach
 
-                        val total = categoryTotals[category] ?: 0.0
-                        if (total > 0) {
-                            val sweepAngleForCategory = (total / totalExpenses).toFloat() * 360f
-                            val angleToDraw = min(sweepAngleForCategory, totalAngleToDraw - drawnAngle)
+                            val total = categoryTotals[category] ?: 0.0
+                            if (total > 0) {
+                                val sweepAngleForCategory = (total / totalExpenses).toFloat() * 360f
+                                val angleToDraw = min(sweepAngleForCategory, totalAngleToDraw - drawnAngle)
 
-                            drawArc(
-                                color = colors[category.name] ?: Color.LightGray,
-                                startAngle = startAngle,
-                                sweepAngle = angleToDraw,
-                                useCenter = true
-                            )
-                            startAngle += sweepAngleForCategory
-                            drawnAngle += sweepAngleForCategory
+                                drawArc(
+                                    color = colors[category.name] ?: Color.LightGray,
+                                    startAngle = startAngle,
+                                    sweepAngle = angleToDraw,
+                                    useCenter = true
+                                )
+                                startAngle += sweepAngleForCategory
+                                drawnAngle += sweepAngleForCategory
+                            }
                         }
                     }
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Category.entries
+                            .filter { (categoryTotals[it] ?: 0.0) > 0 }
+                            .sortedByDescending { categoryTotals[it] ?: 0.0 }
+                            .take(5)
+                            .forEach { category ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Spacer(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .background(colors[category.name] ?: Color.Gray, MaterialTheme.shapes.extraSmall)
+                                    )
+                                    Text(
+                                        text = category.name.lowercase().replaceFirstChar { it.titlecase() },
+                                        style = MaterialTheme.typography.labelSmall,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                    }
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Category.entries
+                        .filter { (categoryTotals[it] ?: 0.0) > 0 }
+                        .sortedByDescending { categoryTotals[it] ?: 0.0 }
+                        .forEach { category ->
+                            val payments = paymentsByCategory[category] ?: emptyList()
+                            val totalFab = payments.filter { it.paidBy == Person.FAB }.sumOf { it.amount }
+                            val totalSab = payments.filter { it.paidBy == Person.SAB }.sumOf { it.amount }
+                            val total = totalFab + totalSab
+                            val percentage = (total * 100.0) / totalExpenses
+                            
+                            CategoryItemRow(
+                                category = category,
+                                total = total,
+                                percentage = percentage,
+                                color = colors[category.name] ?: Color.Gray
+                            )
+                        }
                 }
             } else {
-                Text("No expense data to display.", modifier = Modifier.align(Alignment.CenterHorizontally))
+                Text(
+                    "No expense data to display.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(vertical = 32.dp).align(Alignment.CenterHorizontally),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun CategoryItemRow(
+    category: Category,
+    total: Double,
+    percentage: Double,
+    color: Color
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = category.name.lowercase().replaceFirstChar { it.titlecase() },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "${"%.1f".format(percentage)}%",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Text(
+            text = "${"%.2f".format(total)} €",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
     }
 }

@@ -300,7 +300,10 @@ fun BudgetingScreenContent(
                     )
                 }
                 item {
-                    AnnualGraph()
+                    AnnualGraph(
+                        payments = paymentsForYear,
+                        incomes = incomes
+                    )
                 }
                 item {
                     AnnualCategoryExpensesCard(
@@ -309,7 +312,10 @@ fun BudgetingScreenContent(
                     )
                 }
                 item {
-                    AnnualMonthRecap()
+                    AnnualMonthRecap(
+                        payments = paymentsForYear,
+                        incomes = incomes
+                    )
                 }
             } else {
                 item {
