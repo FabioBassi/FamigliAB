@@ -28,7 +28,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.fabiobassi.famigliab.provider"
+            android:authorities="com.fabiobassi.famigliab.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
