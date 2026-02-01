@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -67,7 +68,9 @@ fun SummaryCard(
                 .clickable { onIncomeCardClick() },
             shape = MaterialTheme.shapes.large,
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
             ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -78,7 +81,7 @@ fun SummaryCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = Color(0xFF00aa00)
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
                     text = "Fab: ${"%.2f".format(totalIncomes[1])} €",
@@ -104,7 +107,10 @@ fun SummaryCard(
         Card(
             modifier = Modifier.weight(1f),
             shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            )
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -115,7 +121,7 @@ fun SummaryCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = Color.Red
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 Text(
                     text = "Fab: ${"%.2f".format(totalExpenses[1])} €",

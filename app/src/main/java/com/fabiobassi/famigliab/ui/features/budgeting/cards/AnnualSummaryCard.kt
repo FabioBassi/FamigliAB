@@ -63,6 +63,9 @@ fun AnnualSummaryCard(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
         ) {
             Column(
                 modifier = Modifier.padding(16.dp).fillMaxWidth(),
@@ -73,7 +76,7 @@ fun AnnualSummaryCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = Color(0xFF00aa00)
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
                     text = "Fab: ${"%.2f".format(totalIncomes[1])} €\t(${"%.2f".format(totalIncomes[1] / 12.0)} €)",
@@ -99,7 +102,10 @@ fun AnnualSummaryCard(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            )
         ) {
             Column(
                 modifier = Modifier.padding(16.dp).fillMaxWidth(),
@@ -110,7 +116,7 @@ fun AnnualSummaryCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = Color.Red
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 Text(
                     text = "Fab: ${"%.2f".format(totalExpenses[1])} € (${"%.2f".format(totalExpenses[1] / 12.0)} €)",
@@ -136,7 +142,10 @@ fun AnnualSummaryCard(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer
+            )
         ) {
             Column(
                 modifier = Modifier.padding(16.dp).fillMaxWidth(),
@@ -147,7 +156,7 @@ fun AnnualSummaryCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = Color.Blue
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
                 Text(
                     text = "Fab: ${"%.2f".format(totalIncomes[1]-totalExpenses[1])} € " +
