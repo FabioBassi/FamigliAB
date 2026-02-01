@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.YearMonth
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -75,7 +76,7 @@ class PoopTrackerViewModel(
     private val _selectedYear = MutableStateFlow(Calendar.getInstance().get(Calendar.YEAR))
     val selectedYear: StateFlow<Int> = _selectedYear.asStateFlow()
 
-    fun loadPoopEntries(dayOffset: Int = currentDayOffset, year: Int = _selectedYear.value) {
+    fun loadPoopEntries(dayOffset: Int = currentDayOffset, year: Int = _selectedYear.value, month: YearMonth? = null) {
         currentDayOffset = dayOffset
         _selectedYear.value = year
         viewModelScope.launch {
@@ -95,15 +96,24 @@ class PoopTrackerViewModel(
 
             val calendar = Calendar.getInstance()
             val dateFormat = SimpleDateFormat("dd/MM", Locale.getDefault())
-            val today = calendar.time
+            val fullDateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             val lastDays = mutableMapOf<String, Int>()
-            val windowSize = 7
 
-            for (i in (dayOffset + windowSize - 1) downTo dayOffset) {
-                calendar.time = today
-                calendar.add(Calendar.DAY_OF_YEAR, -i)
-                val day = dateFormat.format(calendar.time)
-                lastDays[day] = 0
+            if (month != null) {
+                val daysInMonth = month.lengthOfMonth()
+                for (i in 1..daysInMonth) {
+                    val day = String.format("%02d/%02d", i, month.monthValue)
+                    lastDays[day] = 0
+                }
+            } else {
+                val today = calendar.time
+                val windowSize = 7
+                for (i in (dayOffset + windowSize - 1) downTo dayOffset) {
+                    calendar.time = today
+                    calendar.add(Calendar.DAY_OF_YEAR, -i)
+                    val day = dateFormat.format(calendar.time)
+                    lastDays[day] = 0
+                }
             }
 
             val entriesByPerson = allEntries.groupBy { it.person }
@@ -114,11 +124,26 @@ class PoopTrackerViewModel(
                 val personEntries = entriesByPerson[person] ?: emptyList()
                 val personMap = lastDays.toMutableMap()
                 personEntries.forEach { entry ->
-                    val entryDate =
-                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(entry.date)
-                    val entryDay = dateFormat.format(entryDate)
-                    if (personMap.containsKey(entryDay)) {
-                        personMap[entryDay] = personMap[entryDay]!! + 1
+                    try {
+                        val entryDate = fullDateFormat.parse(entry.date)
+                        val entryCal = Calendar.getInstance()
+                        entryCal.time = entryDate
+                        
+                        val matches = if (month != null) {
+                            entryCal.get(Calendar.YEAR) == month.year && (entryCal.get(Calendar.MONTH) + 1) == month.monthValue
+                        } else {
+                            // Simple string match for dayOffset logic (backward compatible)
+                            true
+                        }
+                        
+                        if (matches) {
+                            val entryDay = dateFormat.format(entryDate)
+                            if (personMap.containsKey(entryDay)) {
+                                personMap[entryDay] = personMap[entryDay]!! + 1
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // ignore malformed dates
                     }
                 }
                 result[person] = personMap
@@ -155,9 +180,9 @@ class PoopTrackerViewModel(
                         val entryCal = Calendar.getInstance()
                         entryCal.time = entryDate
                         if (entryCal.get(Calendar.YEAR) == year) {
-                            val month = monthFormat.format(entryDate)
-                            if (monthCounts.containsKey(month)) {
-                                monthCounts[month] = monthCounts[month]!! + 1
+                            val monthName = monthFormat.format(entryDate)
+                            if (monthCounts.containsKey(monthName)) {
+                                monthCounts[monthName] = monthCounts[monthName]!! + 1
                             }
                         }
                     } catch (e: Exception) {
@@ -166,14 +191,14 @@ class PoopTrackerViewModel(
                 }
 
                 var cumulativeCount = 0
-                val cumulativeEntries = allMonths.map { month ->
-                    cumulativeCount += monthCounts[month]!!
-                    month to cumulativeCount
+                val cumulativeEntries = allMonths.map { monthName ->
+                    cumulativeCount += monthCounts[monthName]!!
+                    monthName to cumulativeCount
                 }
                 cumulativeResult[person] = cumulativeEntries
 
-                val monthlyEntries = allMonths.map { month ->
-                    month to (monthCounts[month] ?: 0)
+                val monthlyEntries = allMonths.map { monthName ->
+                    monthName to (monthCounts[monthName] ?: 0)
                 }
                 monthlyResult[person] = monthlyEntries
             }
@@ -200,9 +225,9 @@ class PoopTrackerViewModel(
 
                 val averageEntries = personMonthlyEntries.map { (monthString, poopCount) ->
                     val monthDate = monthDateParseFormat.parse(monthString)
-                    val cal = Calendar.getInstance()
-                    cal.time = monthDate
-                    val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+                    val calAvg = Calendar.getInstance()
+                    calAvg.time = monthDate
+                    val daysInMonth = calAvg.getActualMaximum(Calendar.DAY_OF_MONTH)
                     val average = if (daysInMonth > 0) poopCount.toFloat() / daysInMonth else 0f
                     monthString to average
                 }

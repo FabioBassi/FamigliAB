@@ -11,21 +11,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,11 +49,10 @@ fun StandardPoopScreen(
     val poopEntries by viewModel.poopEntries.collectAsState()
     val poopChartData by viewModel.poopChartData.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
-    var dayOffset by remember { mutableIntStateOf(0) }
     var displayedMonth by remember { mutableStateOf(YearMonth.now()) }
 
-    LaunchedEffect(dayOffset) {
-        viewModel.loadPoopEntries(dayOffset)
+    LaunchedEffect(displayedMonth) {
+        viewModel.loadPoopEntries(month = displayedMonth)
     }
 
     Box(
@@ -87,9 +84,17 @@ fun StandardPoopScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                     ) {
+                        val currentMonthEntries = poopEntries.filter {
+                            try {
+                                val entryDate = LocalDate.parse(it.date, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                                entryDate.monthValue == displayedMonth.monthValue && entryDate.year == displayedMonth.year
+                            } catch (_: Exception) {
+                                false
+                            }
+                        }
                         Text(
                             modifier = Modifier.weight(1f),
-                            text = "Fab: ${poopEntries.count { it.person == Person.FAB }}",
+                            text = "Fab: ${currentMonthEntries.count { it.person == Person.FAB }}",
                             color = chartData.fabColor,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
@@ -97,7 +102,7 @@ fun StandardPoopScreen(
                         )
                         Text(
                             modifier = Modifier.weight(1f),
-                            text = "Sab: ${poopEntries.count { it.person == Person.SAB }}",
+                            text = "Sab: ${currentMonthEntries.count { it.person == Person.SAB }}",
                             color = chartData.sabColor,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
@@ -107,23 +112,13 @@ fun StandardPoopScreen(
                 }
             }
             Text(
-                text = "Last seven days",
+                text = "Monthly activity",
                 textAlign = androidx.compose.ui.text.style.TextAlign.Start,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.fillMaxWidth()
             )
             PoopChartCard(poopChartData = poopChartData)
-            Slider(
-                value = (30f - dayOffset.toFloat()),
-                onValueChange = { dayOffset = (30 - it.toInt()) },
-                valueRange = 0f..30f,
-                steps = 29,
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-            Button(onClick = onSwitchToStatistics) {
-                Text("View general statistics and graphs")
-            }
+            
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -132,22 +127,30 @@ fun StandardPoopScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = { displayedMonth = displayedMonth.minusMonths(1) }) {
-                    Icon(Icons.Filled.KeyboardArrowLeft, contentDescription = "Previous month")
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Previous month")
                 }
                 Text(
                     text = displayedMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 IconButton(onClick = { displayedMonth = displayedMonth.plusMonths(1) }) {
-                    Icon(Icons.Filled.KeyboardArrowRight, contentDescription = "Next month")
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Next month")
                 }
             }
+
+            Button(
+                onClick = onSwitchToStatistics,
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Text("View general statistics and graphs")
+            }
+
             LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
                 val currentMonthEntries = poopEntries.filter {
                     try {
                         val entryDate = LocalDate.parse(it.date, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                         entryDate.monthValue == displayedMonth.monthValue && entryDate.year == displayedMonth.year
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         false
                     }
                 }
