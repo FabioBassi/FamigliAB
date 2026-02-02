@@ -27,6 +27,41 @@ data class MedicationReminder(
     val lastTakenTime: String?
 )
 
+sealed class HistoryItem {
+    abstract val date: String
+    abstract val hour: String
+    abstract val name: String
+    abstract val dosage: String
+    abstract val person: Person
+    abstract val pillsPerDose: Int
+
+    data class Taken(val entry: MedicationEntry) : HistoryItem() {
+        override val date: String = entry.date
+        override val hour: String = entry.hour
+        override val name: String = entry.name
+        override val dosage: String = entry.dosage
+        override val person: Person = entry.person
+        override val pillsPerDose: Int = entry.pillsPerDose
+    }
+
+    data class Skipped(
+        override val date: String,
+        override val hour: String,
+        override val name: String,
+        override val dosage: String,
+        override val person: Person,
+        override val pillsPerDose: Int,
+        val scheduleId: String
+    ) : HistoryItem()
+
+    val dateTime: Date
+        get() = try {
+            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).parse("$date $hour") ?: Date(0)
+        } catch (e: Exception) {
+            Date(0)
+        }
+}
+
 class MedicationsViewModel(
     private val csvFileManager: CsvFileManager
 ) : ViewModel() {
@@ -43,7 +78,70 @@ class MedicationsViewModel(
     ) { schedules, entries ->
         val calendar = Calendar.getInstance()
         val todayDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(calendar.time)
-        val todayDayOfWeek = when (calendar.get(Calendar.DAY_OF_WEEK)) {
+        val todayDayOfWeek = getDayOfWeek(calendar)
+
+        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val today = sdf.parse(todayDate) ?: Date()
+
+        schedules.filter { isScheduleActiveOnDate(it, today, todayDayOfWeek) }
+            .map { schedule ->
+                val takenToday = entries.find { 
+                    it.scheduleId == schedule.id && it.date == todayDate 
+                }
+                MedicationReminder(
+                    schedule = schedule,
+                    isTakenToday = takenToday != null,
+                    lastTakenTime = takenToday?.hour
+                )
+            }.sortedBy { it.schedule.hour }
+    }.collectAsStateFlow(emptyList())
+
+    val historyItems: StateFlow<List<HistoryItem>> = combine(
+        _medicationSchedules,
+        _medicationEntries
+    ) { schedules, entries ->
+        val history = mutableListOf<HistoryItem>()
+        
+        // Add actual entries (Taken)
+        history.addAll(entries.map { HistoryItem.Taken(it) })
+
+        // Calculate skipped entries for the last 14 days
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val todayCalendar = Calendar.getInstance()
+        val todayDateStr = dateFormat.format(todayCalendar.time)
+
+        for (i in 1..14) {
+            val checkCalendar = Calendar.getInstance()
+            checkCalendar.add(Calendar.DAY_OF_YEAR, -i)
+            val checkDateStr = dateFormat.format(checkCalendar.time)
+            val checkDate = dateFormat.parse(checkDateStr) ?: continue
+            val dayOfWeek = getDayOfWeek(checkCalendar)
+
+            schedules.forEach { schedule ->
+                if (isScheduleActiveOnDate(schedule, checkDate, dayOfWeek)) {
+                    val wasTaken = entries.any { it.scheduleId == schedule.id && it.date == checkDateStr }
+                    if (!wasTaken) {
+                        history.add(
+                            HistoryItem.Skipped(
+                                date = checkDateStr,
+                                hour = schedule.hour,
+                                name = schedule.name,
+                                dosage = schedule.dosage,
+                                person = schedule.person,
+                                pillsPerDose = schedule.pillsPerDose,
+                                scheduleId = schedule.id
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        history.sortedByDescending { it.dateTime }
+    }.collectAsStateFlow(emptyList())
+
+    private fun getDayOfWeek(calendar: Calendar): String {
+        return when (calendar.get(Calendar.DAY_OF_WEEK)) {
             Calendar.MONDAY -> "MON"
             Calendar.TUESDAY -> "TUE"
             Calendar.WEDNESDAY -> "WED"
@@ -53,45 +151,34 @@ class MedicationsViewModel(
             Calendar.SUNDAY -> "SUN"
             else -> ""
         }
+    }
 
+    private fun isScheduleActiveOnDate(schedule: MedicationSchedule, date: Date, dayOfWeek: String): Boolean {
         val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val today = sdf.parse(todayDate) ?: Date()
-
-        schedules.filter { schedule ->
-            when (schedule.frequencyType) {
-                FrequencyType.WEEKLY -> {
-                    schedule.daysOfWeek?.contains(todayDayOfWeek) == true
-                }
-                FrequencyType.INTERVAL -> {
-                    if (schedule.startDate != null && schedule.intervalDays != null) {
-                        try {
-                            val startDate = sdf.parse(schedule.startDate)
-                            if (startDate != null && !today.before(startDate)) {
-                                val diffInMillis = today.time - startDate.time
-                                val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMillis).toInt()
-                                diffInDays % schedule.intervalDays == 0
-                            } else {
-                                false
-                            }
-                        } catch (e: Exception) {
+        return when (schedule.frequencyType) {
+            FrequencyType.WEEKLY -> {
+                schedule.daysOfWeek?.contains(dayOfWeek) == true
+            }
+            FrequencyType.INTERVAL -> {
+                if (schedule.startDate != null && schedule.intervalDays != null) {
+                    try {
+                        val startDate = sdf.parse(schedule.startDate)
+                        if (startDate != null && !date.before(startDate)) {
+                            val diffInMillis = date.time - startDate.time
+                            val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMillis).toInt()
+                            diffInDays % schedule.intervalDays == 0
+                        } else {
                             false
                         }
-                    } else {
+                    } catch (e: Exception) {
                         false
                     }
+                } else {
+                    false
                 }
             }
-        }.map { schedule ->
-            val takenToday = entries.find { 
-                it.scheduleId == schedule.id && it.date == todayDate 
-            }
-            MedicationReminder(
-                schedule = schedule,
-                isTakenToday = takenToday != null,
-                lastTakenTime = takenToday?.hour
-            )
-        }.sortedBy { it.schedule.hour }
-    }.collectAsStateFlow(emptyList())
+        }
+    }
 
     private fun <T> kotlinx.coroutines.flow.Flow<T>.collectAsStateFlow(initialValue: T): StateFlow<T> {
         val flow = this
@@ -180,7 +267,8 @@ class MedicationsViewModel(
                 name = reminder.schedule.name,
                 dosage = reminder.schedule.dosage,
                 person = reminder.schedule.person,
-                scheduleId = reminder.schedule.id
+                scheduleId = reminder.schedule.id,
+                pillsPerDose = reminder.schedule.pillsPerDose
             )
             csvFileManager.appendData(CsvFileType.MEDICATIONS, Date(), newEntry)
             loadData()

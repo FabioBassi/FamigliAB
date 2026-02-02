@@ -42,7 +42,7 @@ fun MedicationsScreen(
     paddingValues: PaddingValues,
     viewModel: MedicationsViewModel = viewModel(factory = MedicationsViewModel.Factory)
 ) {
-    val medicationEntries by viewModel.medicationEntries.collectAsState()
+    val historyItems by viewModel.historyItems.collectAsState()
     val medicationSchedules by viewModel.medicationSchedules.collectAsState()
     val reminders by viewModel.reminders.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
@@ -166,11 +166,18 @@ fun MedicationsScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
-                        items(medicationEntries) { entry ->
-                            MedicationItem(
-                                entry = entry,
-                                onDelete = { viewModel.deleteMedication(entry) }
-                            )
+                        items(historyItems) { item ->
+                            when (item) {
+                                is HistoryItem.Taken -> {
+                                    MedicationItem(
+                                        entry = item.entry,
+                                        onDelete = { viewModel.deleteMedication(item.entry) }
+                                    )
+                                }
+                                is HistoryItem.Skipped -> {
+                                    SkippedMedicationItem(item = item)
+                                }
+                            }
                         }
                     }
                 }

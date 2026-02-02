@@ -47,4 +47,9 @@
     <string name="mark_as_taken">Assunto</string>
     <string name="taken_at">Preso alle %s</string>
     <string name="schedule">Programma</string>
+
+    <plurals name="pills_to_take">
+        <item quantity="one">%d pillola</item>
+        <item quantity="other">%d pillole</item>
+    </plurals>
 </resources>

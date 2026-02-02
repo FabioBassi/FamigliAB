@@ -6,10 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -17,25 +15,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.fabiobassi.famigliab.R
+import com.fabiobassi.famigliab.data.FrequencyType
+import com.fabiobassi.famigliab.data.MedicationSchedule
 
 @Composable
-fun ReminderItem(
-    reminder: MedicationReminder,
-    onMarkAsTaken: () -> Unit
+fun ScheduleItem(
+    schedule: MedicationSchedule,
+    onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        colors = if (reminder.isTakenToday) {
-            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-        } else {
-            CardDefaults.cardColors()
-        }
+        shape = MaterialTheme.shapes.medium
     ) {
         Row(
             modifier = Modifier
@@ -46,42 +40,43 @@ fun ReminderItem(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = reminder.schedule.name,
+                    text = schedule.name,
                     style = MaterialTheme.typography.titleMedium,
-                    color = if (reminder.isTakenToday) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "${reminder.schedule.dosage} • ${reminder.schedule.person.name}",
+                    text = "${schedule.dosage} • ${schedule.person.name}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = pluralStringResource(
                         id = R.plurals.pills_to_take,
-                        count = reminder.schedule.pillsPerDose,
-                        reminder.schedule.pillsPerDose
+                        count = schedule.pillsPerDose,
+                        schedule.pillsPerDose
                     ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
                 Text(
-                    text = if (reminder.isTakenToday) {
-                        stringResource(id = R.string.taken_at, reminder.lastTakenTime ?: "")
-                    } else {
-                        "Scheduled at ${reminder.schedule.hour}"
+                    text = when (schedule.frequencyType) {
+                        FrequencyType.WEEKLY -> "Every week: ${schedule.daysOfWeek}"
+                        FrequencyType.INTERVAL -> "Every ${schedule.intervalDays} days, starting ${schedule.startDate}"
                     },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline
+                )
+                Text(
+                    text = "Scheduled at ${schedule.hour}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (reminder.isTakenToday) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
-            IconButton(
-                onClick = onMarkAsTaken,
-                enabled = !reminder.isTakenToday
-            ) {
+            IconButton(onClick = onDelete) {
                 Icon(
-                    imageVector = if (reminder.isTakenToday) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
-                    contentDescription = stringResource(id = R.string.mark_as_taken),
-                    tint = if (reminder.isTakenToday) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary
+                    Icons.Default.Delete,
+                    contentDescription = stringResource(id = R.string.delete),
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }
