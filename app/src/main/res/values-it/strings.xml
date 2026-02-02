@@ -35,4 +35,16 @@
     <string name="mean_monthly_summary_table_title">Cacche medie giornaliere</string>
     <string name="average_monthly_poop_chart_title">Media giornaliera di cacche</string>
     <string name="medications">Medicinali</string>
+    <string name="add_medication">Aggiungi medicinale</string>
+    <string name="log_medication">Registra medicinale</string>
+    <string name="medication_name">Nome medicinale</string>
+    <string name="dosage">Dosaggio (es. 500mg)</string>
+    <string name="person">Persona</string>
+    <string name="log">Registra</string>
+    <string name="no_medications">Nessun medicinale registrato.</string>
+    <string name="today">Oggi</string>
+    <string name="history">Storico</string>
+    <string name="mark_as_taken">Assunto</string>
+    <string name="taken_at">Preso alle %s</string>
+    <string name="schedule">Programma</string>
 </resources>

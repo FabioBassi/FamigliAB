@@ -13,7 +13,9 @@ enum class CsvFileType(val path: String) {
     PAYMENTS("Payments"),
     INCOMES("Incomes"),
     VOUCHERS("Vouchers"),
-    POOP_ENTRIES("PoopTracker")
+    POOP_ENTRIES("PoopTracker"),
+    MEDICATIONS("Medications"),
+    MEDICATION_SCHEDULES("MedicationSchedules")
 }
 
 class CsvFileManager(private val context: Context) {
@@ -21,6 +23,8 @@ class CsvFileManager(private val context: Context) {
     fun getFileForMonth(type: CsvFileType, date: Date): File {
         val fileName = when (type) {
             CsvFileType.POOP_ENTRIES -> "poop_entries.csv"
+            CsvFileType.MEDICATIONS -> "medications.csv"
+            CsvFileType.MEDICATION_SCHEDULES -> "medication_schedules.csv"
             else -> {
                 val monthFormat = SimpleDateFormat("MMM_yy", Locale.US)
                 "${monthFormat.format(date).lowercase()}.csv"
@@ -31,6 +35,8 @@ class CsvFileManager(private val context: Context) {
 
         val directoryPath = when (type) {
             CsvFileType.POOP_ENTRIES -> "FamigliAB/PoopTracker"
+            CsvFileType.MEDICATIONS -> "FamigliAB/Medications"
+            CsvFileType.MEDICATION_SCHEDULES -> "FamigliAB/Medications"
             else -> "FamigliAB/Budgeting/${type.path}"
         }
         val directory = File(baseDir, directoryPath)
