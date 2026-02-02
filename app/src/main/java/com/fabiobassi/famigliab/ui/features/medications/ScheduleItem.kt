@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.fabiobassi.famigliab.R
@@ -45,6 +46,15 @@ fun ScheduleItem(
                 Text(
                     text = "${schedule.dosage} • ${schedule.person.name}",
                     style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = pluralStringResource(
+                        id = R.plurals.pills_to_take,
+                        count = schedule.pillsPerDose,
+                        schedule.pillsPerDose
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary
                 )
                 
                 val frequencyText = when (schedule.frequencyType) {

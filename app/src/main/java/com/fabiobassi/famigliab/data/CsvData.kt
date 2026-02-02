@@ -31,7 +31,14 @@ inline fun <reified T : CsvData> readCsv(
     noinline creator: (List<String>) -> T?
 ): List<T> {
     if (!file.exists() || file.length() == 0L) return emptyList()
-    return csvReader().readAll(file)
-        .filter { it.any(String::isNotEmpty) }
-        .mapNotNull { CsvData.fromCsvRow(it, creator) }
+    // Using a try-catch and configuring the reader to be more lenient
+    return try {
+        csvReader {
+            skipEmptyLine = true
+        }.readAll(file)
+            .mapNotNull { CsvData.fromCsvRow(it, creator) }
+    } catch (e: Exception) {
+        // If the file is corrupted or has inconsistent rows, return empty list to avoid crash
+        emptyList()
+    }
 }
