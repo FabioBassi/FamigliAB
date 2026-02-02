@@ -34,4 +34,5 @@
     <string name="monthly_summary_table_title">Resoconto mensile</string>
     <string name="mean_monthly_summary_table_title">Cacche medie giornaliere</string>
     <string name="average_monthly_poop_chart_title">Media giornaliera di cacche</string>
+    <string name="medications">Medicinali</string>
 </resources>

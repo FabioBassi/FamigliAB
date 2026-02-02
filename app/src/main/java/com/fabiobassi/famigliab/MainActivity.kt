@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AirlineSeatLegroomNormal
 import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -38,19 +39,18 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.fabiobassi.famigliab.ui.features.budgeting.BudgetingScreen
+import com.fabiobassi.famigliab.ui.features.medications.MedicationsScreen
 import com.fabiobassi.famigliab.ui.features.passwords.PasswordsScreen
 import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopTrackerScreenContainer
 import com.fabiobassi.famigliab.ui.features.settings.SettingsScreen
@@ -70,7 +70,8 @@ class MainActivity : ComponentActivity() {
 
 sealed class NavItem(val titleResId: Int, val icon: ImageVector, val route: String) {
     object Budgeting : NavItem(R.string.budgeting, Icons.Default.Analytics, "budgeting")
-    object GroceryList : NavItem(R.string.poop_tracker, Icons.Default.AirlineSeatLegroomNormal, "grocery_list")
+    object PoopTracker : NavItem(R.string.poop_tracker, Icons.Default.AirlineSeatLegroomNormal, "poop_tracker")
+    object Medications : NavItem(R.string.medications, Icons.Default.LocalHospital, "medications")
     object Passwords : NavItem(R.string.passwords, Icons.Default.Lock, "passwords")
     object Settings : NavItem(R.string.settings, Icons.Default.Settings, "settings")
 }
@@ -81,7 +82,8 @@ fun MainScreen() {
 
     val items = listOf(
         NavItem.Budgeting,
-        NavItem.GroceryList,
+        NavItem.PoopTracker,
+        NavItem.Medications,
         NavItem.Passwords,
         NavItem.Settings
     )
@@ -152,7 +154,8 @@ fun MainScreen() {
                     ) {
                         val screenPadding = PaddingValues(0.dp)
                         composable(NavItem.Budgeting.route) { BudgetingScreen(screenPadding) }
-                        composable(NavItem.GroceryList.route) { PoopTrackerScreenContainer(screenPadding) }
+                        composable(NavItem.PoopTracker.route) { PoopTrackerScreenContainer(screenPadding) }
+                        composable(NavItem.Medications.route) { MedicationsScreen(screenPadding) }
                         composable(NavItem.Passwords.route) { PasswordsScreen(screenPadding) }
                         composable(NavItem.Settings.route) { SettingsScreen(screenPadding) }
                     }
