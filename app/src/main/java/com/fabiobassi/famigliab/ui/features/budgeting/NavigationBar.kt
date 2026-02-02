@@ -1,10 +1,11 @@
 package com.fabiobassi.famigliab.ui.features.budgeting
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -15,22 +16,24 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
 fun NavigationBar(
+    modifier: Modifier = Modifier,
     currentDate: Date,
     onMonthClick: () -> Unit,
     onPreviousMonthClick: () -> Unit,
@@ -39,79 +42,79 @@ fun NavigationBar(
     isAnnualReport: Boolean
 ) {
     val monthFormat = remember(isAnnualReport) {
-        SimpleDateFormat(if (isAnnualReport) "yyyy" else "MMMM yyyy", Locale.getDefault())
+        SimpleDateFormat(if (isAnnualReport) "yyyy" else "MMMM", Locale.getDefault())
     }
+    val yearFormat = remember { SimpleDateFormat("yyyy", Locale.getDefault()) }
 
     Card(
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
-        shape = MaterialTheme.shapes.medium
+        shape = MaterialTheme.shapes.large
     ) {
         Row(
             modifier = Modifier
-                .padding(vertical = 8.dp)
+                .padding(horizontal = 8.dp, vertical = 8.dp)
                 .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(
-                onClick = onPreviousMonthClick,
-                modifier = Modifier.size(48.dp)
-            ) {
+            IconButton(onClick = onPreviousMonthClick) {
                 Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Previous Month",
-                    tint = MaterialTheme.colorScheme.onSurface
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Previous"
                 )
             }
+
             IconButton(
                 onClick = onMonthClick,
-                modifier = Modifier.size(48.dp),
                 enabled = !isAnnualReport
             ) {
                 Icon(
-                    Icons.AutoMirrored.Filled.ManageSearch,
-                    contentDescription = "Select Month",
-                    tint = MaterialTheme.colorScheme.onSurface
+                    imageVector = Icons.AutoMirrored.Filled.ManageSearch,
+                    contentDescription = "Select Month"
                 )
             }
 
-            Box(
+            Column(
                 modifier = Modifier
-                    .weight(1f),
-                contentAlignment = Alignment.Center
+                    .weight(1f)
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable(enabled = !isAnnualReport, onClick = onMonthClick)
+                    .padding(vertical = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = monthFormat.format(currentDate)
-                        .uppercase()
-                        .replace(" ", "\n"),
-                    style = MaterialTheme.typography.headlineSmall,
+                    text = monthFormat.format(currentDate).uppercase(),
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
-                    lineHeight = 22.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (!isAnnualReport) {
+                    Text(
+                        text = yearFormat.format(currentDate),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            IconToggleButton(
+                checked = isAnnualReport,
+                onCheckedChange = { onAnnualReportClick() }
+            ) {
+                Icon(
+                    imageVector = if (isAnnualReport) Icons.Filled.Assessment else Icons.Filled.AreaChart,
+                    contentDescription = "Toggle Annual Report"
                 )
             }
 
-            IconButton(
-                onClick = onAnnualReportClick,
-                modifier = Modifier.size(48.dp)
-            ) {
+            IconButton(onClick = onNextMonthClick) {
                 Icon(
-                    Icons.Filled.AreaChart,
-                    contentDescription = "Annual Report",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            IconButton(
-                onClick = onNextMonthClick,
-                modifier = Modifier.size(48.dp)
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = "Next Month",
-                    tint = MaterialTheme.colorScheme.onSurface
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Next"
                 )
             }
         }
