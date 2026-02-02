@@ -10,6 +10,7 @@ import com.fabiobassi.famigliab.data.MedicationSchedule
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.file.CsvFileManager
 import com.fabiobassi.famigliab.file.CsvFileType
+import com.fabiobassi.famigliab.notifications.MedicationNotificationManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -63,7 +64,8 @@ sealed class HistoryItem {
 }
 
 class MedicationsViewModel(
-    private val csvFileManager: CsvFileManager
+    private val csvFileManager: CsvFileManager,
+    private val notificationManager: MedicationNotificationManager
 ) : ViewModel() {
 
     private val _medicationEntries = MutableStateFlow<List<MedicationEntry>>(emptyList())
@@ -221,6 +223,9 @@ class MedicationsViewModel(
                 }
             }
             _medicationSchedules.value = schedules
+            
+            // Re-schedule notifications on load
+            notificationManager.scheduleNotifications(schedules)
         }
     }
 
@@ -248,6 +253,7 @@ class MedicationsViewModel(
                 startDate = startDate
             )
             csvFileManager.appendData(CsvFileType.MEDICATION_SCHEDULES, Date(), newSchedule)
+            notificationManager.scheduleNotification(newSchedule)
             loadData()
         }
     }
@@ -259,6 +265,7 @@ class MedicationsViewModel(
                 if (it.id == schedule.id) it.copy(isArchived = true) else it
             }
             csvFileManager.writeData(CsvFileType.MEDICATION_SCHEDULES, Date(), updatedSchedules)
+            notificationManager.cancelNotification(schedule)
             loadData()
         }
     }
@@ -309,8 +316,12 @@ class MedicationsViewModel(
 
     fun deleteArchivedSchedulesAndHistory() {
         viewModelScope.launch {
-            val archivedIds = _medicationSchedules.value.filter { it.isArchived }.map { it.id }.toSet()
+            val archivedSchedules = _medicationSchedules.value.filter { it.isArchived }
+            val archivedIds = archivedSchedules.map { it.id }.toSet()
             
+            // Cancel notifications for archived schedules being permanently removed
+            archivedSchedules.forEach { notificationManager.cancelNotification(it) }
+
             // Remove archived schedules
             val updatedSchedules = _medicationSchedules.value.filter { !it.isArchived }
             csvFileManager.writeData(CsvFileType.MEDICATION_SCHEDULES, Date(), updatedSchedules)
@@ -332,8 +343,10 @@ class MedicationsViewModel(
             ): T {
                 val application =
                     checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
+                val context = application.applicationContext
                 return MedicationsViewModel(
-                    CsvFileManager(application.applicationContext)
+                    CsvFileManager(context),
+                    MedicationNotificationManager(context)
                 ) as T
             }
         }
