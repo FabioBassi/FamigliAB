@@ -1,5 +1,6 @@
 package com.fabiobassi.famigliab.ui.features.medications
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,17 +11,24 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,11 +40,13 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.SettingsDataStore
+import java.util.Calendar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderItem(
     reminder: MedicationReminder,
-    onMarkAsTaken: () -> Unit
+    onMarkAsTaken: (String) -> Unit
 ) {
     val context = LocalContext.current
     val settingsDataStore = remember { SettingsDataStore(context) }
@@ -48,8 +58,42 @@ fun ReminderItem(
         MaterialTheme.colorScheme.primary
     }
 
+    var showTimePicker by remember { mutableStateOf(false) }
+    val currentTime = Calendar.getInstance()
+    val timePickerState = rememberTimePickerState(
+        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = currentTime.get(Calendar.MINUTE),
+        is24Hour = true
+    )
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val selectedTime = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
+                    onMarkAsTaken(selectedTime)
+                    showTimePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            },
+            title = { Text(stringResource(id = R.string.log_medication)) },
+            text = {
+                TimePicker(state = timePickerState)
+            }
+        )
+    }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = !reminder.isTakenToday) { showTimePicker = true },
         colors = if (reminder.isTakenToday) {
             CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
         } else {
@@ -121,7 +165,7 @@ fun ReminderItem(
                 )
             }
             IconButton(
-                onClick = onMarkAsTaken,
+                onClick = { showTimePicker = true },
                 enabled = !reminder.isTakenToday
             ) {
                 Icon(

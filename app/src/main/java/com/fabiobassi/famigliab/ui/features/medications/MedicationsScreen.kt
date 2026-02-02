@@ -143,7 +143,7 @@ fun MedicationsScreen(
                         items(reminders) { reminder ->
                             ReminderItem(
                                 reminder = reminder,
-                                onMarkAsTaken = { viewModel.markAsTaken(reminder) }
+                                onMarkAsTaken = { hour -> viewModel.markAsTaken(reminder, hour) }
                             )
                         }
                     }
@@ -175,7 +175,10 @@ fun MedicationsScreen(
                                     )
                                 }
                                 is HistoryItem.Skipped -> {
-                                    SkippedMedicationItem(item = item)
+                                    SkippedMedicationItem(
+                                        item = item,
+                                        onMarkAsTaken = { hour -> viewModel.markSkippedAsTaken(item, hour) }
+                                    )
                                 }
                             }
                         }

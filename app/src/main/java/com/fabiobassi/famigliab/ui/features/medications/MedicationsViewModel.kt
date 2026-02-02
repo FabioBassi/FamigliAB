@@ -255,7 +255,7 @@ class MedicationsViewModel(
         }
     }
 
-    fun markAsTaken(reminder: MedicationReminder) {
+    fun markAsTaken(reminder: MedicationReminder, hour: String? = null) {
         viewModelScope.launch {
             val now = Date()
             val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -263,12 +263,28 @@ class MedicationsViewModel(
             
             val newEntry = MedicationEntry(
                 date = dateFormat.format(now),
-                hour = hourFormat.format(now),
+                hour = hour ?: hourFormat.format(now),
                 name = reminder.schedule.name,
                 dosage = reminder.schedule.dosage,
                 person = reminder.schedule.person,
                 scheduleId = reminder.schedule.id,
                 pillsPerDose = reminder.schedule.pillsPerDose
+            )
+            csvFileManager.appendData(CsvFileType.MEDICATIONS, Date(), newEntry)
+            loadData()
+        }
+    }
+
+    fun markSkippedAsTaken(item: HistoryItem.Skipped, hour: String) {
+        viewModelScope.launch {
+            val newEntry = MedicationEntry(
+                date = item.date,
+                hour = hour,
+                name = item.name,
+                dosage = item.dosage,
+                person = item.person,
+                scheduleId = item.scheduleId,
+                pillsPerDose = item.pillsPerDose
             )
             csvFileManager.appendData(CsvFileType.MEDICATIONS, Date(), newEntry)
             loadData()
