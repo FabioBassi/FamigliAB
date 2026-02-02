@@ -70,7 +70,10 @@ class MedicationsViewModel(
     val medicationEntries: StateFlow<List<MedicationEntry>> = _medicationEntries.asStateFlow()
 
     private val _medicationSchedules = MutableStateFlow<List<MedicationSchedule>>(emptyList())
-    val medicationSchedules: StateFlow<List<MedicationSchedule>> = _medicationSchedules.asStateFlow()
+    // Only show non-archived schedules in the schedule list
+    val medicationSchedules: StateFlow<List<MedicationSchedule>> = combine(_medicationSchedules) { schedules ->
+        schedules[0].filter { !it.isArchived }
+    }.collectAsStateFlow(emptyList())
 
     val reminders: StateFlow<List<MedicationReminder>> = combine(
         _medicationSchedules,
@@ -83,7 +86,8 @@ class MedicationsViewModel(
         val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val today = sdf.parse(todayDate) ?: Date()
 
-        schedules.filter { isScheduleActiveOnDate(it, today, todayDayOfWeek) }
+        // Only show reminders for active (non-archived) schedules
+        schedules.filter { !it.isArchived && isScheduleActiveOnDate(it, today, todayDayOfWeek) }
             .map { schedule ->
                 val takenToday = entries.find { 
                     it.scheduleId == schedule.id && it.date == todayDate 
@@ -102,7 +106,7 @@ class MedicationsViewModel(
     ) { schedules, entries ->
         val history = mutableListOf<HistoryItem>()
         
-        // Add actual entries (Taken)
+        // Add actual entries (Taken) - even if the schedule is archived
         history.addAll(entries.map { HistoryItem.Taken(it) })
 
         // Calculate skipped entries for the last 14 days
@@ -117,7 +121,8 @@ class MedicationsViewModel(
             val checkDate = dateFormat.parse(checkDateStr) ?: continue
             val dayOfWeek = getDayOfWeek(checkCalendar)
 
-            schedules.forEach { schedule ->
+            // Only calculate skipped for active (non-archived) schedules
+            schedules.filter { !it.isArchived }.forEach { schedule ->
                 if (isScheduleActiveOnDate(schedule, checkDate, dayOfWeek)) {
                     val wasTaken = entries.any { it.scheduleId == schedule.id && it.date == checkDateStr }
                     if (!wasTaken) {
@@ -249,7 +254,10 @@ class MedicationsViewModel(
 
     fun deleteSchedule(schedule: MedicationSchedule) {
         viewModelScope.launch {
-            val updatedSchedules = _medicationSchedules.value.filter { it.id != schedule.id }
+            // Soft delete: mark as archived instead of removing
+            val updatedSchedules = _medicationSchedules.value.map {
+                if (it.id == schedule.id) it.copy(isArchived = true) else it
+            }
             csvFileManager.writeData(CsvFileType.MEDICATION_SCHEDULES, Date(), updatedSchedules)
             loadData()
         }
@@ -295,6 +303,22 @@ class MedicationsViewModel(
         viewModelScope.launch {
             val updatedEntries = _medicationEntries.value.filter { it != entry }
             csvFileManager.writeData(CsvFileType.MEDICATIONS, Date(), updatedEntries)
+            loadData()
+        }
+    }
+
+    fun deleteArchivedSchedulesAndHistory() {
+        viewModelScope.launch {
+            val archivedIds = _medicationSchedules.value.filter { it.isArchived }.map { it.id }.toSet()
+            
+            // Remove archived schedules
+            val updatedSchedules = _medicationSchedules.value.filter { !it.isArchived }
+            csvFileManager.writeData(CsvFileType.MEDICATION_SCHEDULES, Date(), updatedSchedules)
+            
+            // Remove entries associated with archived schedules
+            val updatedEntries = _medicationEntries.value.filter { it.scheduleId !in archivedIds }
+            csvFileManager.writeData(CsvFileType.MEDICATIONS, Date(), updatedEntries)
+
             loadData()
         }
     }

@@ -6,40 +6,32 @@ import android.provider.OpenableColumns
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AirlineSeatLegroomNormal
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -50,7 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -58,60 +49,44 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.core.graphics.toColorInt
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.SettingsDataStore
+import com.fabiobassi.famigliab.ui.features.settings.dialogs.ImportPaymentsDialog
+import com.fabiobassi.famigliab.ui.features.medications.MedicationsViewModel
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ColorSettingDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ConfirmDeletePoopTrackerDataDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ConfirmImportPasswordsDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ConfirmImportPoopEntriesDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.DeleteAllBudgetingDataDialog
-import com.fabiobassi.famigliab.ui.features.settings.dialogs.ImportPaymentsDialog
-import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
+import com.fabiobassi.famigliab.ui.features.settings.dialogs.DeleteArchivedMedicationDataDialog
+import com.fabiobassi.famigliab.ui.features.settings.dialogs.SharePasswordsDialog
 import java.io.File
 import java.io.FileOutputStream
 
 @Composable
-fun SettingsScreen(paddingValues: PaddingValues) {
+fun SettingsScreen(
+    paddingValues: PaddingValues,
+    medicationsViewModel: MedicationsViewModel = viewModel(factory = MedicationsViewModel.Factory)
+) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val settingsDataStore = remember { SettingsDataStore(context) }
-    var showPasswordResetDialog by remember { mutableStateOf(false) }
-    var showShareOptionsDialog by remember { mutableStateOf(false) }
-    var showImportPaymentCsvDialog by remember { mutableStateOf(false) }
-    var showImportPoopEntriesDialog by remember { mutableStateOf(false) }
-    var showDeleteAllBudgetingDataDialog by remember { mutableStateOf(false) }
-    var showDeletePoopTrackerCsvDialog by remember { mutableStateOf(false) }
+    val fabColor by settingsDataStore.getColorFor("Fab").collectAsState(initial = "")
+    val sabColor by settingsDataStore.getColorFor("Sab").collectAsState(initial = "")
+
     var showColorSettingDialog by remember { mutableStateOf(false) }
     var personToSetColorFor by remember { mutableStateOf<String?>(null) }
-
-    val fabColorHex by settingsDataStore.getColorFor("Fab").collectAsState(initial = "")
-    val sabColorHex by settingsDataStore.getColorFor("Sab").collectAsState(initial = "")
-
-    val fabColor = remember(fabColorHex) {
-        try {
-            if (fabColorHex.isNotEmpty()) {
-                Color(android.graphics.Color.parseColor(fabColorHex))
-            } else {
-                Color.Transparent
-            }
-        } catch (e: Exception) {
-            Color.Transparent
-        }
-    }
-    val sabColor = remember(sabColorHex) {
-        try {
-            if (sabColorHex.isNotEmpty()) {
-                Color(android.graphics.Color.parseColor(sabColorHex))
-            } else {
-                Color.Transparent
-            }
-        } catch (e: Exception) {
-            Color.Transparent
-        }
-    }
+    var showImportPaymentCsvDialog by remember { mutableStateOf(false) }
+    var showDeleteAllBudgetingDataDialog by remember { mutableStateOf(false) }
+    var showImportPoopEntriesDialog by remember { mutableStateOf(false) }
+    var showDeletePoopTrackerCsvDialog by remember { mutableStateOf(false) }
+    var showPasswordResetDialog by remember { mutableStateOf(false) }
+    var showShareOptionsDialog by remember { mutableStateOf(false) }
+    var showDeleteArchivedMedicationsDialog by remember { mutableStateOf(false) }
 
     val importPasswordsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -119,8 +94,8 @@ fun SettingsScreen(paddingValues: PaddingValues) {
         uri?.let {
             try {
                 context.contentResolver.openInputStream(it)?.use { inputStream ->
-                    val passwordsFile = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
-                    FileOutputStream(passwordsFile).use { outputStream ->
+                    val passwordFile = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
+                    FileOutputStream(passwordFile).use { outputStream ->
                         inputStream.copyTo(outputStream)
                     }
                     Toast.makeText(context, "Passwords imported successfully!", Toast.LENGTH_SHORT).show()
@@ -260,6 +235,18 @@ fun SettingsScreen(paddingValues: PaddingValues) {
         }
 
         item {
+            SettingsSection(title = "Medications", icon = Icons.Default.LocalHospital) {
+                PreferenceItem(
+                    title = "Delete archived schedules and history",
+                    titleColor = MaterialTheme.colorScheme.error,
+                    icon = Icons.Default.DeleteForever,
+                    iconColor = MaterialTheme.colorScheme.error,
+                    onClick = { showDeleteArchivedMedicationsDialog = true }
+                )
+            }
+        }
+
+        item {
             SettingsSection(title = "Passwords", icon = Icons.Default.Lock) {
                 PreferenceItem(
                     title = "Import passwords.json",
@@ -277,6 +264,16 @@ fun SettingsScreen(paddingValues: PaddingValues) {
     }
 
     // Dialogs logic
+    if (showDeleteArchivedMedicationsDialog) {
+        DeleteArchivedMedicationDataDialog(
+            onDismissRequest = { showDeleteArchivedMedicationsDialog = false },
+            onConfirm = {
+                medicationsViewModel.deleteArchivedSchedulesAndHistory()
+                Toast.makeText(context, "Archived medication data deleted", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
     if (showPasswordResetDialog) {
         ConfirmImportPasswordsDialog(
             onDismissRequest = { showPasswordResetDialog = false },
@@ -287,58 +284,35 @@ fun SettingsScreen(paddingValues: PaddingValues) {
     }
 
     if (showShareOptionsDialog) {
-        AlertDialog(
+        val shareFileText = stringResource(R.string.share_file)
+        SharePasswordsDialog(
             onDismissRequest = { showShareOptionsDialog = false },
-            title = { Text(stringResource(id = R.string.share_or_save_passwords)) },
-            text = {
-                Column {
-                    // Share option
-                    val shareFileText = stringResource(R.string.share_file)
-                    TextButton(onClick = {
-                        val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
-                        if (file.exists()) {
-                            val uri = FileProvider.getUriForFile(context, "com.fabiobassi.famigliab.fileprovider", file)
-                            val intent = Intent(Intent.ACTION_SEND).apply {
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                type = "application/json"
-                                putExtra(Intent.EXTRA_STREAM, uri)
-                            }
-                            val chooser = Intent.createChooser(intent, shareFileText)
-                            context.startActivity(chooser)
-                        } else {
-                            Toast.makeText(context, R.string.passwords_file_not_found, Toast.LENGTH_SHORT).show()
-                        }
-                        showShareOptionsDialog = false
-                    }) {
-                        Text(stringResource(id = R.string.share_with_other_apps))
+            onShare = {
+                val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
+                if (file.exists()) {
+                    val uri = FileProvider.getUriForFile(context, "com.fabiobassi.famigliab.fileprovider", file)
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        type = "application/json"
+                        putExtra(Intent.EXTRA_STREAM, uri)
                     }
-
-                    // Save to Files option
-                    TextButton(onClick = {
-                        saveFileLauncher.launch("passwords.json")
-                    }) {
-                        Text(stringResource(id = R.string.save_to_files))
-                    }
-
-                    // Copy to Clipboard option
-                    TextButton(onClick = {
-                        val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
-                        if (file.exists()) {
-                            val fileContent = file.readText()
-                            clipboardManager.setText(AnnotatedString(fileContent))
-                            Toast.makeText(context, R.string.passwords_copied_to_clipboard, Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, R.string.passwords_file_not_found, Toast.LENGTH_SHORT).show()
-                        }
-                        showShareOptionsDialog = false
-                    }) {
-                        Text(stringResource(id = R.string.copy_to_clipboard))
-                    }
+                    val chooser = Intent.createChooser(intent, shareFileText)
+                    context.startActivity(chooser)
+                } else {
+                    Toast.makeText(context, R.string.passwords_file_not_found, Toast.LENGTH_SHORT).show()
                 }
             },
-            confirmButton = {
-                TextButton(onClick = { showShareOptionsDialog = false }) {
-                    Text(stringResource(id = R.string.cancel))
+            onSaveToFiles = {
+                saveFileLauncher.launch("passwords.json")
+            },
+            onCopyToClipboard = {
+                val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
+                if (file.exists()) {
+                    val fileContent = file.readText()
+                    clipboardManager.setText(AnnotatedString(fileContent))
+                    Toast.makeText(context, R.string.passwords_copied_to_clipboard, Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, R.string.passwords_file_not_found, Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -410,26 +384,16 @@ fun SettingsSection(
                 imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.padding(end = 12.dp)
             )
-            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold
             )
         }
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.outlinedCardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-        ) {
-            Column(content = content)
-        }
+        Column(content = content)
     }
 }
 
@@ -440,56 +404,46 @@ fun PreferenceItem(
     onClick: () -> Unit,
     titleColor: Color = MaterialTheme.colorScheme.onSurface,
     iconColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    trailing: (@Composable () -> Unit)? = null
+    trailing: @Composable (() -> Unit)? = null
 ) {
-    ListItem(
-        headlineContent = {
-            Text(
-                text = title,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                style = MaterialTheme.typography.bodyLarge
-            )
-        },
-        leadingContent = {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconColor
-            )
-        },
-        trailingContent = trailing,
-        colors = ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-        ),
+    Row(
         modifier = Modifier
-            .clickable { onClick() }
-    )
-}
-
-@Composable
-fun ColorPreview(color: Color) {
-    Box(
-        modifier = Modifier
-            .size(28.dp)
-            .clip(CircleShape)
-            .background(color)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
-    )
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = iconColor,
+            modifier = Modifier.padding(end = 16.dp)
+        )
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            color = titleColor,
+            modifier = Modifier.weight(1f)
+        )
+        trailing?.invoke()
+    }
 }
 
 @Composable
 fun PreferenceDivider() {
-    HorizontalDivider(
+    Divider(
         modifier = Modifier.padding(horizontal = 16.dp),
-        thickness = 0.5.dp,
         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
     )
 }
 
-@Preview(showBackground = true)
 @Composable
-fun SettingsScreenPreview() {
-    FamigliABTheme {
-        SettingsScreen(paddingValues = PaddingValues(0.dp))
-    }
+fun ColorPreview(colorHex: String) {
+    val color = if (colorHex.isNotEmpty()) Color(colorHex.toColorInt()) else Color.Transparent
+    Surface(
+        modifier = Modifier.size(24.dp),
+        shape = CircleShape,
+        color = color,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+    ) {}
 }

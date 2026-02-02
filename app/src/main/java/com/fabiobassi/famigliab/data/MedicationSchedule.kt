@@ -17,7 +17,8 @@ data class MedicationSchedule(
     val frequencyType: FrequencyType = FrequencyType.WEEKLY,
     val daysOfWeek: String? = "MON,TUE,WED,THU,FRI,SAT,SUN", // Comma separated days for WEEKLY
     val intervalDays: Int? = null, // For INTERVAL
-    val startDate: String? = null // For INTERVAL: dd/MM/yyyy
+    val startDate: String? = null, // For INTERVAL: dd/MM/yyyy
+    val isArchived: Boolean = false
 ) : CsvData {
     override fun toCsvRow(): List<String> {
         return listOf(
@@ -30,7 +31,8 @@ data class MedicationSchedule(
             frequencyType.name,
             daysOfWeek ?: "",
             intervalDays?.toString() ?: "",
-            startDate ?: ""
+            startDate ?: "",
+            isArchived.toString()
         )
     }
 
@@ -49,7 +51,8 @@ data class MedicationSchedule(
                     frequencyType = if (hasNewFields) FrequencyType.valueOf(row[6]) else FrequencyType.WEEKLY,
                     daysOfWeek = if (hasNewFields) row[7].ifEmpty { null } else (if (row.size > 5) row[5] else "MON,TUE,WED,THU,FRI,SAT,SUN"),
                     intervalDays = if (hasNewFields) row[8].toIntOrNull() else null,
-                    startDate = if (hasNewFields) row[9].ifEmpty { null } else null
+                    startDate = if (hasNewFields) row[9].ifEmpty { null } else null,
+                    isArchived = if (row.size > 10) row[10].toBoolean() else false
                 )
             } catch (e: Exception) {
                 null
