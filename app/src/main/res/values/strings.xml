@@ -47,6 +47,9 @@
     <string name="mark_as_taken">Mark as Taken</string>
     <string name="taken_at">Taken at %s</string>
     <string name="schedule">Schedule</string>
+    <string name="export_medications_history">Export medications history</string>
+    <string name="medications_history_exported">Medications history exported successfully!</string>
+    <string name="medications_file_not_found">Medications history file not found</string>
 
     <plurals name="pills_to_take">
         <item quantity="one">%d pill</item>

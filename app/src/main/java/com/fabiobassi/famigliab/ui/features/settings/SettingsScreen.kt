@@ -36,7 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
+import com.fabiobassi.famigliab.data.MedicationEntry
 import com.fabiobassi.famigliab.data.SettingsDataStore
+import com.fabiobassi.famigliab.file.CsvFileType
 import com.fabiobassi.famigliab.ui.features.medications.MedicationsViewModel
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ColorSettingDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ConfirmDeletePoopTrackerDataDialog
@@ -46,8 +48,10 @@ import com.fabiobassi.famigliab.ui.features.settings.dialogs.DeleteAllBudgetingD
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.DeleteArchivedMedicationDataDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ImportPaymentsDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.SharePasswordsDialog
+import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Date
 
 @Composable
 fun SettingsScreen(
@@ -70,6 +74,8 @@ fun SettingsScreen(
     var showShareOptionsDialog by remember { mutableStateOf(false) }
     var showDeleteArchivedMedicationsDialog by remember { mutableStateOf(false) }
 
+    val errorSavingFileText: String = stringResource(R.string.error_saving_file)
+
     val importPasswordsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
     ) { uri ->
@@ -89,7 +95,6 @@ fun SettingsScreen(
         }
     }
 
-    val errorSavingFileText: String = stringResource(R.string.error_saving_file)
     val saveFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
         uri?.let { outputUri ->
             val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
@@ -100,13 +105,40 @@ fun SettingsScreen(
                     }
                     Toast.makeText(context, R.string.passwords_saved_to_files, Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
-                    Toast.makeText(context, errorSavingFileText, Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, errorSavingFileText.format(e.message), Toast.LENGTH_LONG).show()
                 }
             } else {
                 Toast.makeText(context, R.string.passwords_file_not_found, Toast.LENGTH_SHORT).show()
             }
         }
         showShareOptionsDialog = false
+    }
+
+    val saveMedicationsHistoryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri: Uri? ->
+        uri?.let { outputUri ->
+            try {
+                val entries = medicationsViewModel.medicationEntries.value
+                val csvRows = entries.map { entry ->
+                    listOf(
+                        entry.date,
+                        entry.hour,
+                        entry.name,
+                        entry.dosage,
+                        entry.person.name,
+                        entry.pillsPerDose.toString()
+                    )
+                }
+
+                context.contentResolver.openOutputStream(outputUri)?.use { outputStream ->
+                    csvWriter().writeAll(csvRows, outputStream)
+                }
+                Toast.makeText(context, R.string.medications_history_exported, Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(context, errorSavingFileText.format(e.message), Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     val importPoopEntriesLauncher = rememberLauncherForActivityResult(
@@ -218,6 +250,14 @@ fun SettingsScreen(
 
         item {
             SettingsSection(title = "Medications", icon = Icons.Default.LocalHospital) {
+                PreferenceItem(
+                    title = stringResource(R.string.export_medications_history),
+                    icon = Icons.Default.Share,
+                    onClick = {
+                        saveMedicationsHistoryLauncher.launch("medications_history.csv")
+                    }
+                )
+                PreferenceDivider()
                 PreferenceItem(
                     title = "Delete archived schedules and history",
                     titleColor = MaterialTheme.colorScheme.error,
