@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
+import com.fabiobassi.famigliab.ui.features.medications.dialogs.AddMedicationDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -192,7 +193,17 @@ fun MedicationsScreen(
         AddMedicationDialog(
             onDismiss = { showDialog = false },
             onConfirm = { name, dosage, pills, hour, person, frequencyType, days, interval, start ->
-                viewModel.addSchedule(name, dosage, pills, hour, person, frequencyType, days, interval, start)
+                viewModel.addSchedule(
+                    name,
+                    dosage,
+                    pills,
+                    hour,
+                    person,
+                    frequencyType,
+                    days,
+                    interval,
+                    start
+                )
                 showDialog = false
             }
         )
