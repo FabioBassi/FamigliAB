@@ -172,4 +172,6 @@
     <string name="month_entries">Month\'s entries</string>
     <string name="no_entries_month">No poop this month yet :(</string>
     <string name="go_back">Go back</string>
+    <string name="set_color_for">Set color for %s</string>
+    <string name="selected_hex">Selected Hex:</string>
 </resources>

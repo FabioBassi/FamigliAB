@@ -70,5 +70,7 @@ dependencies {
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m3)
 
+    implementation("com.github.skydoves:colorpicker-compose:1.0.0")
+
     //ksp("androidx.room:room-compiler:2.5.0")
 }
