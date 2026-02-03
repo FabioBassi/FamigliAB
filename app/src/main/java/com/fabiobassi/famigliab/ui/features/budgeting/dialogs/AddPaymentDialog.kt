@@ -58,7 +58,7 @@ fun AddPaymentDialog(
     var selectedCategory by remember { mutableStateOf(Category.VARIE) }
     var expandedPerson by remember { mutableStateOf(false) }
     var selectedPerson by remember { mutableStateOf(Person.FAB) }
-    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.US) }
     var date by remember { mutableStateOf(Date()) }
     var dateString by remember { mutableStateOf(dateFormatter.format(date)) }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = date.time)

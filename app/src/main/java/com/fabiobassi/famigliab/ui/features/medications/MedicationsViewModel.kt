@@ -57,7 +57,7 @@ sealed class HistoryItem {
 
     val dateTime: Date
         get() = try {
-            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).parse("$date $hour") ?: Date(0)
+            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).parse("$date $hour") ?: Date(0)
         } catch (e: Exception) {
             Date(0)
         }
@@ -82,10 +82,10 @@ class MedicationsViewModel(
         _medicationEntries
     ) { schedules, entries ->
         val calendar = Calendar.getInstance()
-        val todayDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(calendar.time)
+        val todayDate = SimpleDateFormat("dd/MM/yyyy", Locale.US).format(calendar.time)
         val todayDayOfWeek = getDayOfWeek(calendar)
 
-        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.US)
         val today = sdf.parse(todayDate) ?: Date()
 
         // Only show reminders for active (non-archived) schedules
@@ -112,7 +112,7 @@ class MedicationsViewModel(
         history.addAll(entries.map { HistoryItem.Taken(it) })
 
         // Calculate skipped entries for the last 14 days
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
         val todayCalendar = Calendar.getInstance()
         val todayDateStr = dateFormat.format(todayCalendar.time)
 
@@ -161,7 +161,7 @@ class MedicationsViewModel(
     }
 
     private fun isScheduleActiveOnDate(schedule: MedicationSchedule, date: Date, dayOfWeek: String): Boolean {
-        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.US)
         return when (schedule.frequencyType) {
             FrequencyType.WEEKLY -> {
                 schedule.daysOfWeek?.contains(dayOfWeek) == true
@@ -214,7 +214,7 @@ class MedicationsViewModel(
                 creator = MedicationSchedule.Companion::fromCsvRow
             )
 
-            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US)
             _medicationEntries.value = entries.sortedByDescending {
                 try {
                     dateTimeFormat.parse("${it.date} ${it.hour}")
@@ -273,8 +273,8 @@ class MedicationsViewModel(
     fun markAsTaken(reminder: MedicationReminder, hour: String? = null) {
         viewModelScope.launch {
             val now = Date()
-            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            val hourFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
+            val hourFormat = SimpleDateFormat("HH:mm", Locale.US)
             
             val newEntry = MedicationEntry(
                 date = dateFormat.format(now),

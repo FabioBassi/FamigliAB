@@ -11,9 +11,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.ui.features.poop_tracker.MonthlyPoopChartData
 
@@ -26,8 +29,9 @@ fun PoopMonthlySummaryTable(
     val fabEntries = monthlyPoopChartData.entries[Person.FAB] ?: emptyList()
     val sabEntries = monthlyPoopChartData.entries[Person.SAB] ?: emptyList()
 
+    val months = stringArrayResource(R.array.months)
     val tableData = fabEntries.mapIndexed { index, fabPair ->
-        val month = fabPair.first.substringBefore(" ") // "Jan 2023" -> "Jan"
+        val month = months[index]
         val fabCount = fabPair.second
         val sabCount = sabEntries.getOrNull(index)?.second ?: 0
         Triple(month, fabCount, sabCount)
@@ -43,7 +47,7 @@ fun PoopMonthlySummaryTable(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "MONTHLY SUMMARY",
+                text = stringResource(R.string.monthly_summary),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -57,7 +61,7 @@ fun PoopMonthlySummaryTable(
                     .padding(bottom = 8.dp)
             ) {
                 Text(
-                    text = "Month",
+                    text = stringResource(R.string.month),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,

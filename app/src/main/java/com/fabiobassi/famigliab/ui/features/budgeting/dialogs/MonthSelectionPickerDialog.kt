@@ -49,7 +49,7 @@ fun MonthSelectionPickerDialog(
     val months = (0..11).map {
         val cal = Calendar.getInstance()
         cal.set(Calendar.MONTH, it)
-        cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()) ?: ""
+        cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.US) ?: ""
     }
 
     AlertDialog(

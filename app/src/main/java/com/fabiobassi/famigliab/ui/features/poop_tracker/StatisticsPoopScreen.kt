@@ -54,7 +54,7 @@ fun StatisticsPoopScreen(
             contentPadding = PaddingValues(0.dp)
         ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-            Text("Back to main tracker", modifier = Modifier.padding(start = 8.dp))
+            Text(stringResource(R.string.go_back), modifier = Modifier.padding(start = 8.dp))
         }
 
         AverageMonthlyPoopChartCard(

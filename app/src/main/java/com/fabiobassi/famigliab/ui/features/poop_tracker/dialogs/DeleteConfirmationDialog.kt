@@ -4,6 +4,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.fabiobassi.famigliab.R
 
 @Composable
 fun DeleteConfirmationDialog(
@@ -12,16 +14,16 @@ fun DeleteConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete Entry") },
-        text = { Text("Are you sure you want to delete this entry?") },
+        title = { Text(stringResource(R.string.delete_entry)) },
+        text = { Text(stringResource(R.string.poop_delete_confirmation)) },
         confirmButton = {
             Button(onClick = onConfirm) {
-                Text("Delete")
+                Text(stringResource(R.string.delete))
             }
         },
         dismissButton = {
             Button(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

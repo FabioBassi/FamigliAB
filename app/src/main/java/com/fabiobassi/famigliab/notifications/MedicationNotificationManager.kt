@@ -71,7 +71,7 @@ class MedicationNotificationManager(private val context: Context) {
     }
 
     private fun isScheduleActiveOnDate(schedule: MedicationSchedule, date: Date): Boolean {
-        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.US)
         val calendar = Calendar.getInstance().apply { time = date }
         
         return when (schedule.frequencyType) {

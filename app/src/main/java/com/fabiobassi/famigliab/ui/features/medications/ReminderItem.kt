@@ -72,7 +72,7 @@ fun ReminderItem(
             onDismissRequest = { showTimePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    val selectedTime = String.format(Locale.ENGLISH, "%02d:%02d", timePickerState.hour, timePickerState.minute)
+                    val selectedTime = String.format(Locale.US, "%02d:%02d", timePickerState.hour, timePickerState.minute)
                     onMarkAsTaken(selectedTime)
                     showTimePicker = false
                 }) {

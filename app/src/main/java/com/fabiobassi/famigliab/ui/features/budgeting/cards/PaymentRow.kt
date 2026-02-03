@@ -144,7 +144,7 @@ fun PaymentRowPreview() {
                 paidBy = Person.FAB,
                 category = Category.CIBO
             ),
-            dateFormat = SimpleDateFormat("dd/MM", Locale.getDefault()),
+            dateFormat = SimpleDateFormat("dd/MM", Locale.US),
             colors = mapOf(Category.CIBO.name to Color(0xFF4CAF50)),
             onPaymentClick = {},
             onPaymentLongClick = {}

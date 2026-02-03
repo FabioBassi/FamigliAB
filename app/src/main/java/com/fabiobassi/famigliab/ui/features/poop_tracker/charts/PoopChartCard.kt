@@ -13,8 +13,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopChartData
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
@@ -29,7 +31,6 @@ import com.patrykandpatrick.vico.core.entry.entryOf
 @Composable
 fun PoopChartCard(
     poopChartData: PoopChartData?,
-    title: String = "ACTIVITY",
 ) {
     if (poopChartData == null) return
     val chartEntryModelProducer = remember { ChartEntryModelProducer() }
@@ -76,13 +77,13 @@ fun PoopChartCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = title.uppercase(),
+                text = stringResource(R.string.monthly_poop),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-            
+
             if (poopEntriesByDay.isNotEmpty()) {
                 Chart(
                     chart = lineChart(

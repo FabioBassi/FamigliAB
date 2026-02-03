@@ -17,7 +17,7 @@ data class Payment(
 
     override fun toCsvRow(): List<String> = listOf(
         id,
-        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date),
+        SimpleDateFormat("yyyy-MM-dd", Locale.US).format(date),
         description,
         amount.toString(),
         paidBy.name,
@@ -29,9 +29,9 @@ data class Payment(
             val regex1 = Regex("""^\d{4}-\d{2}-\d{2}$""")
             val regex2 = Regex("""^\d{2}/\d{2}/\d{2}$""")
             val dateFormat = if (row.size == 6 && regex1.matches(row[1]))
-                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                SimpleDateFormat("yyyy-MM-dd", Locale.US)
             else if (row.size == 5 && regex2.matches(row[0]))
-                SimpleDateFormat("dd/MM/yy", Locale.getDefault())
+                SimpleDateFormat("dd/MM/yy", Locale.US)
             else
                 SimpleDateFormat()
             var p: Payment
@@ -44,7 +44,7 @@ data class Payment(
                             description = row[2],
                             amount = row[3].replace(",", ".").toDouble(),
                             paidBy = Person.valueOf(row[4]),
-                            category = Category.valueOf(row[5].uppercase(Locale.getDefault()))
+                            category = Category.valueOf(row[5].uppercase(Locale.US))
                         )
                     }
                     5 -> {
@@ -53,7 +53,7 @@ data class Payment(
                             description = row[1],
                             amount = row[2].replace(",", ".").toDouble(),
                             paidBy = Person.valueOf(row[3]),
-                            category = Category.valueOf(row[4].uppercase(Locale.getDefault()))
+                            category = Category.valueOf(row[4].uppercase(Locale.US))
                         )
                     }
                     else -> {

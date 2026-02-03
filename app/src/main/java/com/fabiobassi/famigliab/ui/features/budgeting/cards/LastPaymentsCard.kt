@@ -70,7 +70,7 @@ fun LastPaymentsCard(
             }
 
             if (payments.isNotEmpty()) {
-                val dateFormat = remember { SimpleDateFormat("dd/MM", Locale.getDefault()) }
+                val dateFormat = remember { SimpleDateFormat("dd/MM", Locale.US) }
                 val n = if (showAllPayments) payments.size else 3
                 
                 Column {

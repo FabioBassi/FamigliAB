@@ -142,4 +142,23 @@
         <item quantity="many">Ogni %1$d giorni (dal %2$s)</item>
     </plurals>
     <string name="frequency_at_time">%1$s alle %2$s</string>
+    <string name="select_time">Seleziona orario</string>
+    <string name="log_poop">Registra cacca💩</string>
+    <string name="daily_average_month">Media giornaliera per mese</string>
+    <string name="annual_accumulation">Accumulo annuale</string>
+    <string name="monthly_frequency">Frequenza mensile</string>
+    <string name="monthly_summary">Resoconto mensile</string>
+    <string name="poop_good">Buona</string>
+    <string name="poop_bad">Brutta</string>
+    <string name="who">Chi?</string>
+    <string name="quality">Qualità</string>
+    <string name="delete_entry">Elimina la registrazione</string>
+    <string name="poop_delete_confirmation">Sei sicuro di voler eliminare questa registrazione?</string>
+    <string name="weekly">Settimanale</string>
+    <string name="interval">Intervallo</string>
+    <string name="monthly_poop">Cacche mensili</string>
+    <string name="poop_statistics_button">Più grafici e statistiche</string>
+    <string name="month_entries">Registrazioni del mese</string>
+    <string name="no_entries_month">Ancora nessuna cacca questo mese :(</string>
+    <string name="go_back">Torna indietro</string>
 </resources>

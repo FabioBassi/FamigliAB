@@ -85,7 +85,7 @@ class PoopTrackerViewModel(
                 date = Date(),
                 creator = PoopEntry.Companion::fromCsvRow
             )
-            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US)
             _poopEntries.value = allEntries.sortedByDescending {
                 try {
                     dateTimeFormat.parse("${it.date} ${it.hour}")
@@ -95,8 +95,8 @@ class PoopTrackerViewModel(
             }
 
             val calendar = Calendar.getInstance()
-            val dateFormat = SimpleDateFormat("dd/MM", Locale.getDefault())
-            val fullDateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val dateFormat = SimpleDateFormat("dd/MM", Locale.US)
+            val fullDateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
             val lastDays = mutableMapOf<String, Int>()
 
             if (month != null) {
@@ -159,8 +159,8 @@ class PoopTrackerViewModel(
 
             val cumulativeResult = mutableMapOf<Person, List<Pair<String, Int>>>()
             val monthlyResult = mutableMapOf<Person, List<Pair<String, Int>>>()
-            val monthFormat = SimpleDateFormat("MMM yyyy", Locale.getDefault())
-            val dateParseFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val monthFormat = SimpleDateFormat("MMM yyyy", Locale.US)
+            val dateParseFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
 
             val allMonths = mutableListOf<String>()
             val cal = Calendar.getInstance()
@@ -218,7 +218,7 @@ class PoopTrackerViewModel(
             )
 
             val averageMonthlyResult = mutableMapOf<Person, List<Pair<String, Float>>>()
-            val monthDateParseFormat = SimpleDateFormat("MMM yyyy", Locale.getDefault())
+            val monthDateParseFormat = SimpleDateFormat("MMM yyyy", Locale.US)
 
             for (person in Person.entries) {
                 val personMonthlyEntries = monthlyResult[person] ?: emptyList()
@@ -261,7 +261,7 @@ class PoopTrackerViewModel(
                 creator = PoopEntry.Companion::fromCsvRow
             )
             val updatedEntries = allEntries + newEntry
-            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US)
             val sortedEntries = updatedEntries.sortedByDescending {
                 try {
                     dateTimeFormat.parse("${it.date} ${it.hour}")
@@ -282,7 +282,7 @@ class PoopTrackerViewModel(
                 creator = PoopEntry.Companion::fromCsvRow
             )
             val updatedEntries = allEntries.filter { it != entry }
-            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            val dateTimeFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US)
             val sortedEntries = updatedEntries.sortedByDescending {
                 try {
                     dateTimeFormat.parse("${it.date} ${it.hour}")

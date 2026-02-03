@@ -69,6 +69,20 @@
     <string name="oct">oct</string>
     <string name="nov">nov</string>
     <string name="dec">dec</string>
+    <string-array name="months">
+        <item>jan</item>
+        <item>feb</item>
+        <item>mar</item>
+        <item>apr</item>
+        <item>may</item>
+        <item>jun</item>
+        <item>jul</item>
+        <item>aug</item>
+        <item>sep</item>
+        <item>oct</item>
+        <item>nov</item>
+        <item>dec</item>
+    </string-array>
     <string-array name="days_of_week">
         <item>Mon</item>
         <item>Tue</item>
@@ -139,4 +153,23 @@
         <item quantity="other">Every %1$d days (from %2$s)</item>
     </plurals>
     <string name="frequency_at_time">%1$s at %2$s</string>
+    <string name="daily_average_month">Daily average per month</string>
+    <string name="annual_accumulation">Annual accumulation</string>
+    <string name="monthly_frequency">Monthly frequency</string>
+    <string name="monthly_summary">Monthly summary</string>
+    <string name="poop_good">Good</string>
+    <string name="poop_bad">Bad</string>
+    <string name="select_time">Select time</string>
+    <string name="log_poop">Log poop 💩</string>
+    <string name="who">Who?</string>
+    <string name="quality">Quality</string>
+    <string name="delete_entry">Delete entry</string>
+    <string name="poop_delete_confirmation">Are you sure you want to delete this entry?</string>
+    <string name="weekly">Weekly</string>
+    <string name="interval">Interval</string>
+    <string name="monthly_poop">Monthly poop</string>
+    <string name="poop_statistics_button">More charts and statistics</string>
+    <string name="month_entries">Month\'s entries</string>
+    <string name="no_entries_month">No poop this month yet :(</string>
+    <string name="go_back">Go back</string>
 </resources>

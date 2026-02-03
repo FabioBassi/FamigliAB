@@ -33,11 +33,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.PoopChartCard
 import com.fabiobassi.famigliab.ui.features.poop_tracker.dialogs.AddPoopDialog
@@ -144,15 +146,7 @@ fun StandardPoopScreen(
 
             // Activity Chart
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "MONTHLY ACTIVITY",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    PoopChartCard(poopChartData = poopChartData, title = "")
-                }
+                PoopChartCard(poopChartData = poopChartData)
             }
 
             // Navigation Button
@@ -162,14 +156,14 @@ fun StandardPoopScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("General Statistics & Trends")
+                    Text(stringResource(R.string.poop_statistics_button))
                 }
             }
 
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "RECENT ENTRIES",
+                    text = stringResource(R.string.month_entries),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -180,7 +174,7 @@ fun StandardPoopScreen(
             if (currentMonthEntries.isEmpty()) {
                 item {
                     Text(
-                        text = "No entries for this month",
+                        text = stringResource(R.string.no_entries_month),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier

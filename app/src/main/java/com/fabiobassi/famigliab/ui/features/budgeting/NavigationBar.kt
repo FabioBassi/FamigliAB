@@ -42,9 +42,9 @@ fun NavigationBar(
     isAnnualReport: Boolean
 ) {
     val monthFormat = remember(isAnnualReport) {
-        SimpleDateFormat(if (isAnnualReport) "yyyy" else "MMMM", Locale.getDefault())
+        SimpleDateFormat(if (isAnnualReport) "yyyy" else "MMMM", Locale.US)
     }
-    val yearFormat = remember { SimpleDateFormat("yyyy", Locale.getDefault()) }
+    val yearFormat = remember { SimpleDateFormat("yyyy", Locale.US) }
 
     Card(
         modifier = modifier.fillMaxWidth(),

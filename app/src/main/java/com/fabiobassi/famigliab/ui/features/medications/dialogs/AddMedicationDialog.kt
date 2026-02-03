@@ -69,14 +69,14 @@ fun AddMedicationDialog(
     
     var intervalDays by remember { mutableStateOf("1") }
     val datePickerState = rememberDatePickerState()
-    var startDate by remember { mutableStateOf(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())) }
+    var startDate by remember { mutableStateOf(SimpleDateFormat("dd/MM/yyyy", Locale.US).format(Date())) }
 
     if (showTimePicker) {
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    selectedTime = String.format(locale = Locale.ENGLISH, "%02d:%02d", timePickerState.hour, timePickerState.minute)
+                    selectedTime = String.format(locale = Locale.US, "%02d:%02d", timePickerState.hour, timePickerState.minute)
                     showTimePicker = false
                 }) {
                     Text(stringResource(R.string.ok))
@@ -99,7 +99,7 @@ fun AddMedicationDialog(
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let {
-                        startDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
+                        startDate = SimpleDateFormat("dd/MM/yyyy", Locale.US).format(Date(it))
                     }
                     showDatePicker = false
                 }) {
@@ -170,12 +170,16 @@ fun AddMedicationDialog(
                 Text(text = stringResource(R.string.frequency)+":", style = MaterialTheme.typography.labelLarge)
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                     FrequencyType.entries.forEachIndexed { index, type ->
+                        val label = when (type) {
+                            FrequencyType.WEEKLY -> stringResource(R.string.weekly)
+                            FrequencyType.INTERVAL -> stringResource(R.string.interval)
+                        }
                         SegmentedButton(
                             shape = SegmentedButtonDefaults.itemShape(index = index, count = FrequencyType.entries.size),
                             onClick = { frequencyType = type },
                             selected = frequencyType == type
                         ) {
-                            Text(type.name)
+                            Text(label)
                         }
                     }
                 }

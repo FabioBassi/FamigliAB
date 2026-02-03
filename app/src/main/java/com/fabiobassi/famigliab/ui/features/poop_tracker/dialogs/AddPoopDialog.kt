@@ -38,8 +38,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.Person
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -53,8 +55,8 @@ fun AddPoopDialog(
     onSave: (String, String, String, Person) -> Unit
 ) {
     val calendar = Calendar.getInstance()
-    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
-    val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.US) }
+    val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.US) }
 
     var date by remember { mutableStateOf(dateFormatter.format(Date())) }
     var hour by remember { mutableStateOf(timeFormatter.format(Date())) }
@@ -72,7 +74,10 @@ fun AddPoopDialog(
         initialMinute = calendar.get(Calendar.MINUTE),
         is24Hour = true
     )
-    val qualityOptions = listOf("Good", "Bad")
+    val qualityOptions = listOf(
+        "Good" to stringResource(R.string.poop_good),
+        "Bad" to stringResource(R.string.poop_bad)
+    )
 
     if (showDatePicker) {
         DatePickerDialog(
@@ -84,12 +89,12 @@ fun AddPoopDialog(
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }) {
             DatePicker(state = datePickerState)
@@ -102,19 +107,19 @@ fun AddPoopDialog(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        hour = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
+                        hour = String.format(Locale.US, "%02d:%02d", timePickerState.hour, timePickerState.minute)
                         showTimePicker = false
                     }
                 ) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showTimePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
-            title = { Text(text = "Select time") },
+            title = { Text(stringResource(R.string.select_time)) },
             text = {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     TimePicker(state = timePickerState)
@@ -127,7 +132,7 @@ fun AddPoopDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Log Poop 💩",
+                text = stringResource(R.string.log_poop),
                 style = MaterialTheme.typography.headlineSmall
             )
         },
@@ -140,7 +145,7 @@ fun AddPoopDialog(
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Who?",
+                        text = stringResource(R.string.who),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -168,7 +173,7 @@ fun AddPoopDialog(
                         onValueChange = { },
                         readOnly = true,
                         enabled = false,
-                        label = { Text("Date") },
+                        label = { Text(stringResource(R.string.date)) },
                         leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -191,7 +196,7 @@ fun AddPoopDialog(
                         onValueChange = { },
                         readOnly = true,
                         enabled = false,
-                        label = { Text("Hour") },
+                        label = { Text(stringResource(R.string.time)) },
                         leadingIcon = { Icon(Icons.Default.AccessTime, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -209,10 +214,10 @@ fun AddPoopDialog(
                     onExpandedChange = { isQualityExpanded = it }
                 ) {
                     OutlinedTextField(
-                        value = quality,
+                        value = qualityOptions.find { it.first == quality }?.second ?: quality,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Quality") },
+                        label = { Text(stringResource(R.string.quality)) },
                         leadingIcon = { Icon(Icons.Default.SentimentSatisfied, contentDescription = null) },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = isQualityExpanded)
@@ -225,11 +230,11 @@ fun AddPoopDialog(
                         expanded = isQualityExpanded,
                         onDismissRequest = { isQualityExpanded = false }
                     ) {
-                        qualityOptions.forEach { option ->
+                        qualityOptions.forEach { (english, localized) ->
                             DropdownMenuItem(
-                                text = { Text(option) },
+                                text = { Text(localized) },
                                 onClick = {
-                                    quality = option
+                                    quality = english
                                     isQualityExpanded = false
                                 }
                             )
@@ -242,12 +247,12 @@ fun AddPoopDialog(
             Button(onClick = {
                 onSave(date, hour, quality, selectedPerson)
             }) {
-                Text("Save")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )
