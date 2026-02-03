@@ -25,9 +25,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import java.util.Calendar
 import java.util.Locale
+import com.fabiobassi.famigliab.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +56,7 @@ fun MonthSelectionPickerDialog(
         onDismissRequest = onDismissRequest,
         title = {
             Text(
-                text = "Select Month and Year",
+                text = stringResource(R.string.select_month_year),
                 style = MaterialTheme.typography.headlineSmall
             )
         },
@@ -73,7 +76,7 @@ fun MonthSelectionPickerDialog(
                         value = selectedYear.toString(),
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Year") },
+                        label = { Text(stringResource(R.string.year)) },
                         leadingIcon = { Icon(Icons.Default.Event, contentDescription = null) },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = yearExpanded)
@@ -107,7 +110,7 @@ fun MonthSelectionPickerDialog(
                         value = months[selectedMonth],
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Month") },
+                        label = { Text(stringResource(R.string.month)) },
                         leadingIcon = { Icon(Icons.Default.CalendarMonth, contentDescription = null) },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = monthExpanded)
@@ -140,12 +143,12 @@ fun MonthSelectionPickerDialog(
                     onDismissRequest()
                 }
             ) {
-                Text("OK")
+                Text(stringResource(R.string.ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

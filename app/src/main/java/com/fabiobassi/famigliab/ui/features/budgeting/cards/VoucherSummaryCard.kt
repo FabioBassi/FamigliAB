@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalGroceryStore
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -18,12 +17,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.Voucher
+import com.fabiobassi.famigliab.R
 
 @Composable
 fun VoucherSummaryCard(vouchers: List<Voucher>, onClick: () -> Unit) {
@@ -51,7 +52,7 @@ fun VoucherSummaryCard(vouchers: List<Voucher>, onClick: () -> Unit) {
                     tint = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "VOUCHERS USED",
+                    text = stringResource(R.string.vouchers_used),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -84,13 +85,18 @@ fun VoucherSummaryCard(vouchers: List<Voucher>, onClick: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Total",
+                        text = stringResource(R.string.total),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "${voucherCounts[0]} vouchers (%.2f €)".format(voucherValues[0]),
+                        text = pluralStringResource(
+                            R.plurals.vouchers_count,
+                            voucherCounts[0],
+                            voucherCounts[0],
+                            voucherValues[0]
+                        ),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.End,
@@ -99,7 +105,7 @@ fun VoucherSummaryCard(vouchers: List<Voucher>, onClick: () -> Unit) {
                 }
             } else {
                 Text(
-                    text = "No vouchers used yet.\nTap to add.",
+                    text = stringResource(R.string.no_vouchers_used),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -125,7 +131,7 @@ private fun VoucherRow(label: String, count: Int, value: Double) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            text = "$count vouchers (%.2f €)".format(value),
+            text = pluralStringResource(R.plurals.vouchers_count, count, count, value),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.End,

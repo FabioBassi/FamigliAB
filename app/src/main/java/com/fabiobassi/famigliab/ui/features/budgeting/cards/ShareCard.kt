@@ -16,10 +16,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.fabiobassi.famigliab.R
 
 @Composable
 fun ShareCard(
@@ -49,7 +50,7 @@ fun ShareCard(
                     tint = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "SHARE DATA (CSV)",
+                    text = stringResource(R.string.share_data_csv),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -61,17 +62,17 @@ fun ShareCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 ShareButton(
-                    text = "Payments",
+                    text = stringResource(R.string.payments),
                     onClick = onSharePaymentsClick,
                     modifier = Modifier.weight(1f)
                 )
                 ShareButton(
-                    text = "Incomes",
+                    text = stringResource(R.string.incomes),
                     onClick = onShareIncomesClick,
                     modifier = Modifier.weight(1f)
                 )
                 ShareButton(
-                    text = "Vouchers",
+                    text = stringResource(R.string.vouchers),
                     onClick = onShareVouchersClick,
                     modifier = Modifier.weight(1f)
                 )

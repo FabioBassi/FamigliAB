@@ -4,7 +4,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.fabiobassi.famigliab.data.Payment
+import com.fabiobassi.famigliab.R
+
 
 @Composable
 fun DeleteConfirmationDialog(
@@ -14,16 +17,24 @@ fun DeleteConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete Payment") },
-        text = { Text("Are you sure you want to delete this payment?\n'${payment.description}' of ${payment.amount}€") },
+        title = { Text(stringResource(R.string.delete_payment)) },
+        text = {
+            Text(
+                stringResource(
+                    R.string.delete_payment_confirmation,
+                    payment.description,
+                    payment.amount
+                )
+            )
+        },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Delete")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -21,12 +20,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.fabiobassi.famigliab.data.Payment
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.fabiobassi.famigliab.R
+
 
 @Composable
 fun LastPaymentsCard(
@@ -59,7 +60,9 @@ fun LastPaymentsCard(
                     tint = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = if (showAllPayments) "ALL PAYMENTS" else "LAST PAYMENTS",
+                    text =
+                        if (showAllPayments) stringResource(R.string.all_payments)
+                        else stringResource(R.string.last_payments),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -89,7 +92,7 @@ fun LastPaymentsCard(
                 }
             } else {
                 Text(
-                    text = "No payments recorded yet.",
+                    text = stringResource(R.string.no_payments_recorded),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -107,7 +110,9 @@ fun LastPaymentsCard(
                 )
             ) {
                 Text(
-                    text = if (showAllPayments) "Show less" else "View all payments",
+                    text =
+                        if (showAllPayments) stringResource(R.string.show_less)
+                        else stringResource(R.string.view_all_payments),
                     fontWeight = FontWeight.SemiBold
                 )
             }

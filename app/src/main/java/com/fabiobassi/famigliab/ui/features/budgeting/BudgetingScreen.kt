@@ -10,12 +10,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.data.Payment
 import com.fabiobassi.famigliab.file.CsvFileManager
 import com.fabiobassi.famigliab.file.CsvFileType
 import java.io.File
+import com.fabiobassi.famigliab.R
+
 
 @Composable
 fun BudgetingScreen(
@@ -144,5 +147,5 @@ private fun shareFile(context: Context, file: File) {
         putExtra(Intent.EXTRA_STREAM, uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    context.startActivity(Intent.createChooser(intent, "Share CSV"))
+    context.startActivity(Intent.createChooser(intent, context.getString(R.string.share_csv)))
 }

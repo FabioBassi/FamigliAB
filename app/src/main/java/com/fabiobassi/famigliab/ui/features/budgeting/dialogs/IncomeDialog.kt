@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,6 +40,8 @@ import androidx.core.graphics.toColorInt
 import com.fabiobassi.famigliab.data.Income
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.SettingsDataStore
+import com.fabiobassi.famigliab.R
+
 
 @Composable
 fun IncomeDialog(
@@ -71,7 +74,7 @@ fun IncomeDialog(
         },
         title = {
             Text(
-                text = "Income Details",
+                text = stringResource(R.string.incomes_details),
                 style = MaterialTheme.typography.headlineSmall
             )
         },
@@ -82,7 +85,7 @@ fun IncomeDialog(
             ) {
                 if (incomes.isEmpty()) {
                     Text(
-                        text = "No income records found.",
+                        text = stringResource(R.string.no_income_records),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 32.dp),
@@ -107,7 +110,7 @@ fun IncomeDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close")
+                Text(stringResource(R.string.close))
             }
         }
     )
@@ -193,20 +196,24 @@ fun DeleteIncomeConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete Income Record") },
+        title = { Text(stringResource(R.string.delete_income_record)) },
         text = {
             Text(
-                "Are you sure you want to permanently delete the income record for \"${income.description}\" (%.2f €)?".format(income.amount)
+                text = stringResource(
+                    R.string.delete_income_confirmation,
+                    income.description,
+                    income.amount
+                )
             )
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Delete", color = MaterialTheme.colorScheme.error)
+                Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

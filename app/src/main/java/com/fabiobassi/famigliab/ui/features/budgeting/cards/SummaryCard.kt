@@ -23,12 +23,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import com.fabiobassi.famigliab.data.SettingsDataStore
+import com.fabiobassi.famigliab.R
+
 
 @Composable
 fun SummaryCard(
@@ -42,7 +46,7 @@ fun SummaryCard(
     ) {
         SummaryCard(
             modifier = Modifier.weight(1f),
-            title = "INCOME",
+            title = stringResource(R.string.incomes).uppercase(),
             fabValue = totalIncomes[1],
             sabValue = totalIncomes[2],
             totalValue = totalIncomes[0],
@@ -53,7 +57,7 @@ fun SummaryCard(
         )
         SummaryCard(
             modifier = Modifier.weight(1f),
-            title = "EXPENSES",
+            title = stringResource(R.string.expenses).uppercase(),
             fabValue = totalExpenses[1],
             sabValue = totalExpenses[2],
             totalValue = totalExpenses[0],

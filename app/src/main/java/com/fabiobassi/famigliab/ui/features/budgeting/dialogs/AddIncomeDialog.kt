@@ -27,9 +27,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.fabiobassi.famigliab.data.Person
+import com.fabiobassi.famigliab.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +49,7 @@ fun AddIncomeDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Add New Income",
+                text = stringResource(R.string.add_new_income),
                 style = MaterialTheme.typography.headlineSmall
             )
         },
@@ -60,7 +63,7 @@ fun AddIncomeDialog(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Description") },
+                    label = { Text(stringResource(R.string.description)) },
                     leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
@@ -68,7 +71,7 @@ fun AddIncomeDialog(
                 OutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it },
-                    label = { Text("Amount") },
+                    label = { Text(stringResource(R.string.amount)) },
                     leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
@@ -83,7 +86,7 @@ fun AddIncomeDialog(
                         value = selectedPerson.name,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Person") },
+                        label = { Text(stringResource(R.string.person)) },
                         leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
@@ -118,12 +121,12 @@ fun AddIncomeDialog(
                 },
                 enabled = description.isNotBlank() && amount.isNotBlank() && amount.replace(",", ".").toDoubleOrNull() != null
             ) {
-                Text("Confirm")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

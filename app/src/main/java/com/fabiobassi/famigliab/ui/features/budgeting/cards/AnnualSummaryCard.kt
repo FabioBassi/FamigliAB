@@ -14,10 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fabiobassi.famigliab.R
+
 
 @Composable
 fun AnnualSummaryCard(
@@ -29,7 +32,7 @@ fun AnnualSummaryCard(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         SummarySection(
-            title = "ANNUAL INCOME",
+            title = stringResource(R.string.annual_incomes),
             fabValue = totalIncomes[1],
             sabValue = totalIncomes[2],
             totalValue = totalIncomes[0],
@@ -38,7 +41,7 @@ fun AnnualSummaryCard(
         )
 
         SummarySection(
-            title = "ANNUAL EXPENSES",
+            title = stringResource(R.string.annual_expenses),
             fabValue = totalExpenses[1],
             sabValue = totalExpenses[2],
             totalValue = totalExpenses[0],
@@ -47,7 +50,7 @@ fun AnnualSummaryCard(
         )
 
         SummarySection(
-            title = "ANNUAL NET",
+            title = stringResource(R.string.annual_net),
             fabValue = totalIncomes[1] - totalExpenses[1],
             sabValue = totalIncomes[2] - totalExpenses[2],
             totalValue = totalIncomes[0] - totalExpenses[0],
@@ -105,7 +108,7 @@ private fun SummarySection(
                 verticalAlignment = Alignment.Bottom
             ) {
                 Text(
-                    text = "Total",
+                    text = stringResource(R.string.total),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,
@@ -120,7 +123,7 @@ private fun SummarySection(
                         color = onContainerColor
                     )
                     Text(
-                        text = "avg: ${"%.2f".format(totalValue / 12.0)} €/mo",
+                        text = "avg: ${"%.2f".format(totalValue / 12.0)} €/M",
                         style = MaterialTheme.typography.labelSmall,
                         color = onContainerColor
                     )
