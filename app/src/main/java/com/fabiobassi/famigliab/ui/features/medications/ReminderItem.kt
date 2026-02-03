@@ -41,6 +41,7 @@ import androidx.core.graphics.toColorInt
 import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.SettingsDataStore
 import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +72,7 @@ fun ReminderItem(
             onDismissRequest = { showTimePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    val selectedTime = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
+                    val selectedTime = String.format(Locale.ENGLISH, "%02d:%02d", timePickerState.hour, timePickerState.minute)
                     onMarkAsTaken(selectedTime)
                     showTimePicker = false
                 }) {

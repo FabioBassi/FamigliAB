@@ -15,7 +15,7 @@ data class MedicationSchedule(
     val hour: String, // Scheduled time in HH:mm
     val person: Person,
     val frequencyType: FrequencyType = FrequencyType.WEEKLY,
-    val daysOfWeek: String? = "MON,TUE,WED,THU,FRI,SAT,SUN", // Comma separated days for WEEKLY
+    val daysOfWeek: String? = DEFAULT_DAYS,
     val intervalDays: Int? = null, // For INTERVAL
     val startDate: String? = null, // For INTERVAL: dd/MM/yyyy
     val isArchived: Boolean = false
@@ -37,6 +37,9 @@ data class MedicationSchedule(
     }
 
     companion object {
+        val DAY_KEYS = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        const val DEFAULT_DAYS = "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
+
         fun fromCsvRow(row: List<String>): MedicationSchedule? {
             if (row.size < 5) return null
             return try {
@@ -49,7 +52,7 @@ data class MedicationSchedule(
                     hour = if (hasNewFields) row[4] else row[3],
                     person = if (hasNewFields) Person.valueOf(row[5]) else Person.valueOf(row[4]),
                     frequencyType = if (hasNewFields) FrequencyType.valueOf(row[6]) else FrequencyType.WEEKLY,
-                    daysOfWeek = if (hasNewFields) row[7].ifEmpty { null } else (if (row.size > 5) row[5] else "MON,TUE,WED,THU,FRI,SAT,SUN"),
+                    daysOfWeek = if (hasNewFields) row[7].ifEmpty { null } else (if (row.size > 5) row[5] else DEFAULT_DAYS),
                     intervalDays = if (hasNewFields) row[8].toIntOrNull() else null,
                     startDate = if (hasNewFields) row[9].ifEmpty { null } else null,
                     isArchived = if (row.size > 10) row[10].toBoolean() else false

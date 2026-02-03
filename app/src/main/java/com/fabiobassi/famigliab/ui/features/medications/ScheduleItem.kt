@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -96,19 +97,34 @@ fun ScheduleItem(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "[${schedule.dosage}]",
+                        text = stringResource(R.string.medication_dosage, schedule.dosage),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
+                val localizedDays = stringArrayResource(R.array.days_of_week)
+                val stableKeys = MedicationSchedule.DAY_KEYS
+                
                 val frequencyText = when (schedule.frequencyType) {
-                    FrequencyType.WEEKLY -> "Every ${schedule.daysOfWeek}"
-                    FrequencyType.INTERVAL -> "Every ${schedule.intervalDays} days (from ${schedule.startDate})"
+                    FrequencyType.WEEKLY -> {
+                        val scheduleDays = schedule.daysOfWeek?.split(",") ?: emptyList()
+                        val localizedScheduleDays = scheduleDays.mapNotNull { key ->
+                            val index = stableKeys.indexOf(key)
+                            if (index != -1) localizedDays[index] else null
+                        }.joinToString(", ")
+                        stringResource(R.string.frequency_weekly, localizedScheduleDays)
+                    }
+                    FrequencyType.INTERVAL -> pluralStringResource(
+                        id = R.plurals.frequency_interval,
+                        count = schedule.intervalDays ?: 0,
+                        schedule.intervalDays ?: 0,
+                        schedule.startDate ?: ""
+                    )
                 }
 
                 Text(
-                    text = "$frequencyText at ${schedule.hour}",
+                    text = stringResource(R.string.frequency_at_time, frequencyText, schedule.hour),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.padding(top = 8.dp)

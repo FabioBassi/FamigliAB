@@ -48,10 +48,10 @@
     <string name="taken_at">Preso alle %s</string>
     <string name="schedule">Programma</string>
     <string name="expenses_by_category">Spese per categoria</string>
-
     <plurals name="pills_to_take">
         <item quantity="one">%d pillola</item>
         <item quantity="other">%d pillole</item>
+        <item quantity="many">%d pillole</item>
     </plurals>
     <string name="export_medications_history">Esporta lo storico dei medicinali</string>
     <string name="medications_history_exported">Storico dei medicinali esportato con successo!</string>
@@ -70,6 +70,15 @@
     <string name="oct">ott</string>
     <string name="nov">nov</string>
     <string name="dec">dic</string>
+    <array name="days_of_week">
+        <item>Lun</item>
+        <item>Mar</item>
+        <item>Mer</item>
+        <item>Gio</item>
+        <item>Ven</item>
+        <item>Sab</item>
+        <item>Dom</item>
+    </array>
     <string name="annual_incomes">Entrate annuali</string>
     <string name="annual_expenses">Spese annuali</string>
     <string name="annual_net">Netto annuale</string>
@@ -110,4 +119,27 @@
     <string name="year">Anno</string>
     <string name="month">Mese</string>
     <string name="share_csv">Condividi CSV</string>
+    <plurals name="vouchers_count">
+        <item quantity="one">%1$d buono (%2$.2f €)</item>
+        <item quantity="other">%1$d buoni (%2$.2f €)</item>
+        <item quantity="many">%1$d buoni (%2$.2f €)</item>
+    </plurals>
+    <string name="start_date">Data iniziale</string>
+    <string name="medication_taken_on_at">Preso il %1$s alle %2$s</string>
+    <string name="medication_skipped_on_at">Saltato: %1$s %2$s</string>
+    <string name="medication_dosage_person">(%1$s) • %2$s</string>
+    <string name="medication_dosage">[%s]</string>
+    <string name="pills">Pillole</string>
+    <string name="time">Orario</string>
+    <string name="set">Imposta</string>
+    <string name="frequency">Frequenza</string>
+    <string name="repeat_on">Ripeti</string>
+    <string name="every_x_days">Ogni %d giorni</string>
+    <string name="frequency_weekly">Ogni %s</string>
+    <plurals name="frequency_interval">
+        <item quantity="one">Ogni giorno (dal %2$s)</item>
+        <item quantity="other">Ogni %1$d giorni (dal %2$s)</item>
+        <item quantity="many">Ogni %1$d giorni (dal %2$s)</item>
+    </plurals>
+    <string name="frequency_at_time">%1$s alle %2$s</string>
 </resources>

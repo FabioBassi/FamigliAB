@@ -42,7 +42,7 @@ import androidx.core.graphics.toColorInt
 import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.MedicationEntry
 import com.fabiobassi.famigliab.data.SettingsDataStore
-import java.util.Calendar
+import java.util.Locale
 
 @Composable
 fun MedicationItem(
@@ -108,14 +108,14 @@ fun MedicationItem(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "[${entry.dosage}]",
+                        text = stringResource(id = R.string.medication_dosage, entry.dosage),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
                 Text(
-                    text = "Taken on ${entry.date} at ${entry.hour}",
+                    text = stringResource(id = R.string.medication_taken_on_at, entry.date, entry.hour),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.padding(top = 8.dp)
@@ -150,11 +150,11 @@ fun SkippedMedicationItem(
             onDismissRequest = { showTimePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    val selectedTime = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
+                    val selectedTime = String.format(Locale.ENGLISH, "%02d:%02d", timePickerState.hour, timePickerState.minute)
                     onMarkAsTaken(selectedTime)
                     showTimePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(id = R.string.ok))
                 }
             },
             dismissButton = {
@@ -174,7 +174,7 @@ fun SkippedMedicationItem(
             .fillMaxWidth()
             .clickable { showTimePicker = true },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
         )
     ) {
         Row(
@@ -216,14 +216,14 @@ fun SkippedMedicationItem(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "(${item.dosage}) • ${item.person.name}",
+                        text = stringResource(id = R.string.medication_dosage_person, item.dosage, item.person.name),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
                 Text(
-                    text = "Skipped: ${item.date} ${item.hour}",
+                    text = stringResource(id = R.string.medication_skipped_on_at, item.date, item.hour),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(top = 8.dp)
