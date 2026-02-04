@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AirlineSeatLegroomNormal
@@ -37,6 +39,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,16 +49,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.createGraph
 import com.fabiobassi.famigliab.ui.features.budgeting.BudgetingScreen
 import com.fabiobassi.famigliab.ui.features.medications.MedicationsScreen
 import com.fabiobassi.famigliab.ui.features.passwords.PasswordsScreen
 import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopTrackerScreenContainer
 import com.fabiobassi.famigliab.ui.features.settings.SettingsScreen
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,8 +83,6 @@ sealed class NavItem(val titleResId: Int, val icon: ImageVector, val route: Stri
 
 @Composable
 fun MainScreen() {
-    val navController = rememberNavController()
-
     val items = listOf(
         NavItem.Budgeting,
         NavItem.PoopTracker,
@@ -88,17 +91,53 @@ fun MainScreen() {
         NavItem.Settings
     )
 
+    val navController = rememberNavController()
+
+    // Initialize the navigation graph to avoid "setGraph() before getGraph()" error
+    // This is required because we are using NavController without a NavHost
+    navController.graph = remember(items) {
+        navController.createGraph(startDestination = items[0].route) {
+            items.forEach { item ->
+                composable(item.route) {
+                    // Empty because UI is handled by HorizontalPager
+                }
+            }
+        }
+    }
+
+    val scope = rememberCoroutineScope()
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     
     val lazyListState = rememberLazyListState()
+    val pagerState = rememberPagerState(pageCount = { items.size })
 
-    // Scroll to the selected item whenever the route changes
+    // Synchronize Pager with Navigation
+    LaunchedEffect(pagerState.currentPage) {
+        val targetRoute = items[pagerState.currentPage].route
+        if (currentRoute != targetRoute) {
+            navController.navigate(targetRoute) {
+                popUpTo(navController.graph.startDestinationId) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
+
+    // Synchronize Navigation with Pager (e.g., when clicking a pill or back button)
     LaunchedEffect(currentRoute) {
         val index = items.indexOfFirst { it.route == currentRoute }
-        if (index != -1) {
-            lazyListState.animateScrollToItem(index)
+        if (index != -1 && index != pagerState.currentPage) {
+            pagerState.animateScrollToPage(index)
         }
+    }
+
+    // Scroll the pill list when the pager changes
+    LaunchedEffect(pagerState.currentPage) {
+        lazyListState.animateScrollToItem(pagerState.currentPage)
     }
 
     Scaffold { innerPadding ->
@@ -107,7 +146,7 @@ fun MainScreen() {
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.primaryContainer)
         ) {
-            // Merged Navigation and Title using LazyRow for auto-scrolling
+            // Merged Navigation and Title using LazyRow
             LazyRow(
                 state = lazyListState,
                 modifier = Modifier
@@ -117,19 +156,15 @@ fun MainScreen() {
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                itemsIndexed(items) { _, item ->
+                itemsIndexed(items) { index, item ->
                     val selected = currentRoute == item.route
                     PillNavigationItem(
                         item = item,
                         selected = selected,
                         onClick = {
                             if (!selected) {
-                                navController.navigate(item.route) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
+                                scope.launch {
+                                    pagerState.animateScrollToPage(index)
                                 }
                             }
                         }
@@ -148,16 +183,19 @@ fun MainScreen() {
                         .fillMaxSize()
                         .padding(top = 16.dp)
                 ) {
-                    NavHost(
-                        navController,
-                        startDestination = NavItem.Budgeting.route
-                    ) {
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        beyondViewportPageCount = 1
+                    ) { page ->
                         val screenPadding = PaddingValues(0.dp)
-                        composable(NavItem.Budgeting.route) { BudgetingScreen(screenPadding) }
-                        composable(NavItem.PoopTracker.route) { PoopTrackerScreenContainer(screenPadding) }
-                        composable(NavItem.Medications.route) { MedicationsScreen(screenPadding) }
-                        composable(NavItem.Passwords.route) { PasswordsScreen(screenPadding) }
-                        composable(NavItem.Settings.route) { SettingsScreen(screenPadding) }
+                        when (items[page]) {
+                            NavItem.Budgeting -> BudgetingScreen(screenPadding)
+                            NavItem.PoopTracker -> PoopTrackerScreenContainer(screenPadding)
+                            NavItem.Medications -> MedicationsScreen(screenPadding)
+                            NavItem.Passwords -> PasswordsScreen(screenPadding)
+                            NavItem.Settings -> SettingsScreen(screenPadding)
+                        }
                     }
                 }
             }
