@@ -6,6 +6,8 @@ import android.provider.OpenableColumns
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -33,7 +35,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.SettingsDataStore
@@ -77,6 +81,36 @@ fun SettingsScreen(
     var showDeleteArchivedMedicationsDialog by remember { mutableStateOf(false) }
 
     val errorSavingFileText: String = stringResource(R.string.error_saving_file)
+    val biometricPromptTitle = stringResource(R.string.biometric_prompt_title)
+    val biometricPromptSubtitle = stringResource(R.string.biometric_prompt_subtitle)
+    val biometricErrorFormat = stringResource(R.string.biometric_error)
+
+    fun runWithAuth(onSuccess: () -> Unit) {
+        val activity = context as? FragmentActivity ?: return
+        val executor = ContextCompat.getMainExecutor(activity)
+        val biometricPrompt = BiometricPrompt(activity, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    onSuccess()
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    if (errorCode != BiometricPrompt.ERROR_USER_CANCELED && errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON) {
+                        Toast.makeText(context, biometricErrorFormat.format(errString), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            })
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(biometricPromptTitle)
+            .setSubtitle(biometricPromptSubtitle)
+            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
+    }
 
     val importPasswordsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -276,13 +310,13 @@ fun SettingsScreen(
                 PreferenceItem(
                     title = "Import passwords.json",
                     icon = Icons.Default.Lock,
-                    onClick = { showPasswordResetDialog = true }
+                    onClick = { runWithAuth { showPasswordResetDialog = true } }
                 )
                 PreferenceDivider()
                 PreferenceItem(
                     title = "Share or Save passwords.json",
                     icon = Icons.Default.Share,
-                    onClick = { showShareOptionsDialog = true }
+                    onClick = { runWithAuth { showShareOptionsDialog = true } }
                 )
             }
         }

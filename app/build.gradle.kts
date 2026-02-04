@@ -61,6 +61,9 @@ dependencies {
 
     // Security Crypto
     implementation(libs.androidx.security.crypto)
+    
+    // Biometric
+    implementation(libs.androidx.biometric)
 
     // Kotlinx Serialization
     implementation(libs.kotlinx.serialization.json)

@@ -180,8 +180,15 @@
     <string name="import_payments_error">Errore durante l\'importazione del CSV: %s</string>
     <string name="import_invalid_file_type">Tipo di file non valido. Seleziona un file CSV.</string>
     <string name="import_button">Importa</string>
+    <string name="delete_budgeting_data_title">Eliminare i dati di bilancio?</string>
     <string name="delete_budgeting_data_confirmation">Sei sicuro di voler eliminare tutti i dati di bilancio? L\'azione non può essere annullata.</string>
     <string name="confirm_import">Conferma importazione</string>
     <string name="import_poop_entries_confirmation">Sei sicuro di voler importare le registrazioni di cacca? Questo sovrascriverà i dati esistenti.</string>
+    <string name="delete_archived_medication_data_title">Eliminare l\'archivio dati dei medicinali?</string>
     <string name="delete_archived_medication_data_confirmation">Sei sicuro di voler eliminare tutti i dati archiviati dei farmaci? L\'azione non può essere annullata.</string>
+    <string name="biometric_prompt_title">Autenticazione Biometrica</string>
+    <string name="biometric_prompt_subtitle">Sblocca per vedere le password</string>
+    <string name="biometric_prompt_negative_button">Annulla</string>
+    <string name="biometric_not_available">Autenticazione biometrica non disponibile</string>
+    <string name="biometric_error">Errode di autenticazione: %s</string>
 </resources>

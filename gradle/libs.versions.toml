@@ -19,6 +19,7 @@ uiText = "1.10.2"
 vico = "1.14.0"
 uiTextVersion = "1.10.2"
 securityCrypto = "1.1.0"
+biometric = "1.1.0"
 
 [libraries]
 #noinspection SimilarGradleDependency
@@ -55,6 +56,7 @@ vico-compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref
 vico-core = { module = "com.patrykandpatrick.vico:core", version.ref = "vico" }
 androidx-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiTextVersion" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
+androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

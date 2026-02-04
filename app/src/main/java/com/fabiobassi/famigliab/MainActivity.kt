@@ -1,7 +1,6 @@
 package com.fabiobassi.famigliab
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateColorAsState
@@ -49,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -61,7 +61,7 @@ import com.fabiobassi.famigliab.ui.features.settings.SettingsScreen
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -74,21 +74,21 @@ class MainActivity : ComponentActivity() {
 }
 
 sealed class NavItem(val titleResId: Int, val icon: ImageVector, val route: String) {
+    object Settings : NavItem(R.string.settings, Icons.Default.Settings, "settings")
     object Budgeting : NavItem(R.string.budgeting, Icons.Default.Analytics, "budgeting")
     object PoopTracker : NavItem(R.string.poop_tracker, Icons.Default.AirlineSeatLegroomNormal, "poop_tracker")
     object Medications : NavItem(R.string.medications, Icons.Default.LocalHospital, "medications")
     object Passwords : NavItem(R.string.passwords, Icons.Default.Lock, "passwords")
-    object Settings : NavItem(R.string.settings, Icons.Default.Settings, "settings")
 }
 
 @Composable
 fun MainScreen() {
     val items = listOf(
+        NavItem.Settings,
         NavItem.Budgeting,
         NavItem.PoopTracker,
         NavItem.Medications,
-        NavItem.Passwords,
-        NavItem.Settings
+        NavItem.Passwords
     )
 
     val navController = rememberNavController()
@@ -96,7 +96,7 @@ fun MainScreen() {
     // Initialize the navigation graph to avoid "setGraph() before getGraph()" error
     // This is required because we are using NavController without a NavHost
     navController.graph = remember(items) {
-        navController.createGraph(startDestination = items[0].route) {
+        navController.createGraph(startDestination = items[1].route) {
             items.forEach { item ->
                 composable(item.route) {
                     // Empty because UI is handled by HorizontalPager
@@ -111,7 +111,7 @@ fun MainScreen() {
     val currentRoute = navBackStackEntry?.destination?.route
     
     val lazyListState = rememberLazyListState()
-    val pagerState = rememberPagerState(pageCount = { items.size })
+    val pagerState = rememberPagerState(initialPage = 1, pageCount = { items.size })
 
     // Synchronize Pager with Navigation
     LaunchedEffect(pagerState.currentPage) {
@@ -190,11 +190,14 @@ fun MainScreen() {
                     ) { page ->
                         val screenPadding = PaddingValues(0.dp)
                         when (items[page]) {
+                            NavItem.Settings -> SettingsScreen(screenPadding)
                             NavItem.Budgeting -> BudgetingScreen(screenPadding)
                             NavItem.PoopTracker -> PoopTrackerScreenContainer(screenPadding)
                             NavItem.Medications -> MedicationsScreen(screenPadding)
-                            NavItem.Passwords -> PasswordsScreen(screenPadding)
-                            NavItem.Settings -> SettingsScreen(screenPadding)
+                            NavItem.Passwords -> PasswordsScreen(
+                                paddingValues = screenPadding,
+                                isVisible = pagerState.currentPage == page
+                            )
                         }
                     }
                 }
@@ -209,13 +212,21 @@ fun PillNavigationItem(
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val isSettings = item is NavItem.Settings
+    
+    val selectedBgColor = if (isSettings) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+    val selectedContentColor = if (isSettings) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onPrimary
+    
+    val unselectedBgColor = if (isSettings) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+    val unselectedContentColor = if (isSettings) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+
     val backgroundColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        targetValue = if (selected) selectedBgColor else unselectedBgColor,
         animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = "pillBackground"
     )
     val contentColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (selected) selectedContentColor else unselectedContentColor,
         animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = "pillContent"
     )
