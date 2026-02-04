@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.Person
+import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.MonthPoopChartCard
 import com.fabiobassi.famigliab.ui.features.poop_tracker.dialogs.AddPoopDialog
 import java.time.LocalDate
 import java.time.YearMonth
@@ -141,6 +142,10 @@ fun StandardPoopScreen(
                         color = poopData?.sabColor ?: MaterialTheme.colorScheme.secondary
                     )
                 }
+            }
+
+            item{
+                MonthPoopChartCard()
             }
 
             // Navigation Button

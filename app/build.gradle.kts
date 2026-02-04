@@ -72,6 +72,11 @@ dependencies {
     // kotlin-csv
     implementation(libs.kotlin.csv.jvm)
 
+    // Vico
+    implementation(libs.vico.compose)
+    implementation(libs.vico.compose.m3)
+
+
     implementation(libs.colorpicker.compose)
 
 }
