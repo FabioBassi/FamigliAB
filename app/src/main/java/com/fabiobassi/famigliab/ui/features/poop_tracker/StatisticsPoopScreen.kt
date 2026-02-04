@@ -40,7 +40,7 @@ fun StatisticsPoopScreen(
 ) {
     val recapData by viewModel.recapData.collectAsState()
     val selectedYear by viewModel.selectedYear.collectAsState()
-    val poopData by viewModel.poopData.collectAsState()
+    val personColors by viewModel.personColors.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -91,10 +91,11 @@ fun StatisticsPoopScreen(
                 }
                 MonthAveragePoopGraphCard(
                     recapData = recapData,
-                    poopData = poopData,
+                    personColors = personColors,
                 )
                 MonthRecapTable(
-                    recapData = recapData
+                    recapData = recapData,
+                    personColors = personColors,
                 )
             }
         }

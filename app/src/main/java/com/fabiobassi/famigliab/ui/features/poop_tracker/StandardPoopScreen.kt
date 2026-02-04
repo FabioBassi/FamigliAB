@@ -52,7 +52,7 @@ fun StandardPoopScreen(
     val viewModel: PoopTrackerViewModel = viewModel(factory = PoopTrackerViewModel.Factory)
     val filteredEntries by viewModel.filteredEntries.collectAsState()
     val displayedMonth by viewModel.displayedMonth.collectAsState()
-    val poopData by viewModel.poopData.collectAsState()
+    val personColors by viewModel.personColors.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
 
     Box(
@@ -115,13 +115,13 @@ fun StandardPoopScreen(
                         modifier = Modifier.weight(1f),
                         label = "FAB",
                         count = fabCount,
-                        color = poopData?.fabColor ?: MaterialTheme.colorScheme.primary
+                        color = personColors?.fabColor ?: MaterialTheme.colorScheme.primary
                     )
                     SummaryCard(
                         modifier = Modifier.weight(1f),
                         label = "SAB",
                         count = sabCount,
-                        color = poopData?.sabColor ?: MaterialTheme.colorScheme.secondary
+                        color = personColors?.sabColor ?: MaterialTheme.colorScheme.secondary
                     )
                 }
             }
@@ -130,7 +130,7 @@ fun StandardPoopScreen(
                 MonthPoopChartCard(
                     entries = filteredEntries,
                     month = displayedMonth,
-                    poopData = poopData
+                    personColors = personColors
                 )
             }
 

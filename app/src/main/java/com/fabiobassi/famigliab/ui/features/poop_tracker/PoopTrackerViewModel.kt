@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
-data class PoopData(
+data class PersonColors(
     val fabColor: Color,
     val sabColor: Color
 )
@@ -47,8 +47,8 @@ class PoopTrackerViewModel(
     private val _poopEntries = MutableStateFlow<List<PoopEntry>>(emptyList())
     val poopEntries: StateFlow<List<PoopEntry>> = _poopEntries.asStateFlow()
 
-    private val _poopData = MutableStateFlow<PoopData?>(null)
-    val poopData: StateFlow<PoopData?> = _poopData.asStateFlow()
+    private val _personColors = MutableStateFlow<PersonColors?>(null)
+    val personColors: StateFlow<PersonColors?> = _personColors.asStateFlow()
 
     private val _selectedYear = MutableStateFlow(LocalDate.now().year)
     val selectedYear: StateFlow<Int> = _selectedYear.asStateFlow()
@@ -144,7 +144,7 @@ class PoopTrackerViewModel(
             val fabColor = if (fabColorHex.isNotEmpty()) Color(fabColorHex.toColorInt()) else Color.Blue
             val sabColor = if (sabColorHex.isNotEmpty()) Color(sabColorHex.toColorInt()) else Color.Red
 
-            _poopData.value = PoopData(fabColor, sabColor)
+            _personColors.value = PersonColors(fabColor, sabColor)
         }
     }
 

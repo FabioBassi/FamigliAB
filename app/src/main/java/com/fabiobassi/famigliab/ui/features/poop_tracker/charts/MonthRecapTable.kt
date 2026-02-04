@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.fabiobassi.famigliab.ui.features.poop_tracker.MonthlyStats
+import com.fabiobassi.famigliab.ui.features.poop_tracker.PersonColors
 import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
@@ -23,7 +24,8 @@ import java.util.Locale
 @Composable
 fun MonthRecapTable(
     recapData: List<Pair<Month, MonthlyStats>>,
-    modifier: Modifier = Modifier
+    personColors: PersonColors?,
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
         Card(
@@ -55,17 +57,19 @@ fun MonthRecapTable(
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        color = personColors?.fabColor ?: MaterialTheme.colorScheme.primary,
                     )
                     Text(
                         text = "Sab",
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        color = personColors?.sabColor ?: MaterialTheme.colorScheme.secondary,
                     )
                 }
-                
+
                 HorizontalDivider(thickness = 2.dp)
 
                 Column(
@@ -83,7 +87,7 @@ fun MonthRecapTable(
                                 modifier = Modifier.weight(1.5f),
                                 style = MaterialTheme.typography.bodyMedium
                             )
-                            
+
                             // Fab Stats
                             Column(
                                 modifier = Modifier.weight(1f),

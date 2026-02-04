@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.fabiobassi.famigliab.ui.features.poop_tracker.MonthlyStats
-import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopData
+import com.fabiobassi.famigliab.ui.features.poop_tracker.PersonColors
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
@@ -32,7 +32,7 @@ import java.util.Locale
 @Composable
 fun MonthAveragePoopGraphCard(
     recapData: List<Pair<Month, MonthlyStats>>,
-    poopData: PoopData? = null
+    personColors: PersonColors? = null
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -42,7 +42,7 @@ fun MonthAveragePoopGraphCard(
     ) {
         AveragePoopColumnChart(
             recapData = recapData,
-            poopData = poopData,
+            personColors = personColors,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
@@ -54,7 +54,7 @@ fun MonthAveragePoopGraphCard(
 @Composable
 private fun AveragePoopColumnChart(
     recapData: List<Pair<Month, MonthlyStats>>,
-    poopData: PoopData?,
+    personColors: PersonColors?,
     modifier: Modifier = Modifier,
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
@@ -74,8 +74,8 @@ private fun AveragePoopColumnChart(
         }
     }
 
-    val fabColor = poopData?.fabColor ?: MaterialTheme.colorScheme.primary
-    val sabColor = poopData?.sabColor ?: MaterialTheme.colorScheme.secondary
+    val fabColor = personColors?.fabColor ?: MaterialTheme.colorScheme.primary
+    val sabColor = personColors?.sabColor ?: MaterialTheme.colorScheme.secondary
     val months = remember {
         Month.entries.map { it.getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
     }
