@@ -25,8 +25,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.Payment
 import com.fabiobassi.famigliab.file.CsvFileManager
 import com.fabiobassi.famigliab.file.CsvFileType
@@ -82,26 +84,31 @@ fun ImportPaymentsDialog(
                             set(Calendar.MONTH, selectedMonth)
                         }
                         csvFileManager.writeData(CsvFileType.PAYMENTS, calendar.time, payments)
-                        Toast.makeText(context, "Imported ${payments.size} payments.", Toast.LENGTH_LONG).show()
+                        val successMessage = context.resources.getQuantityString(
+                            R.plurals.import_payments_success,
+                            payments.size,
+                            payments.size
+                        )
+                        Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
                     }
                     onDismissRequest()
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Error importing CSV: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.import_payments_error, e.message), Toast.LENGTH_LONG).show()
                     e.printStackTrace()
                 }
             } else {
-                Toast.makeText(context, "Invalid file type. Please select a CSV file.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.import_invalid_file_type), Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text("Import Payments CSV") },
+        title = { Text(stringResource(R.string.import_payments_csv)) },
         text = {
             Column {
-                Text("Select month and year to import the payments for.")
-                Text("Dates in the csv file must be in the format dd/mm/yy")
+                Text(stringResource(R.string.import_payments_select_month_year))
+                Text(stringResource(R.string.import_payments_date_format))
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ExposedDropdownMenuBox(
@@ -113,7 +120,7 @@ fun ImportPaymentsDialog(
                             value = months[selectedMonth].toString(),
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Month") },
+                            label = { Text(stringResource(R.string.month)) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = monthExpanded) },
                             modifier = Modifier.menuAnchor()
                         )
@@ -141,7 +148,7 @@ fun ImportPaymentsDialog(
                             value = selectedYear.toString(),
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Year") },
+                            label = { Text(stringResource(R.string.year)) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = yearExpanded) },
                             modifier = Modifier.menuAnchor()
                         )
@@ -162,23 +169,23 @@ fun ImportPaymentsDialog(
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Input the separator used in the csv file.")
+                Text(stringResource(R.string.import_payments_separator_info))
                 Spacer(modifier = Modifier.height(16.dp))
                 TextField(
                     value = separator,
                     onValueChange = { separator = it },
-                    label = { Text("Separator") },
+                    label = { Text(stringResource(R.string.import_payments_separator)) },
                 )
             }
         },
         confirmButton = {
             Button(onClick = { importLauncher.launch("*/*") }) {
-                Text("Import")
+                Text(stringResource(R.string.import_button))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

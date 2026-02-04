@@ -174,4 +174,26 @@
     <string name="go_back">Go back</string>
     <string name="set_color_for">Set color for %s</string>
     <string name="selected_hex">Selected Hex:</string>
+    <string name="confirm_deletion">Confirm Deletion</string>
+    <string name="delete_poop_data_confirmation">Are you sure you want to delete the poop tracker data?</string>
+    <string name="import_passwords_title">Confirm Import</string>
+    <string name="import_passwords_message">Are you sure you want to import passwords? This will overwrite existing data.</string>
+    <string name="import_payments_csv">Import Payments CSV</string>
+    <string name="import_payments_select_month_year">Select month and year to import the payments for.</string>
+    <string name="import_payments_date_format">Dates in the csv file must be in the format dd/mm/yy</string>
+    <string name="import_payments_separator_info">Input the separator used in the csv file.</string>
+    <string name="import_payments_separator">Separator</string>
+    <plurals name="import_payments_success">
+        <item quantity="one">Imported %d payment.</item>
+        <item quantity="other">Imported %d payments.</item>
+    </plurals>
+    <string name="import_payments_error">Error importing CSV: %s</string>
+    <string name="import_invalid_file_type">Invalid file type. Please select a CSV file.</string>
+    <string name="import_button">Import</string>
+    <string name="delete_budgeting_data_title">Delete budgeting data?</string>
+    <string name="delete_budgeting_data_confirmation">Are you sure you want to delete all budgeting data? This action cannot be undone.</string>
+    <string name="confirm_import">Confirm Import</string>
+    <string name="import_poop_entries_confirmation">Are you sure you want to import poop entries? This will overwrite existing data.</string>
+    <string name="delete_archived_medication_data_title">Delete archived medication data?</string>
+    <string name="delete_archived_medication_data_confirmation">This will permanently remove all archived schedules and their associated medication history. This action cannot be undone.</string>
 </resources>

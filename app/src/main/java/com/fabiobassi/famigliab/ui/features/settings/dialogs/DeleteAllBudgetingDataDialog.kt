@@ -5,6 +5,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.fabiobassi.famigliab.R
 import java.io.File
 
 @Composable
@@ -15,8 +17,8 @@ fun DeleteAllBudgetingDataDialog(
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text("Confirm Deletion") },
-        text = { Text("Are you sure you want to delete all budgeting data? This action cannot be undone.") },
+        title = { Text(stringResource(R.string.confirm_deletion)) },
+        text = { Text(stringResource(R.string.delete_budgeting_data_confirmation)) },
         confirmButton = {
             TextButton(onClick = {
                 val budgetingDir = File(context.getExternalFilesDir("FamigliAB"), "Budgeting")
@@ -25,12 +27,12 @@ fun DeleteAllBudgetingDataDialog(
                 }
                 onDismissRequest()
             }) {
-                Text("Confirm")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

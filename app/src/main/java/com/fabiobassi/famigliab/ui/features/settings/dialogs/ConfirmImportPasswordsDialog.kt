@@ -4,7 +4,9 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 
 @Composable
@@ -14,19 +16,19 @@ fun ConfirmImportPasswordsDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text("Confirm Import") },
-        text = { Text("Are you sure you want to import passwords? This will overwrite existing data.") },
+        title = { Text(stringResource(R.string.import_passwords_title)) },
+        text = { Text(stringResource(R.string.import_passwords_message)) },
         confirmButton = {
             TextButton(onClick = {
                 onConfirm()
                 onDismissRequest()
             }) {
-                Text("Confirm")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         },
     )

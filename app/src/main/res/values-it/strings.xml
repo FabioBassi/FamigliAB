@@ -163,4 +163,25 @@
     <string name="go_back">Torna indietro</string>
     <string name="set_color_for">Imposta il colore per %s</string>
     <string name="selected_hex">Esadecimale selezionato</string>
+    <string name="confirm_deletion">Conferma eliminazione</string>
+    <string name="delete_poop_data_confirmation">Sei sicuro di voler eliminare i dati del contatore cacca?</string>
+    <string name="import_passwords_title">Conferma Importazione</string>
+    <string name="import_passwords_message">Sei sicuro di voler importare le password? Questo sovrascriverà i dati esistenti.</string>
+    <string name="import_payments_csv">Importa Pagamenti CSV</string>
+    <string name="import_payments_select_month_year">Seleziona il mese e l\'anno per cui importare i pagamenti.</string>
+    <string name="import_payments_date_format">Le date nel file csv devono essere nel formato gg/mm/aa</string>
+    <string name="import_payments_separator_info">Inserisci il separatore usato nel file csv.</string>
+    <string name="import_payments_separator">Separatore</string>
+    <plurals name="import_payments_success">
+        <item quantity="one">Importato %d pagamento.</item>
+        <item quantity="other">Importati %d pagamenti.</item>
+        <item quantity="many">Importati %d pagamenti.</item>
+    </plurals>
+    <string name="import_payments_error">Errore durante l\'importazione del CSV: %s</string>
+    <string name="import_invalid_file_type">Tipo di file non valido. Seleziona un file CSV.</string>
+    <string name="import_button">Importa</string>
+    <string name="delete_budgeting_data_confirmation">Sei sicuro di voler eliminare tutti i dati di bilancio? L\'azione non può essere annullata.</string>
+    <string name="confirm_import">Conferma importazione</string>
+    <string name="import_poop_entries_confirmation">Sei sicuro di voler importare le registrazioni di cacca? Questo sovrascriverà i dati esistenti.</string>
+    <string name="delete_archived_medication_data_confirmation">Sei sicuro di voler eliminare tutti i dati archiviati dei farmaci? L\'azione non può essere annullata.</string>
 </resources>
