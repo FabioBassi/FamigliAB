@@ -18,6 +18,7 @@ material3 = "1.4.0"
 uiText = "1.10.2"
 vico = "1.14.0"
 uiTextVersion = "1.10.2"
+securityCrypto = "1.1.0"
 
 [libraries]
 #noinspection SimilarGradleDependency
@@ -53,6 +54,7 @@ vico-compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vi
 vico-compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "vico" }
 vico-core = { module = "com.patrykandpatrick.vico:core", version.ref = "vico" }
 androidx-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiTextVersion" }
+androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

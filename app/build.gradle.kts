@@ -59,6 +59,9 @@ dependencies {
     // DataStore
     implementation(libs.androidx.datastore.preferences)
 
+    // Security Crypto
+    implementation(libs.androidx.security.crypto)
+
     // Kotlinx Serialization
     implementation(libs.kotlinx.serialization.json)
 

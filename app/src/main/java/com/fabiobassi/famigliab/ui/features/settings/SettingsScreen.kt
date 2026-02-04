@@ -36,10 +36,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
-import com.fabiobassi.famigliab.data.MedicationEntry
 import com.fabiobassi.famigliab.data.SettingsDataStore
-import com.fabiobassi.famigliab.file.CsvFileType
 import com.fabiobassi.famigliab.ui.features.medications.MedicationsViewModel
+import com.fabiobassi.famigliab.ui.features.passwords.PasswordItem
+import com.fabiobassi.famigliab.ui.features.passwords.PasswordRepository
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ColorSettingDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ConfirmDeletePoopTrackerDataDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ConfirmImportPasswordsDialog
@@ -49,9 +49,9 @@ import com.fabiobassi.famigliab.ui.features.settings.dialogs.DeleteArchivedMedic
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ImportPaymentsDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.SharePasswordsDialog
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.FileOutputStream
-import java.util.Date
 
 @Composable
 fun SettingsScreen(
@@ -63,6 +63,8 @@ fun SettingsScreen(
     val settingsDataStore = remember { SettingsDataStore(context) }
     val fabColor by settingsDataStore.getColorFor("Fab").collectAsState(initial = "")
     val sabColor by settingsDataStore.getColorFor("Sab").collectAsState(initial = "")
+    
+    val passwordRepository = remember { PasswordRepository(context) }
 
     var showColorSettingDialog by remember { mutableStateOf(false) }
     var personToSetColorFor by remember { mutableStateOf<String?>(null) }
@@ -82,11 +84,10 @@ fun SettingsScreen(
         uri?.let {
             try {
                 context.contentResolver.openInputStream(it)?.use { inputStream ->
-                    val passwordFile = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
-                    FileOutputStream(passwordFile).use { outputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
-                    Toast.makeText(context, "Passwords imported successfully!", Toast.LENGTH_SHORT).show()
+                    val jsonString = inputStream.readBytes().decodeToString()
+                    val passwords = Json.decodeFromString<List<PasswordItem>>(jsonString)
+                    passwordRepository.savePasswords(passwords)
+                    Toast.makeText(context, "Passwords imported and encrypted successfully!", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Error importing passwords: ${e.message}", Toast.LENGTH_LONG).show()
@@ -104,6 +105,8 @@ fun SettingsScreen(
                         file.inputStream().copyTo(outputStream)
                     }
                     Toast.makeText(context, R.string.passwords_saved_to_files, Toast.LENGTH_SHORT).show()
+                    // Clean up plain text file after saving
+                    file.delete()
                 } catch (e: Exception) {
                     Toast.makeText(context, errorSavingFileText.format(e.message), Toast.LENGTH_LONG).show()
                 }
@@ -310,8 +313,8 @@ fun SettingsScreen(
         SharePasswordsDialog(
             onDismissRequest = { showShareOptionsDialog = false },
             onShare = {
-                val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
-                if (file.exists()) {
+                val file = passwordRepository.exportToPlainText()
+                if (file != null && file.exists()) {
                     val uri = FileProvider.getUriForFile(context, "com.fabiobassi.famigliab.fileprovider", file)
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -320,19 +323,23 @@ fun SettingsScreen(
                     }
                     val chooser = Intent.createChooser(intent, shareFileText)
                     context.startActivity(chooser)
+                    // Note: Ideally we'd delete the file after the share is complete, 
+                    // but since we don't know when that is, it will be overwritten/deleted next time.
                 } else {
                     Toast.makeText(context, R.string.passwords_file_not_found, Toast.LENGTH_SHORT).show()
                 }
             },
             onSaveToFiles = {
+                passwordRepository.exportToPlainText()
                 saveFileLauncher.launch("passwords.json")
             },
             onCopyToClipboard = {
-                val file = File(context.getExternalFilesDir("FamigliAB"), "passwords.json")
-                if (file.exists()) {
+                val file = passwordRepository.exportToPlainText()
+                if (file != null && file.exists()) {
                     val fileContent = file.readText()
                     clipboardManager.setText(AnnotatedString(fileContent))
                     Toast.makeText(context, R.string.passwords_copied_to_clipboard, Toast.LENGTH_SHORT).show()
+                    file.delete() // Safe to delete immediately after copying to memory
                 } else {
                     Toast.makeText(context, R.string.passwords_file_not_found, Toast.LENGTH_SHORT).show()
                 }
