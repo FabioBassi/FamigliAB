@@ -147,7 +147,8 @@ fun StandardPoopScreen(
             item {
                 MonthPoopChartCard(
                     entries = currentMonthEntries,
-                    month = displayedMonth
+                    month = displayedMonth,
+                    poopData = poopData
                 )
             }
 

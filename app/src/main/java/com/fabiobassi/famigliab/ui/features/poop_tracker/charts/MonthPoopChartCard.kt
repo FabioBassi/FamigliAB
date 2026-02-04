@@ -10,9 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.data.PoopEntry
+import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopData
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
@@ -22,6 +24,8 @@ import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
+import com.patrykandpatrick.vico.core.common.Fill
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -30,6 +34,7 @@ import java.time.format.DateTimeFormatter
 fun MonthPoopChartCard(
     entries: List<PoopEntry>,
     month: YearMonth,
+    poopData: PoopData? = null
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -40,6 +45,7 @@ fun MonthPoopChartCard(
         PoopLineChart(
             entries = entries,
             month = month,
+            poopData = poopData,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
@@ -52,6 +58,7 @@ fun MonthPoopChartCard(
 private fun PoopLineChart(
     entries: List<PoopEntry>,
     month: YearMonth,
+    poopData: PoopData?,
     modifier: Modifier = Modifier,
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
@@ -88,9 +95,17 @@ private fun PoopLineChart(
         }
     }
 
+    val fabColor = poopData?.fabColor ?: MaterialTheme.colorScheme.primary
+    val sabColor = poopData?.sabColor ?: MaterialTheme.colorScheme.secondary
+
     CartesianChartHost(
         chart = rememberCartesianChart(
-            rememberLineCartesianLayer(),
+            rememberLineCartesianLayer(
+                lineProvider = LineCartesianLayer.LineProvider.series(
+                    LineCartesianLayer.Line(fill = LineCartesianLayer.LineFill.single(Fill(fabColor.toArgb()))),
+                    LineCartesianLayer.Line(fill = LineCartesianLayer.LineFill.single(Fill(sabColor.toArgb())))
+                )
+            ),
             startAxis = VerticalAxis.rememberStart(),
             bottomAxis = HorizontalAxis.rememberBottom(),
         ),
