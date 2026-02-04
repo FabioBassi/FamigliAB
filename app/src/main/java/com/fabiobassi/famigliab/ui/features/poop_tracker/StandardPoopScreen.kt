@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.Person
-import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.PoopChartCard
 import com.fabiobassi.famigliab.ui.features.poop_tracker.dialogs.AddPoopDialog
 import java.time.LocalDate
 import java.time.YearMonth
@@ -54,7 +53,7 @@ fun StandardPoopScreen(
 ) {
     val viewModel: PoopTrackerViewModel = viewModel(factory = PoopTrackerViewModel.Factory)
     val poopEntries by viewModel.poopEntries.collectAsState()
-    val poopChartData by viewModel.poopChartData.collectAsState()
+    val poopData by viewModel.poopData.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     var displayedMonth by remember { mutableStateOf(YearMonth.now()) }
 
@@ -133,20 +132,15 @@ fun StandardPoopScreen(
                         modifier = Modifier.weight(1f),
                         label = "FAB",
                         count = fabCount,
-                        color = poopChartData?.fabColor ?: MaterialTheme.colorScheme.primary
+                        color = poopData?.fabColor ?: MaterialTheme.colorScheme.primary
                     )
                     SummaryCard(
                         modifier = Modifier.weight(1f),
                         label = "SAB",
                         count = sabCount,
-                        color = poopChartData?.sabColor ?: MaterialTheme.colorScheme.secondary
+                        color = poopData?.sabColor ?: MaterialTheme.colorScheme.secondary
                     )
                 }
-            }
-
-            // Activity Chart
-            item {
-                PoopChartCard(poopChartData = poopChartData)
             }
 
             // Navigation Button

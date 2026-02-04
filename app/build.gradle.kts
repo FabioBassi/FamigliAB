@@ -72,12 +72,6 @@ dependencies {
     // kotlin-csv
     implementation(libs.kotlin.csv.jvm)
 
-    // Vico for charts
-    implementation(libs.vico.core)
-    implementation(libs.vico.compose)
-    implementation(libs.vico.compose.m3)
-
     implementation(libs.colorpicker.compose)
 
-    //ksp("androidx.room:room-compiler:2.5.0")
 }

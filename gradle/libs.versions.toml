@@ -11,7 +11,6 @@ composeBom = "2026.01.01"
 navigationCompose = "2.9.7"
 material3 = "1.4.0"
 uiText = "1.10.2"
-vico = "1.14.0"
 securityCrypto = "1.1.0"
 biometric = "1.1.0"
 
@@ -32,9 +31,6 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
 kotlin-csv-jvm = { module = "com.github.doyaaaaaken:kotlin-csv-jvm", version.ref = "kotlinCsvJvm" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
-vico-compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vico" }
-vico-compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "vico" }
-vico-core = { module = "com.patrykandpatrick.vico:core", version.ref = "vico" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 

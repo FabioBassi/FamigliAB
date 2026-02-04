@@ -18,35 +18,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.YearMonth
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-data class PoopChartData(
-    val entriesByDay: Map<Person, Map<String, Int>>,
+data class PoopData(
     val fabColor: Color,
     val sabColor: Color
-)
-
-data class CumulativePoopChartData(
-    val entries: Map<Person, List<Pair<String, Int>>>,
-    val fabColor: Color,
-    val sabColor: Color,
-    val year: Int,
-)
-
-data class MonthlyPoopChartData(
-    val entries: Map<Person, List<Pair<String, Int>>>,
-    val fabColor: Color,
-    val sabColor: Color,
-    val year: Int,
-)
-
-data class AverageMonthlyPoopChartData(
-    val entries: Map<Person, List<Pair<String, Float>>>,
-    val fabColor: Color,
-    val sabColor: Color,
-    val year: Int,
 )
 
 class PoopTrackerViewModel(
@@ -57,28 +34,10 @@ class PoopTrackerViewModel(
     private val _poopEntries = MutableStateFlow<List<PoopEntry>>(emptyList())
     val poopEntries: StateFlow<List<PoopEntry>> = _poopEntries.asStateFlow()
 
-    private val _poopChartData = MutableStateFlow<PoopChartData?>(null)
-    val poopChartData: StateFlow<PoopChartData?> = _poopChartData.asStateFlow()
+    private val _poopData = MutableStateFlow<PoopData?>(null)
+    val poopData: StateFlow<PoopData?> = _poopData.asStateFlow()
 
-    private val _cumulativePoopChartData = MutableStateFlow<CumulativePoopChartData?>(null)
-    val cumulativePoopChartData: StateFlow<CumulativePoopChartData?> =
-        _cumulativePoopChartData.asStateFlow()
-
-    private val _monthlyPoopChartData = MutableStateFlow<MonthlyPoopChartData?>(null)
-    val monthlyPoopChartData: StateFlow<MonthlyPoopChartData?> = _monthlyPoopChartData.asStateFlow()
-
-    private val _averageMonthlyPoopChartData =
-        MutableStateFlow<AverageMonthlyPoopChartData?>(null)
-    val averageMonthlyPoopChartData: StateFlow<AverageMonthlyPoopChartData?> =
-        _averageMonthlyPoopChartData.asStateFlow()
-
-    private var currentDayOffset: Int = 0
-    private val _selectedYear = MutableStateFlow(Calendar.getInstance().get(Calendar.YEAR))
-    val selectedYear: StateFlow<Int> = _selectedYear.asStateFlow()
-
-    fun loadPoopEntries(dayOffset: Int = currentDayOffset, year: Int = _selectedYear.value, month: YearMonth? = null) {
-        currentDayOffset = dayOffset
-        _selectedYear.value = year
+    fun loadPoopEntries(month: YearMonth? = null) {
         viewModelScope.launch {
             val allEntries = csvFileManager.readData(
                 type = CsvFileType.POOP_ENTRIES,
@@ -94,157 +53,14 @@ class PoopTrackerViewModel(
                 }
             }
 
-            val calendar = Calendar.getInstance()
-            val dateFormat = SimpleDateFormat("dd/MM", Locale.US)
-            val fullDateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
-            val lastDays = mutableMapOf<String, Int>()
-
-            if (month != null) {
-                val daysInMonth = month.lengthOfMonth()
-                for (i in 1..daysInMonth) {
-                    val day = String.format("%02d/%02d", i, month.monthValue)
-                    lastDays[day] = 0
-                }
-            } else {
-                val today = calendar.time
-                val windowSize = 7
-                for (i in (dayOffset + windowSize - 1) downTo dayOffset) {
-                    calendar.time = today
-                    calendar.add(Calendar.DAY_OF_YEAR, -i)
-                    val day = dateFormat.format(calendar.time)
-                    lastDays[day] = 0
-                }
-            }
-
-            val entriesByPerson = allEntries.groupBy { it.person }
-
-            val result = mutableMapOf<Person, Map<String, Int>>()
-
-            for (person in Person.entries) {
-                val personEntries = entriesByPerson[person] ?: emptyList()
-                val personMap = lastDays.toMutableMap()
-                personEntries.forEach { entry ->
-                    try {
-                        val entryDate = fullDateFormat.parse(entry.date)
-                        val entryCal = Calendar.getInstance()
-                        entryCal.time = entryDate
-                        
-                        val matches = if (month != null) {
-                            entryCal.get(Calendar.YEAR) == month.year && (entryCal.get(Calendar.MONTH) + 1) == month.monthValue
-                        } else {
-                            // Simple string match for dayOffset logic (backward compatible)
-                            true
-                        }
-                        
-                        if (matches) {
-                            val entryDay = dateFormat.format(entryDate)
-                            if (personMap.containsKey(entryDay)) {
-                                personMap[entryDay] = personMap[entryDay]!! + 1
-                            }
-                        }
-                    } catch (e: Exception) {
-                        // ignore malformed dates
-                    }
-                }
-                result[person] = personMap
-            }
-
             val fabColorHex = settingsDataStore.getColorFor(Person.FAB.name).first()
             val sabColorHex = settingsDataStore.getColorFor(Person.SAB.name).first()
 
             val fabColor = if (fabColorHex.isNotEmpty()) Color(fabColorHex.toColorInt()) else Color.Blue
             val sabColor = if (sabColorHex.isNotEmpty()) Color(sabColorHex.toColorInt()) else Color.Red
 
-            _poopChartData.value = PoopChartData(result, fabColor, sabColor)
-
-            val cumulativeResult = mutableMapOf<Person, List<Pair<String, Int>>>()
-            val monthlyResult = mutableMapOf<Person, List<Pair<String, Int>>>()
-            val monthFormat = SimpleDateFormat("MMM yyyy", Locale.US)
-            val dateParseFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
-
-            val allMonths = mutableListOf<String>()
-            val cal = Calendar.getInstance()
-            for (i in 0..11) {
-                cal.set(Calendar.YEAR, year)
-                cal.set(Calendar.MONTH, i)
-                allMonths.add(monthFormat.format(cal.time))
-            }
-
-            for (person in Person.entries) {
-                val personEntries = entriesByPerson[person] ?: emptyList()
-                val monthCounts = allMonths.associateWith { 0 }.toMutableMap()
-
-                personEntries.forEach { entry ->
-                    try {
-                        val entryDate = dateParseFormat.parse(entry.date)
-                        val entryCal = Calendar.getInstance()
-                        entryCal.time = entryDate
-                        if (entryCal.get(Calendar.YEAR) == year) {
-                            val monthName = monthFormat.format(entryDate)
-                            if (monthCounts.containsKey(monthName)) {
-                                monthCounts[monthName] = monthCounts[monthName]!! + 1
-                            }
-                        }
-                    } catch (e: Exception) {
-                        // ignore malformed dates
-                    }
-                }
-
-                var cumulativeCount = 0
-                val cumulativeEntries = allMonths.map { monthName ->
-                    cumulativeCount += monthCounts[monthName]!!
-                    monthName to cumulativeCount
-                }
-                cumulativeResult[person] = cumulativeEntries
-
-                val monthlyEntries = allMonths.map { monthName ->
-                    monthName to (monthCounts[monthName] ?: 0)
-                }
-                monthlyResult[person] = monthlyEntries
-            }
-
-            _cumulativePoopChartData.value = CumulativePoopChartData(
-                entries = cumulativeResult,
-                fabColor = fabColor,
-                sabColor = sabColor,
-                year = year,
-            )
-
-            _monthlyPoopChartData.value = MonthlyPoopChartData(
-                entries = monthlyResult,
-                fabColor = fabColor,
-                sabColor = sabColor,
-                year = year,
-            )
-
-            val averageMonthlyResult = mutableMapOf<Person, List<Pair<String, Float>>>()
-            val monthDateParseFormat = SimpleDateFormat("MMM yyyy", Locale.US)
-
-            for (person in Person.entries) {
-                val personMonthlyEntries = monthlyResult[person] ?: emptyList()
-
-                val averageEntries = personMonthlyEntries.map { (monthString, poopCount) ->
-                    val monthDate = monthDateParseFormat.parse(monthString)
-                    val calAvg = Calendar.getInstance()
-                    calAvg.time = monthDate
-                    val daysInMonth = calAvg.getActualMaximum(Calendar.DAY_OF_MONTH)
-                    val average = if (daysInMonth > 0) poopCount.toFloat() / daysInMonth else 0f
-                    monthString to average
-                }
-                averageMonthlyResult[person] = averageEntries
-            }
-
-            _averageMonthlyPoopChartData.value = AverageMonthlyPoopChartData(
-                entries = averageMonthlyResult,
-                fabColor = fabColor,
-                sabColor = sabColor,
-                year = year,
-            )
+            _poopData.value = PoopData(fabColor, sabColor)
         }
-    }
-
-    fun changeYear(year: Int) {
-        loadPoopEntries(year = year)
     }
 
     fun addPoopEntry(date: String, hour: String, quality: String, person: Person) {

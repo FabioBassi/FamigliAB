@@ -25,10 +25,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
-import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.AverageMonthlyPoopChartCard
-import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.CumulativeYearlyPoopChartCard
-import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.MonthlyPoopChartCard
-import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.PoopMonthlySummaryTable
 
 @Composable
 fun StatisticsPoopScreen(
@@ -36,9 +32,6 @@ fun StatisticsPoopScreen(
     onSwitchToStandard: () -> Unit,
     viewModel: PoopTrackerViewModel = viewModel(factory = PoopTrackerViewModel.Factory),
 ) {
-    val cumulativePoopChartData by viewModel.cumulativePoopChartData.collectAsState()
-    val monthlyPoopChartData by viewModel.monthlyPoopChartData.collectAsState()
-    val averageMonthlyPoopChartData by viewModel.averageMonthlyPoopChartData.collectAsState()
 
     Column(
         modifier = Modifier
@@ -57,16 +50,6 @@ fun StatisticsPoopScreen(
             Text(stringResource(R.string.go_back), modifier = Modifier.padding(start = 8.dp))
         }
 
-        AverageMonthlyPoopChartCard(
-            averageMonthlyPoopChartData = averageMonthlyPoopChartData,
-            onChangeYear = viewModel::changeYear,
-        )
-
-        MonthlyPoopChartCard(
-            monthlyPoopChartData = monthlyPoopChartData,
-            onChangeYear = viewModel::changeYear,
-        )
-
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -77,15 +60,9 @@ fun StatisticsPoopScreen(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
-            PoopMonthlySummaryTable(
-                monthlyPoopChartData = monthlyPoopChartData,
-            )
+
         }
 
-        CumulativeYearlyPoopChartCard(
-            cumulativePoopChartData = cumulativePoopChartData,
-            onChangeYear = viewModel::changeYear,
-        )
     }
 }
 
