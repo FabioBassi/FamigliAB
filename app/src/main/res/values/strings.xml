@@ -101,7 +101,7 @@
     <string name="no_payments_recorded">No payments recorded yet</string>
     <string name="show_less">Show less</string>
     <string name="view_all_payments">View all payments</string>
-    <string name="payed_by">Payed by %s</string>
+    <string name="payed_by">Paid by %s</string>
     <string name="share_data_csv">Share data CSV</string>
     <string name="payments">Payments</string>
     <string name="incomes">Incomes</string>
@@ -117,7 +117,7 @@
     <string name="description">Description</string>
     <string name="amount">Amount</string>
     <string name="confirm">Confirm</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="add_new_payment">Add new payment</string>
     <string name="date">Date</string>
     <string name="category">Category</string>

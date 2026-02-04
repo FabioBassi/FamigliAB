@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.ApplicationExtension
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -6,7 +8,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
-android {
+extensions.configure<ApplicationExtension> { //old "android{...}"
     namespace = "com.fabiobassi.famigliab"
     compileSdk = 36
 
@@ -46,7 +48,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.ui.text)
-    implementation(libs.androidx.ui.text)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // 🧩 Activity + Lifecycle Compose
@@ -76,7 +77,7 @@ dependencies {
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m3)
 
-    implementation("com.github.skydoves:colorpicker-compose:1.0.0")
+    implementation(libs.colorpicker.compose)
 
     //ksp("androidx.room:room-compiler:2.5.0")
 }
