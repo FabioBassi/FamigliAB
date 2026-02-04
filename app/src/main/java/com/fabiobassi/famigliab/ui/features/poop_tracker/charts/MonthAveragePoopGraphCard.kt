@@ -90,7 +90,13 @@ private fun AveragePoopColumnChart(
                     )
                 ),
                 startAxis = VerticalAxis.rememberStart(
-                    valueFormatter = { _, value, _ -> "%.1f".format(value) }
+                    valueFormatter = { _, value, _ ->
+                        when {
+                            value >= 1 -> value.toInt().toString()
+                            value > 0 -> "%.1f".format(value)
+                            else -> "0"
+                        }
+                    }
                 ),
                 bottomAxis = HorizontalAxis.rememberBottom(
                     valueFormatter = { _, value, _ -> months.getOrNull(value.toInt()) ?: "" }

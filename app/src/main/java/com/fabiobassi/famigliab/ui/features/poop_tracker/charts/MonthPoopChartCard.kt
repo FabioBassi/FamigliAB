@@ -106,7 +106,12 @@ private fun PoopLineChart(
                     LineCartesianLayer.Line(fill = LineCartesianLayer.LineFill.single(Fill(sabColor.toArgb())))
                 )
             ),
-            startAxis = VerticalAxis.rememberStart(),
+            startAxis = VerticalAxis.rememberStart(
+                itemPlacer = VerticalAxis.ItemPlacer.step({ 1.0 }),
+                valueFormatter = { _, value, _ ->
+                    value.toInt().toString()
+                }
+            ),
             bottomAxis = HorizontalAxis.rememberBottom(),
         ),
         modelProducer = modelProducer,
