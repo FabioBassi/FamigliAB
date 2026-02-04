@@ -12,18 +12,31 @@ import com.fabiobassi.famigliab.data.SettingsDataStore
 import com.fabiobassi.famigliab.file.CsvFileManager
 import com.fabiobassi.famigliab.file.CsvFileType
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.Month
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
 data class PoopData(
     val fabColor: Color,
     val sabColor: Color
+)
+
+data class MonthlyStats(
+    val fabCount: Int = 0,
+    val fabAvg: Double = 0.0,
+    val sabCount: Int = 0,
+    val sabAvg: Double = 0.0
 )
 
 class PoopTrackerViewModel(
@@ -37,7 +50,75 @@ class PoopTrackerViewModel(
     private val _poopData = MutableStateFlow<PoopData?>(null)
     val poopData: StateFlow<PoopData?> = _poopData.asStateFlow()
 
-    fun loadPoopEntries(month: YearMonth? = null) {
+    private val _selectedYear = MutableStateFlow(LocalDate.now().year)
+    val selectedYear: StateFlow<Int> = _selectedYear.asStateFlow()
+
+    private val _displayedMonth = MutableStateFlow(YearMonth.now())
+    val displayedMonth: StateFlow<YearMonth> = _displayedMonth.asStateFlow()
+
+    val filteredEntries: StateFlow<List<PoopEntry>> = combine(_poopEntries, _displayedMonth) { entries, month ->
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.US)
+        entries.filter {
+            try {
+                val entryDate = LocalDate.parse(it.date, formatter)
+                entryDate.monthValue == month.monthValue && entryDate.year == month.year
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val recapData: StateFlow<List<Pair<Month, MonthlyStats>>> = combine(_poopEntries, _selectedYear) { entries, year ->
+        calculateRecapData(entries, year)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    init {
+        loadPoopEntries()
+    }
+
+    fun updateSelectedYear(year: Int) {
+        _selectedYear.value = year
+    }
+
+    fun updateDisplayedMonth(month: YearMonth) {
+        _displayedMonth.value = month
+    }
+
+    private fun calculateRecapData(entries: List<PoopEntry>, year: Int): List<Pair<Month, MonthlyStats>> {
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.US)
+        val statsMap = mutableMapOf<Month, MonthlyStats>()
+
+        // Initialize all months
+        Month.entries.forEach { month ->
+            statsMap[month] = MonthlyStats()
+        }
+
+        val yearEntries = entries.filter {
+            try {
+                LocalDate.parse(it.date, formatter).year == year
+            } catch (_: Exception) {
+                false
+            }
+        }
+
+        yearEntries.groupBy { LocalDate.parse(it.date, formatter).month }.forEach { (month, monthEntries) ->
+            val daysInMonth = YearMonth.of(year, month).lengthOfMonth()
+            
+            val fabCount = monthEntries.count { it.person == Person.FAB }
+            val sabCount = monthEntries.count { it.person == Person.SAB }
+            
+            statsMap[month] = MonthlyStats(
+                fabCount = fabCount,
+                fabAvg = fabCount.toDouble() / daysInMonth,
+                sabCount = sabCount,
+                sabAvg = sabCount.toDouble() / daysInMonth
+            )
+        }
+
+        return statsMap.toList().sortedBy { it.first.value }
+    }
+
+    fun loadPoopEntries() {
         viewModelScope.launch {
             val allEntries = csvFileManager.readData(
                 type = CsvFileType.POOP_ENTRIES,

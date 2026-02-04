@@ -25,6 +25,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
+import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.MonthAveragePoopGraphCard
+import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.MonthRecapTable
 
 @Composable
 fun StatisticsPoopScreen(
@@ -32,6 +34,8 @@ fun StatisticsPoopScreen(
     onSwitchToStandard: () -> Unit,
     viewModel: PoopTrackerViewModel = viewModel(factory = PoopTrackerViewModel.Factory),
 ) {
+    val recapData by viewModel.recapData.collectAsState()
+    val selectedYear by viewModel.selectedYear.collectAsState()
 
     Column(
         modifier = Modifier
@@ -60,7 +64,12 @@ fun StatisticsPoopScreen(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
-
+            MonthAveragePoopGraphCard()
+            MonthRecapTable(
+                recapData = recapData,
+                selectedYear = selectedYear,
+                onYearSelected = viewModel::updateSelectedYear
+            )
         }
 
     }

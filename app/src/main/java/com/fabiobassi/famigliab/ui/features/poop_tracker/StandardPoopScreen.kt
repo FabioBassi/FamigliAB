@@ -25,7 +25,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,8 +42,6 @@ import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.MonthPoopChartCard
 import com.fabiobassi.famigliab.ui.features.poop_tracker.dialogs.AddPoopDialog
-import java.time.LocalDate
-import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -53,25 +50,10 @@ fun StandardPoopScreen(
     onSwitchToStatistics: () -> Unit,
 ) {
     val viewModel: PoopTrackerViewModel = viewModel(factory = PoopTrackerViewModel.Factory)
-    val poopEntries by viewModel.poopEntries.collectAsState()
+    val filteredEntries by viewModel.filteredEntries.collectAsState()
+    val displayedMonth by viewModel.displayedMonth.collectAsState()
     val poopData by viewModel.poopData.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
-    var displayedMonth by remember { mutableStateOf(YearMonth.now()) }
-
-    LaunchedEffect(displayedMonth) {
-        viewModel.loadPoopEntries(month = displayedMonth)
-    }
-
-    val currentMonthEntries = remember(poopEntries, displayedMonth) {
-        poopEntries.filter {
-            try {
-                val entryDate = LocalDate.parse(it.date, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-                entryDate.monthValue == displayedMonth.monthValue && entryDate.year == displayedMonth.year
-            } catch (_: Exception) {
-                false
-            }
-        }
-    }
 
     Box(
         modifier = Modifier
@@ -98,7 +80,7 @@ fun StandardPoopScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        IconButton(onClick = { displayedMonth = displayedMonth.minusMonths(1) }) {
+                        IconButton(onClick = { viewModel.updateDisplayedMonth(displayedMonth.minusMonths(1)) }) {
                             Icon(
                                 Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                                 contentDescription = "Previous month"
@@ -110,7 +92,7 @@ fun StandardPoopScreen(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        IconButton(onClick = { displayedMonth = displayedMonth.plusMonths(1) }) {
+                        IconButton(onClick = { viewModel.updateDisplayedMonth(displayedMonth.plusMonths(1)) }) {
                             Icon(
                                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                 contentDescription = "Next month"
@@ -126,8 +108,8 @@ fun StandardPoopScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    val fabCount = currentMonthEntries.count { it.person == Person.FAB }
-                    val sabCount = currentMonthEntries.count { it.person == Person.SAB }
+                    val fabCount = filteredEntries.count { it.person == Person.FAB }
+                    val sabCount = filteredEntries.count { it.person == Person.SAB }
 
                     SummaryCard(
                         modifier = Modifier.weight(1f),
@@ -146,7 +128,7 @@ fun StandardPoopScreen(
 
             item {
                 MonthPoopChartCard(
-                    entries = currentMonthEntries,
+                    entries = filteredEntries,
                     month = displayedMonth,
                     poopData = poopData
                 )
@@ -174,7 +156,7 @@ fun StandardPoopScreen(
             }
 
             // Entries List
-            if (currentMonthEntries.isEmpty()) {
+            if (filteredEntries.isEmpty()) {
                 item {
                     Text(
                         text = stringResource(R.string.no_entries_month),
@@ -187,7 +169,7 @@ fun StandardPoopScreen(
                     )
                 }
             } else {
-                items(currentMonthEntries) { entry ->
+                items(filteredEntries) { entry ->
                     PoopEntryItem(entry = entry, onDelete = { viewModel.deletePoopEntry(entry) })
                 }
             }
