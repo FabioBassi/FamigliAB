@@ -144,8 +144,11 @@ fun StandardPoopScreen(
                 }
             }
 
-            item{
-                MonthPoopChartCard()
+            item {
+                MonthPoopChartCard(
+                    entries = currentMonthEntries,
+                    month = displayedMonth
+                )
             }
 
             // Navigation Button
