@@ -70,7 +70,11 @@ class PoopTrackerViewModel(
 
     val recapData: StateFlow<List<Pair<Month, MonthlyStats>>> = combine(_poopEntries, _selectedYear) { entries, year ->
         calculateRecapData(entries, year)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = calculateRecapData(emptyList(), LocalDate.now().year)
+    )
 
     init {
         loadPoopEntries()
