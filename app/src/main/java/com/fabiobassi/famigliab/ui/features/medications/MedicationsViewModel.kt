@@ -63,6 +63,10 @@ sealed class RecordItem {
         }
 }
 
+enum class DayStatus {
+    NONE, TAKEN_ALL, TAKEN_SOME, TAKEN_NONE, FUTURE_SCHEDULED
+}
+
 class MedicationsViewModel(
     private val csvFileManager: CsvFileManager,
     private val notificationManager: MedicationNotificationManager
@@ -146,6 +150,46 @@ class MedicationsViewModel(
 
         history.sortedByDescending { it.dateTime }
     }.collectAsStateFlow(emptyList())
+
+    fun getDayStatus(date: Date): DayStatus {
+        val today = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.time
+
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
+        val dateStr = dateFormat.format(date)
+        val calendar = Calendar.getInstance().apply { time = date }
+        val dayOfWeek = getDayOfWeek(calendar)
+        
+        val schedules = _medicationSchedules.value
+        val entries = _medicationEntries.value
+        
+        // Use a parsed version of date for isScheduleActiveOnDate to avoid time precision issues
+        val normalizedDate = dateFormat.parse(dateStr) ?: date
+
+        val activeSchedules = schedules.filter { 
+            !it.isArchived && isScheduleActiveOnDate(it, normalizedDate, dayOfWeek) 
+        }
+        
+        if (activeSchedules.isEmpty()) return DayStatus.NONE
+        
+        if (normalizedDate.after(today)) {
+            return DayStatus.FUTURE_SCHEDULED
+        }
+
+        val takenCount = activeSchedules.count { schedule ->
+            entries.any { it.scheduleId == schedule.id && it.date == dateStr }
+        }
+        
+        return when {
+            takenCount == activeSchedules.size -> DayStatus.TAKEN_ALL
+            takenCount > 0 -> DayStatus.TAKEN_SOME
+            else -> DayStatus.TAKEN_NONE
+        }
+    }
 
     private fun getDayOfWeek(calendar: Calendar): String {
         return when (calendar.get(Calendar.DAY_OF_WEEK)) {

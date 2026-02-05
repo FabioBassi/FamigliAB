@@ -153,7 +153,8 @@ fun MedicationsScreen(
                             item,
                             hour
                         )
-                    }
+                    },
+                    viewModel = viewModel
                 )
             }
         }
