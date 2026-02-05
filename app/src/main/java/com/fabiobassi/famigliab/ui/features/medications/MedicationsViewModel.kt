@@ -28,7 +28,7 @@ data class MedicationReminder(
     val lastTakenTime: String?
 )
 
-sealed class HistoryItem {
+sealed class RecordItem {
     abstract val date: String
     abstract val hour: String
     abstract val name: String
@@ -36,7 +36,7 @@ sealed class HistoryItem {
     abstract val person: Person
     abstract val pillsPerDose: Int
 
-    data class Taken(val entry: MedicationEntry) : HistoryItem() {
+    data class Taken(val entry: MedicationEntry) : RecordItem() {
         override val date: String = entry.date
         override val hour: String = entry.hour
         override val name: String = entry.name
@@ -53,7 +53,7 @@ sealed class HistoryItem {
         override val person: Person,
         override val pillsPerDose: Int,
         val scheduleId: String
-    ) : HistoryItem()
+    ) : RecordItem()
 
     val dateTime: Date
         get() = try {
@@ -102,14 +102,14 @@ class MedicationsViewModel(
             }.sortedBy { it.schedule.hour }
     }.collectAsStateFlow(emptyList())
 
-    val historyItems: StateFlow<List<HistoryItem>> = combine(
+    val recordItems: StateFlow<List<RecordItem>> = combine(
         _medicationSchedules,
         _medicationEntries
     ) { schedules, entries ->
-        val history = mutableListOf<HistoryItem>()
+        val history = mutableListOf<RecordItem>()
         
         // Add actual entries (Taken) - even if the schedule is archived
-        history.addAll(entries.map { HistoryItem.Taken(it) })
+        history.addAll(entries.map { RecordItem.Taken(it) })
 
         // Calculate skipped entries for the last 14 days
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
@@ -129,7 +129,7 @@ class MedicationsViewModel(
                     val wasTaken = entries.any { it.scheduleId == schedule.id && it.date == checkDateStr }
                     if (!wasTaken) {
                         history.add(
-                            HistoryItem.Skipped(
+                            RecordItem.Skipped(
                                 date = checkDateStr,
                                 hour = schedule.hour,
                                 name = schedule.name,
@@ -290,7 +290,7 @@ class MedicationsViewModel(
         }
     }
 
-    fun markSkippedAsTaken(item: HistoryItem.Skipped, hour: String) {
+    fun markSkippedAsTaken(item: RecordItem.Skipped, hour: String) {
         viewModelScope.launch {
             val newEntry = MedicationEntry(
                 date = item.date,

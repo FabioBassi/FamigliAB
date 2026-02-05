@@ -1,4 +1,4 @@
-package com.fabiobassi.famigliab.ui.features.medications
+package com.fabiobassi.famigliab.ui.features.medications.items
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,7 +35,7 @@ import com.fabiobassi.famigliab.data.MedicationSchedule
 import com.fabiobassi.famigliab.data.SettingsDataStore
 
 @Composable
-fun ScheduleItem(
+fun MedicationScheduleItem(
     schedule: MedicationSchedule,
     onDelete: () -> Unit,
 ) {

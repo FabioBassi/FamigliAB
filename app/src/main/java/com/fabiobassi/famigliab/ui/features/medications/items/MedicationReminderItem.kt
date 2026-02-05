@@ -1,4 +1,4 @@
-package com.fabiobassi.famigliab.ui.features.medications
+package com.fabiobassi.famigliab.ui.features.medications.items
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,12 +40,13 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.SettingsDataStore
+import com.fabiobassi.famigliab.ui.features.medications.MedicationReminder
 import java.util.Calendar
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReminderItem(
+fun MedicationReminderItem(
     reminder: MedicationReminder,
     onMarkAsTaken: (String) -> Unit
 ) {

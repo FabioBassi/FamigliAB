@@ -1,4 +1,4 @@
-package com.fabiobassi.famigliab.ui.features.medications
+package com.fabiobassi.famigliab.ui.features.medications.items
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,10 +42,11 @@ import androidx.core.graphics.toColorInt
 import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.MedicationEntry
 import com.fabiobassi.famigliab.data.SettingsDataStore
+import com.fabiobassi.famigliab.ui.features.medications.RecordItem
 import java.util.Locale
 
 @Composable
-fun MedicationItem(
+fun MedicationRecordItem(
     entry: MedicationEntry,
     onDelete: () -> Unit
 ) {
@@ -135,7 +136,7 @@ fun MedicationItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SkippedMedicationItem(
-    item: HistoryItem.Skipped,
+    item: RecordItem.Skipped,
     onMarkAsTaken: (String) -> Unit
 ) {
     var showTimePicker by remember { mutableStateOf(false) }

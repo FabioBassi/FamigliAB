@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -36,6 +34,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.ui.features.medications.dialogs.AddMedicationDialog
+import com.fabiobassi.famigliab.ui.features.medications.tabs.MedicationHistoryTab
+import com.fabiobassi.famigliab.ui.features.medications.tabs.MedicationScheduleTab
+import com.fabiobassi.famigliab.ui.features.medications.tabs.MedicationTodayTab
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +44,7 @@ fun MedicationsScreen(
     paddingValues: PaddingValues,
     viewModel: MedicationsViewModel = viewModel(factory = MedicationsViewModel.Factory)
 ) {
-    val historyItems by viewModel.historyItems.collectAsState()
+    val historyItems by viewModel.recordItems.collectAsState()
     val medicationSchedules by viewModel.medicationSchedules.collectAsState()
     val reminders by viewModel.reminders.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
@@ -136,55 +137,24 @@ fun MedicationsScreen(
                 .padding(horizontal = 16.dp)
         ) {
             when (selectedTab) {
-                0 -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp)
-                    ) {
-                        items(reminders) { reminder ->
-                            ReminderItem(
-                                reminder = reminder,
-                                onMarkAsTaken = { hour -> viewModel.markAsTaken(reminder, hour) }
-                            )
-                        }
+                0 -> MedicationTodayTab(
+                    reminders = reminders,
+                    onMarkAsTaken = { reminder, hour -> viewModel.markAsTaken(reminder, hour) }
+                )
+                1 -> MedicationScheduleTab(
+                    medicationSchedules = medicationSchedules,
+                    onDeleteSchedule = { schedule -> viewModel.deleteSchedule(schedule) }
+                )
+                2 -> MedicationHistoryTab(
+                    recordItems = historyItems,
+                    onDeleteMedication = { entry -> viewModel.deleteMedication(entry) },
+                    onMarkSkippedAsTaken = { item, hour ->
+                        viewModel.markSkippedAsTaken(
+                            item,
+                            hour
+                        )
                     }
-                }
-                1 -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp)
-                    ) {
-                        items(medicationSchedules) { schedule ->
-                            ScheduleItem(
-                                schedule = schedule,
-                                onDelete = { viewModel.deleteSchedule(schedule) }
-                            )
-                        }
-                    }
-                }
-                2 -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp)
-                    ) {
-                        items(historyItems) { item ->
-                            when (item) {
-                                is HistoryItem.Taken -> {
-                                    MedicationItem(
-                                        entry = item.entry,
-                                        onDelete = { viewModel.deleteMedication(item.entry) }
-                                    )
-                                }
-                                is HistoryItem.Skipped -> {
-                                    SkippedMedicationItem(
-                                        item = item,
-                                        onMarkAsTaken = { hour -> viewModel.markSkippedAsTaken(item, hour) }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                )
             }
         }
     }
