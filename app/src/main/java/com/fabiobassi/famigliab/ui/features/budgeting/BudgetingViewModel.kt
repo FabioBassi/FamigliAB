@@ -31,6 +31,12 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
     private val _isAnnualReport = MutableStateFlow(false)
     val isAnnualReport: StateFlow<Boolean> = _isAnnualReport
 
+    private val _fabAnnualIncomes = MutableStateFlow<List<Double>>(List(12) { 0.0 })
+    val fabAnnualIncomes: StateFlow<List<Double>> = _fabAnnualIncomes
+
+    private val _sabAnnualIncomes = MutableStateFlow<List<Double>>(List(12) { 0.0 })
+    val sabAnnualIncomes: StateFlow<List<Double>> = _sabAnnualIncomes
+
     init {
         loadDataForMonth(_currentDate.value)
     }
@@ -63,15 +69,25 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
 
         val allPayments = mutableListOf<Payment>()
         val allIncomes = mutableListOf<Income>()
+        val fabIncomes = MutableList(12) { 0.0 }
+        val sabIncomes = MutableList(12) { 0.0 }
 
         for (month in 0..11) {
             calendar.set(year, month, 1)
             val monthDate = calendar.time
-            allPayments.addAll(csvFileManager.readData(CsvFileType.PAYMENTS, monthDate, Payment::fromCsvRow))
-            allIncomes.addAll(csvFileManager.readData(CsvFileType.INCOMES, monthDate, Income::fromCsvRow))
+            val monthPayments = csvFileManager.readData(CsvFileType.PAYMENTS, monthDate, Payment::fromCsvRow)
+            val monthIncomes = csvFileManager.readData(CsvFileType.INCOMES, monthDate, Income::fromCsvRow)
+            
+            allPayments.addAll(monthPayments)
+            allIncomes.addAll(monthIncomes)
+            
+            fabIncomes[month] = monthIncomes.filter { it.paidTo == Person.FAB }.sumOf { it.amount }
+            sabIncomes[month] = monthIncomes.filter { it.paidTo == Person.SAB }.sumOf { it.amount }
         }
         _payments.value = allPayments
         _incomes.value = allIncomes
+        _fabAnnualIncomes.value = fabIncomes
+        _sabAnnualIncomes.value = sabIncomes
     }
 
     fun toggleAnnualReport() {
@@ -105,6 +121,8 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
             val updatedOtherMonthPayments = otherMonthPayments + newPayment
             csvFileManager.writeData(CsvFileType.PAYMENTS, date, updatedOtherMonthPayments)
         }
+        
+        if (_isAnnualReport.value) loadDataForYear(_currentDate.value)
     }
 
     fun updatePayment(oldPayment: Payment, newPayment: Payment) {
@@ -143,6 +161,7 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
         val updatedPayments = _payments.value.filter { it.id != paymentId }
         _payments.value = updatedPayments
         csvFileManager.writeData(CsvFileType.PAYMENTS, _currentDate.value, updatedPayments)
+        if (_isAnnualReport.value) loadDataForYear(_currentDate.value)
     }
 
     fun addIncome(description: String, amount: Double, paidTo: Person) {
@@ -154,12 +173,14 @@ class BudgetingViewModel(application: Application) : AndroidViewModel(applicatio
         val updatedIncomes = _incomes.value + newIncome
         _incomes.value = updatedIncomes
         csvFileManager.writeData(CsvFileType.INCOMES, _currentDate.value, updatedIncomes)
+        if (_isAnnualReport.value) loadDataForYear(_currentDate.value)
     }
 
     fun deleteIncome(income: Income) {
         val updatedIncomes = _incomes.value.filter { it != income }
         _incomes.value = updatedIncomes
         csvFileManager.writeData(CsvFileType.INCOMES, _currentDate.value, updatedIncomes)
+        if (_isAnnualReport.value) loadDataForYear(_currentDate.value)
     }
 
     fun updateVouchers(fabVouchers: Int, sabVouchers: Int, fabVoucherValue: Double, sabVoucherValue: Double) {

@@ -38,6 +38,8 @@ fun BudgetingScreenContent(
     payments: List<Payment>,
     incomes: List<Income>,
     vouchers: List<Voucher>,
+    fabAnnualIncomes: List<Double>,
+    sabAnnualIncomes: List<Double>,
     currentDate: Date,
     showAllPayments: Boolean,
     showAnnualReport: Boolean,
@@ -103,6 +105,25 @@ fun BudgetingScreenContent(
     val paymentsForPeriod = if (showAnnualReport) paymentsForYear else paymentsForMonth
     val paymentsByCategory = paymentsForPeriod.groupBy { it.category }
 
+    val fabMonthlyPayments = remember(paymentsForYear) {
+        val cal = Calendar.getInstance()
+        (0..11).map { month ->
+            paymentsForYear.filter {
+                cal.time = it.date
+                cal.get(Calendar.MONTH) == month && it.paidBy == Person.FAB
+            }.sumOf { it.amount }
+        }
+    }
+    val sabMonthlyPayments = remember(paymentsForYear) {
+        val cal = Calendar.getInstance()
+        (0..11).map { month ->
+            paymentsForYear.filter {
+                cal.time = it.date
+                cal.get(Calendar.MONTH) == month && it.paidBy == Person.SAB
+            }.sumOf { it.amount }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -131,19 +152,24 @@ fun BudgetingScreenContent(
                     }
                     item {
                         AnnualGraph(
-                            payments = paymentsForYear,
-                            incomes = incomes
+                            fabMonthlyIncomes = fabAnnualIncomes,
+                            fabMonthlyPayments = fabMonthlyPayments,
+                            sabMonthlyIncomes = sabAnnualIncomes,
+                            sabMonthlyPayments = sabMonthlyPayments
+                        )
+                    }
+                    item {
+                        AnnualMonthRecap(
+                            fabMonthlyIncomes = fabAnnualIncomes,
+                            fabMonthlyPayments = fabMonthlyPayments,
+                            sabMonthlyIncomes = sabAnnualIncomes,
+                            sabMonthlyPayments = sabMonthlyPayments
                         )
                     }
                     item {
                         AnnualCategoryExpensesCard(
                             paymentsByCategory = paymentsByCategory,
                             colors = categoryColors
-                        )
-                    }
-                    item {
-                        AnnualMonthRecap(
-
                         )
                     }
                 } else {
@@ -238,6 +264,8 @@ fun BudgetingScreenPreview() {
         payments = mockOutcomes,
         incomes = mockIncomes,
         vouchers = mockVouchers,
+        fabAnnualIncomes = List(12) { 0.0 },
+        sabAnnualIncomes = List(12) { 0.0 },
         currentDate = Date(),
         showAllPayments = false,
         showAnnualReport = false,

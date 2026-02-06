@@ -35,6 +35,8 @@ fun BudgetingScreen(
     val vouchers by viewModel.vouchers.collectAsState()
     val currentDate by viewModel.currentDate.collectAsState()
     val isAnnualReport by viewModel.isAnnualReport.collectAsState()
+    val fabAnnualIncomes by viewModel.fabAnnualIncomes.collectAsState()
+    val sabAnnualIncomes by viewModel.sabAnnualIncomes.collectAsState()
     val context = LocalContext.current
     var showAllPayments by remember { mutableStateOf(false) }
     val csvFileManager = remember { CsvFileManager(context) }
@@ -99,6 +101,8 @@ fun BudgetingScreen(
         payments = payments,
         incomes = incomes,
         vouchers = vouchers,
+        fabAnnualIncomes = fabAnnualIncomes,
+        sabAnnualIncomes = sabAnnualIncomes,
         currentDate = currentDate,
         showAllPayments = showAllPayments,
         showAnnualReport = isAnnualReport,
