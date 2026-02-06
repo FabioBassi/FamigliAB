@@ -42,7 +42,10 @@ import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.Person
 import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.MonthPoopChartCard
 import com.fabiobassi.famigliab.ui.features.poop_tracker.dialogs.AddPoopDialog
+import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun StandardPoopScreen(
@@ -111,16 +114,28 @@ fun StandardPoopScreen(
                     val fabCount = filteredEntries.count { it.person == Person.FAB }
                     val sabCount = filteredEntries.count { it.person == Person.SAB }
 
+                    val daysToConsider = remember(displayedMonth) {
+                        val now = LocalDate.now()
+                        val currentMonth = YearMonth.from(now)
+                        when {
+                            displayedMonth == currentMonth -> now.dayOfMonth
+                            displayedMonth.isBefore(currentMonth) -> displayedMonth.lengthOfMonth()
+                            else -> 0
+                        }
+                    }
+
                     SummaryCard(
                         modifier = Modifier.weight(1f),
                         label = "FAB",
                         count = fabCount,
+                        average = if (daysToConsider > 0) fabCount.toDouble() / daysToConsider else null,
                         color = personColors?.fabColor ?: MaterialTheme.colorScheme.primary
                     )
                     SummaryCard(
                         modifier = Modifier.weight(1f),
                         label = "SAB",
                         count = sabCount,
+                        average = if (daysToConsider > 0) sabCount.toDouble() / daysToConsider else null,
                         color = personColors?.sabColor ?: MaterialTheme.colorScheme.secondary
                     )
                 }
@@ -206,6 +221,7 @@ fun SummaryCard(
     modifier: Modifier = Modifier,
     label: String,
     count: Int,
+    average: Double? = null,
     color: androidx.compose.ui.graphics.Color
 ) {
     Card(
@@ -236,6 +252,13 @@ fun SummaryCard(
                 fontWeight = FontWeight.Black,
                 color = color
             )
+            if (average != null) {
+                Text(
+                    text = String.format(Locale.getDefault(), "avg: %.2f", average),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = color.copy(alpha = 0.7f)
+                )
+            }
         }
     }
 }

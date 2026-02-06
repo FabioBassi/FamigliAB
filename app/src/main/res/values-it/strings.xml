@@ -194,4 +194,6 @@
     <string name="monthly_recap">Resoconto mensile</string>
     <string name="income">Entrate</string>
     <string name="net">Netto</string>
+    <string name="poop_time_distribution_title">Distribuzione oraria</string>
+    <string name="monthly_average">Media mensile</string>
 </resources>

@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.MonthAveragePoopGraphCard
 import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.MonthRecapTable
+import com.fabiobassi.famigliab.ui.features.poop_tracker.charts.TimeDistributionLineChartCard
 
 @Composable
 fun StatisticsPoopScreen(
@@ -39,6 +40,7 @@ fun StatisticsPoopScreen(
     viewModel: PoopTrackerViewModel = viewModel(factory = PoopTrackerViewModel.Factory),
 ) {
     val recapData by viewModel.recapData.collectAsState()
+    val timeDistribution by viewModel.timeDistribution.collectAsState()
     val selectedYear by viewModel.selectedYear.collectAsState()
     val personColors by viewModel.personColors.collectAsState()
 
@@ -64,12 +66,6 @@ fun StatisticsPoopScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(
-                    text = stringResource(R.string.monthly_summary_table_title).uppercase(),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -89,6 +85,13 @@ fun StatisticsPoopScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowRight, contentDescription = "next year")
                     }
                 }
+                Text(
+                    text = stringResource(R.string.monthly_average),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
                 MonthAveragePoopGraphCard(
                     recapData = recapData,
                     personColors = personColors,
@@ -96,6 +99,17 @@ fun StatisticsPoopScreen(
                 MonthRecapTable(
                     recapData = recapData,
                     personColors = personColors,
+                )
+                Text(
+                    text = stringResource(R.string.poop_time_distribution_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+                TimeDistributionLineChartCard(
+                    timeDistribution = timeDistribution,
+                    personColors = personColors
                 )
             }
         }

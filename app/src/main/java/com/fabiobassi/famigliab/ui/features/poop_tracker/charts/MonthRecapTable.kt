@@ -12,9 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.ui.features.poop_tracker.MonthlyStats
 import com.fabiobassi.famigliab.ui.features.poop_tracker.PersonColors
 import java.time.Month
@@ -47,7 +49,7 @@ fun MonthRecapTable(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Month",
+                        text = stringResource(R.string.month),
                         modifier = Modifier.weight(1.5f),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold

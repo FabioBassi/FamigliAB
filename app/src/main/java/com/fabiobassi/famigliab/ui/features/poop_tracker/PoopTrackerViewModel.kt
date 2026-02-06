@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.Month
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -37,6 +38,11 @@ data class MonthlyStats(
     val fabAvg: Double = 0.0,
     val sabCount: Int = 0,
     val sabAvg: Double = 0.0
+)
+
+data class TimeDistribution(
+    val fabDistribution: Map<Int, Int> = emptyMap(),
+    val sabDistribution: Map<Int, Int> = emptyMap()
 )
 
 class PoopTrackerViewModel(
@@ -76,6 +82,14 @@ class PoopTrackerViewModel(
         initialValue = calculateRecapData(emptyList(), LocalDate.now().year)
     )
 
+    val timeDistribution: StateFlow<TimeDistribution> = combine(_poopEntries, _selectedYear) { entries, year ->
+        calculateTimeDistribution(entries, year)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = TimeDistribution()
+    )
+
     init {
         loadPoopEntries()
     }
@@ -107,10 +121,10 @@ class PoopTrackerViewModel(
 
         yearEntries.groupBy { LocalDate.parse(it.date, formatter).month }.forEach { (month, monthEntries) ->
             val daysInMonth = YearMonth.of(year, month).lengthOfMonth()
-            
+
             val fabCount = monthEntries.count { it.person == Person.FAB }
             val sabCount = monthEntries.count { it.person == Person.SAB }
-            
+
             statsMap[month] = MonthlyStats(
                 fabCount = fabCount,
                 fabAvg = fabCount.toDouble() / daysInMonth,
@@ -120,6 +134,35 @@ class PoopTrackerViewModel(
         }
 
         return statsMap.toList().sortedBy { it.first.value }
+    }
+
+    private fun calculateTimeDistribution(entries: List<PoopEntry>, year: Int): TimeDistribution {
+        val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.US)
+        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale.US)
+
+        val yearEntries = entries.filter {
+            try {
+                LocalDate.parse(it.date, dateFormatter).year == year
+            } catch (_: Exception) {
+                false
+            }
+        }
+
+        val fabDist = (0..23).associateWith { 0 }.toMutableMap()
+        val sabDist = (0..23).associateWith { 0 }.toMutableMap()
+
+        yearEntries.forEach { entry ->
+            try {
+                val hour = LocalTime.parse(entry.hour, timeFormatter).hour
+                if (entry.person == Person.FAB) {
+                    fabDist[hour] = fabDist.getOrDefault(hour, 0) + 1
+                } else if (entry.person == Person.SAB) {
+                    sabDist[hour] = sabDist.getOrDefault(hour, 0) + 1
+                }
+            } catch (_: Exception) { }
+        }
+
+        return TimeDistribution(fabDist, sabDist)
     }
 
     fun loadPoopEntries() {

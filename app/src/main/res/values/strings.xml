@@ -204,4 +204,6 @@
     <string name="monthly_recap">Monthly recap</string>
     <string name="income">Income</string>
     <string name="net">Net</string>
+    <string name="poop_time_distribution_title">Time of Day Distribution</string>
+    <string name="monthly_average">Monthly average</string>
 </resources>
