@@ -196,4 +196,7 @@
     <string name="net">Netto</string>
     <string name="poop_time_distribution_title">Distribuzione oraria</string>
     <string name="monthly_average">Media mensile</string>
+    <string name="miscellaneous">Varie</string>
+    <string name="mileage">Chilometraggio Toyota C-HR</string>
+    <string name="toyota_chr">Toyota C-HR</string>
 </resources>

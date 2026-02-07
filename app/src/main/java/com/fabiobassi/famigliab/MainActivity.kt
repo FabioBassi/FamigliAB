@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AirlineSeatLegroomNormal
 import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
@@ -55,6 +56,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
 import com.fabiobassi.famigliab.ui.features.budgeting.BudgetingScreen
 import com.fabiobassi.famigliab.ui.features.medications.MedicationsScreen
+import com.fabiobassi.famigliab.ui.features.miscellaneus.MiscellaneousScreenContainer
 import com.fabiobassi.famigliab.ui.features.passwords.PasswordsScreen
 import com.fabiobassi.famigliab.ui.features.poop_tracker.PoopTrackerScreenContainer
 import com.fabiobassi.famigliab.ui.features.settings.SettingsScreen
@@ -79,6 +81,7 @@ sealed class NavItem(val titleResId: Int, val icon: ImageVector, val route: Stri
     object PoopTracker : NavItem(R.string.poop_tracker, Icons.Default.AirlineSeatLegroomNormal, "poop_tracker")
     object Medications : NavItem(R.string.medications, Icons.Default.LocalHospital, "medications")
     object Passwords : NavItem(R.string.passwords, Icons.Default.Lock, "passwords")
+    object Miscellaneous : NavItem(R.string.miscellaneous, Icons.Default.Apps, "miscellaneous")
 }
 
 @Composable
@@ -88,7 +91,8 @@ fun MainScreen() {
         NavItem.Budgeting,
         NavItem.PoopTracker,
         NavItem.Medications,
-        NavItem.Passwords
+        NavItem.Passwords,
+        NavItem.Miscellaneous
     )
 
     val navController = rememberNavController()
@@ -198,6 +202,7 @@ fun MainScreen() {
                                 paddingValues = screenPadding,
                                 isVisible = pagerState.currentPage == page
                             )
+                            NavItem.Miscellaneous -> MiscellaneousScreenContainer(screenPadding)
                         }
                     }
                 }

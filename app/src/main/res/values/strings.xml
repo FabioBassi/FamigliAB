@@ -206,4 +206,7 @@
     <string name="net">Net</string>
     <string name="poop_time_distribution_title">Time of Day Distribution</string>
     <string name="monthly_average">Monthly average</string>
+    <string name="miscellaneous">Miscellaneous</string>
+    <string name="mileage">Toyota C-HR usage</string>
+    <string name="toyota_chr">Toyota C-HR</string>
 </resources>
