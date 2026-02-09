@@ -67,9 +67,10 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val navigateTo = intent.getStringExtra("navigate_to")
         setContent {
             FamigliABTheme {
-                MainScreen()
+                MainScreen(initialPageRoute = navigateTo)
             }
         }
     }
@@ -85,7 +86,7 @@ sealed class NavItem(val titleResId: Int, val icon: ImageVector, val route: Stri
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(initialPageRoute: String? = null) {
     val items = listOf(
         NavItem.Settings,
         NavItem.Budgeting,
@@ -115,7 +116,12 @@ fun MainScreen() {
     val currentRoute = navBackStackEntry?.destination?.route
     
     val lazyListState = rememberLazyListState()
-    val pagerState = rememberPagerState(initialPage = 1, pageCount = { items.size })
+    
+    val initialPageIndex = remember(initialPageRoute) {
+        val index = items.indexOfFirst { it.route == initialPageRoute }
+        if (index != -1) index else 1
+    }
+    val pagerState = rememberPagerState(initialPage = initialPageIndex, pageCount = { items.size })
 
     // Synchronize Pager with Navigation
     LaunchedEffect(pagerState.currentPage) {
