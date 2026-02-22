@@ -4,6 +4,8 @@ import android.content.Context
 import com.fabiobassi.famigliab.data.CsvData
 import com.fabiobassi.famigliab.data.readCsv
 import com.fabiobassi.famigliab.data.writeToCsv
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
+import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -67,5 +69,46 @@ class CsvFileManager(private val context: Context) {
     ): List<T> {
         val file = getFileForMonth(type, date)
         return readCsv(file, creator)
+    }
+
+    /**
+     * Formats a CSV file for sharing by:
+     * 1. Removing the first column if specified.
+     * 2. Replacing decimal dots with commas for numeric cells.
+     * 3. Using ';' as a delimiter.
+     *
+     * Returns a new temporary file with the formatted data.
+     */
+    fun formatCsvForSharing(file: File, removeFirstColumn: Boolean = false): File {
+        if (!file.exists()) return file
+
+        val sharedDir = File(context.getExternalFilesDir(null), "FamigliAB/Shared")
+        if (!sharedDir.exists()) sharedDir.mkdirs()
+
+        // Clear previous shared files to avoid confusion
+        sharedDir.listFiles()?.forEach { it.delete() }
+
+        val tempFile = File(sharedDir, "export_${file.name}")
+        return try {
+            val rows = csvReader().readAll(file)
+            val formattedRows = rows.map { row ->
+                val processedRow = if (removeFirstColumn && row.isNotEmpty()) row.drop(1) else row
+                processedRow.map { cell ->
+                    // Check if the cell content is a numeric value to replace dot with comma
+                    if (cell.toDoubleOrNull() != null) {
+                        cell.replace(".", ",")
+                    } else {
+                        cell
+                    }
+                }
+            }
+            csvWriter {
+                delimiter = ';'
+            }.writeAll(formattedRows, tempFile)
+            tempFile
+        } catch (e: Exception) {
+            // Fallback to original file only if transformation fails
+            file
+        }
     }
 }

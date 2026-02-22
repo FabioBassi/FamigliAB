@@ -10,16 +10,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.fabiobassi.famigliab.R
 import com.fabiobassi.famigliab.data.Payment
 import com.fabiobassi.famigliab.file.CsvFileManager
 import com.fabiobassi.famigliab.file.CsvFileType
 import java.io.File
-import com.fabiobassi.famigliab.R
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 
 
 @Composable
@@ -129,15 +126,15 @@ fun BudgetingScreen(
         onAddIncomeClick = { showAddIncomeDialog = true },
         onSharePaymentsClick = {
             val file = csvFileManager.getFileForMonth(CsvFileType.PAYMENTS, currentDate)
-            shareFormattedCsv(context, file, removeFirstColumn = true)
+            shareFormattedCsv(context, csvFileManager, file, removeFirstColumn = true)
         },
         onShareIncomesClick = {
             val file = csvFileManager.getFileForMonth(CsvFileType.INCOMES, currentDate)
-            shareFormattedCsv(context, file)
+            shareFormattedCsv(context, csvFileManager, file)
         },
         onShareVouchersClick = {
             val file = csvFileManager.getFileForMonth(CsvFileType.VOUCHERS, currentDate)
-            shareFormattedCsv(context, file)
+            shareFormattedCsv(context, csvFileManager, file)
         },
         onPaymentClick = { paymentToEdit = it },
         onPaymentLongClick = { paymentToDelete = it },
@@ -146,42 +143,18 @@ fun BudgetingScreen(
     )
 }
 
-private fun shareFormattedCsv(context: Context, file: File, removeFirstColumn: Boolean = false) {
-    if (!file.exists()) return
-
-    // Ensure we use a directory that FileProvider has access to according to file_paths.xml
-    val sharedDir = File(context.getExternalFilesDir(null), "FamigliAB/Shared")
-    if (!sharedDir.exists()) sharedDir.mkdirs()
-    
-    // Clear previous shared files to avoid confusion
-    sharedDir.listFiles()?.forEach { it.delete() }
-
-    val tempFile = File(sharedDir, "export_${file.name}")
-    try {
-        val rows = csvReader().readAll(file)
-        val formattedRows = rows.map { row ->
-            val processedRow = if (removeFirstColumn && row.isNotEmpty()) row.drop(1) else row
-            processedRow.map { cell ->
-                // Check if the cell content is a numeric value to replace dot with comma
-                if (cell.toDoubleOrNull() != null) {
-                    cell.replace(".", ",")
-                } else {
-                    cell
-                }
-            }
-        }
-        csvWriter {
-            delimiter = ';'
-        }.writeAll(formattedRows, tempFile)
-
-        shareFile(context, tempFile)
-    } catch (e: Exception) {
-        // Fallback to original file only if transformation fails
-        shareFile(context, file)
-    }
+private fun shareFormattedCsv(
+    context: Context,
+    csvFileManager: CsvFileManager,
+    file: File,
+    removeFirstColumn: Boolean = false
+) {
+    val formattedFile = csvFileManager.formatCsvForSharing(file, removeFirstColumn)
+    shareFile(context, formattedFile)
 }
 
 private fun shareFile(context: Context, file: File) {
+    if (!file.exists()) return
     val uri = FileProvider.getUriForFile(context, "com.fabiobassi.famigliab.fileprovider", file)
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/csv"
