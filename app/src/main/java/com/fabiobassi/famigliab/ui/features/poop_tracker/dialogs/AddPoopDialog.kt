@@ -4,21 +4,24 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.SentimentDissatisfied
 import androidx.compose.material.icons.filled.SentimentSatisfied
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -55,15 +58,14 @@ fun AddPoopDialog(
     onSave: (String, String, String, Person) -> Unit
 ) {
     val calendar = Calendar.getInstance()
-    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.US) }
-    val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.US) }
+    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
 
     var date by remember { mutableStateOf(dateFormatter.format(Date())) }
     var hour by remember { mutableStateOf(timeFormatter.format(Date())) }
     var quality by remember { mutableStateOf("Good") }
     var selectedPerson by remember { mutableStateOf(Person.FAB) }
     val people = Person.entries
-    var isQualityExpanded by remember { mutableStateOf(false) }
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
@@ -74,9 +76,10 @@ fun AddPoopDialog(
         initialMinute = calendar.get(Calendar.MINUTE),
         is24Hour = true
     )
+
     val qualityOptions = listOf(
-        "Good" to stringResource(R.string.poop_good),
-        "Bad" to stringResource(R.string.poop_bad)
+        "Good" to (stringResource(R.string.poop_good) to Icons.Default.SentimentSatisfied),
+        "Bad" to (stringResource(R.string.poop_bad) to Icons.Default.SentimentDissatisfied)
     )
 
     if (showDatePicker) {
@@ -107,7 +110,7 @@ fun AddPoopDialog(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        hour = String.format(Locale.US, "%02d:%02d", timePickerState.hour, timePickerState.minute)
+                        hour = String.format(Locale.getDefault(), "%02d:%02d", timePickerState.hour, timePickerState.minute)
                         showTimePicker = false
                     }
                 ) {
@@ -130,6 +133,7 @@ fun AddPoopDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Default.History, contentDescription = null) },
         title = {
             Text(
                 text = stringResource(R.string.log_poop),
@@ -141,8 +145,9 @@ fun AddPoopDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
+                // Who Section
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = stringResource(R.string.who),
@@ -157,85 +162,88 @@ fun AddPoopDialog(
                                 selected = person == selectedPerson,
                                 icon = { SegmentedButtonDefaults.Icon(person == selectedPerson) }
                             ) {
-                                Text(person.name)
+                                Text(person.name.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
                             }
                         }
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showDatePicker = true }
+                // Date and Time Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedTextField(
-                        value = date,
-                        onValueChange = { },
-                        readOnly = true,
-                        enabled = false,
-                        label = { Text(stringResource(R.string.date)) },
-                        leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                            disabledBorderColor = MaterialTheme.colorScheme.outline,
-                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showTimePicker = true }
-                ) {
-                    OutlinedTextField(
-                        value = hour,
-                        onValueChange = { },
-                        readOnly = true,
-                        enabled = false,
-                        label = { Text(stringResource(R.string.time)) },
-                        leadingIcon = { Icon(Icons.Default.AccessTime, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                            disabledBorderColor = MaterialTheme.colorScheme.outline,
-                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
-                }
-
-                ExposedDropdownMenuBox(
-                    expanded = isQualityExpanded,
-                    onExpandedChange = { isQualityExpanded = it }
-                ) {
-                    OutlinedTextField(
-                        value = qualityOptions.find { it.first == quality }?.second ?: quality,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.quality)) },
-                        leadingIcon = { Icon(Icons.Default.SentimentSatisfied, contentDescription = null) },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = isQualityExpanded)
-                        },
+                    Box(
                         modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = isQualityExpanded,
-                        onDismissRequest = { isQualityExpanded = false }
+                            .weight(1.1f)
+                            .clickable { showDatePicker = true }
                     ) {
-                        qualityOptions.forEach { (english, localized) ->
-                            DropdownMenuItem(
-                                text = { Text(localized) },
-                                onClick = {
-                                    quality = english
-                                    isQualityExpanded = false
+                        OutlinedTextField(
+                            value = date,
+                            onValueChange = { },
+                            readOnly = true,
+                            enabled = false,
+                            singleLine = true,
+                            label = { Text(stringResource(R.string.date)) },
+                            leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(0.9f)
+                            .clickable { showTimePicker = true }
+                    ) {
+                        OutlinedTextField(
+                            value = hour,
+                            onValueChange = { },
+                            readOnly = true,
+                            enabled = false,
+                            singleLine = true,
+                            label = { Text(stringResource(R.string.time)) },
+                            leadingIcon = { Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        )
+                    }
+                }
+
+                // Quality Section
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(R.string.quality),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        qualityOptions.forEachIndexed { index, (english, data) ->
+                            val (localized, icon) = data
+                            SegmentedButton(
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = qualityOptions.size),
+                                onClick = { quality = english },
+                                selected = quality == english,
+                                icon = { SegmentedButtonDefaults.Icon(quality == english) },
+                                label = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Spacer(Modifier.size(8.dp))
+                                        Text(localized)
+                                    }
                                 }
                             )
                         }
@@ -244,9 +252,10 @@ fun AddPoopDialog(
             }
         },
         confirmButton = {
-            Button(onClick = {
-                onSave(date, hour, quality, selectedPerson)
-            }) {
+            Button(
+                onClick = { onSave(date, hour, quality, selectedPerson) },
+                modifier = Modifier.padding(horizontal = 8.dp)
+            ) {
                 Text(stringResource(R.string.save))
             }
         },
