@@ -1,5 +1,6 @@
 package com.fabiobassi.famigliab
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -39,8 +40,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -64,15 +67,24 @@ import com.fabiobassi.famigliab.ui.theme.FamigliABTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : FragmentActivity() {
+    
+    private var navigateToState by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val navigateTo = intent.getStringExtra("navigate_to")
+        navigateToState = intent.getStringExtra("navigate_to")
         setContent {
             FamigliABTheme {
-                MainScreen(initialPageRoute = navigateTo)
+                MainScreen(initialPageRoute = navigateToState)
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        navigateToState = intent.getStringExtra("navigate_to")
     }
 }
 
@@ -98,8 +110,7 @@ fun MainScreen(initialPageRoute: String? = null) {
 
     val navController = rememberNavController()
 
-    // Initialize the navigation graph to avoid "setGraph() before getGraph()" error
-    // This is required because we are using NavController without a NavHost
+    // Initialize the navigation graph
     navController.graph = remember(items) {
         navController.createGraph(startDestination = items[1].route) {
             items.forEach { item ->
@@ -111,17 +122,26 @@ fun MainScreen(initialPageRoute: String? = null) {
     }
 
     val scope = rememberCoroutineScope()
-
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     
     val lazyListState = rememberLazyListState()
     
-    val initialPageIndex = remember(initialPageRoute) {
+    val initialPageIndex = remember {
         val index = items.indexOfFirst { it.route == initialPageRoute }
         if (index != -1) index else 1
     }
     val pagerState = rememberPagerState(initialPage = initialPageIndex, pageCount = { items.size })
+
+    // Handle deep link / widget navigation after initial composition
+    LaunchedEffect(initialPageRoute) {
+        if (initialPageRoute != null) {
+            val index = items.indexOfFirst { it.route == initialPageRoute }
+            if (index != -1 && index != pagerState.currentPage) {
+                pagerState.animateScrollToPage(index)
+            }
+        }
+    }
 
     // Synchronize Pager with Navigation
     LaunchedEffect(pagerState.currentPage) {
@@ -137,7 +157,7 @@ fun MainScreen(initialPageRoute: String? = null) {
         }
     }
 
-    // Synchronize Navigation with Pager (e.g., when clicking a pill or back button)
+    // Synchronize Navigation with Pager
     LaunchedEffect(currentRoute) {
         val index = items.indexOfFirst { it.route == currentRoute }
         if (index != -1 && index != pagerState.currentPage) {

@@ -79,4 +79,8 @@ dependencies {
 
     implementation(libs.colorpicker.compose)
 
+    // Glance for App Widgets
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+
 }
