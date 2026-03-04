@@ -3,7 +3,13 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-  <path
-      android:fillColor="@android:color/white"
-      android:pathData="M20,18v-7h-3.5c-0.6,0 -1.1,0.2 -1.4,0.7L13.1,14H9.5c-0.6,0 -1,0.4 -1,1v1h11.5c0.8,0 1.5,0.7 1.5,1.5S20.8,19 20,19H4v-1.1c0,-0.8 0.4,-1.5 1.1,-1.9l2.4,-1.4c0.3,-0.2 0.5,-0.5 0.5,-0.9V8c0,-1.7 1.3,-3 3,-3h2c0.6,0 1,0.4 1,1s-0.4,1 -1,1h-2c-0.6,0 -1,0.4 -1,1v5h2.8l2,2.8c0.4,0.6 1.1,1 1.9,1H20z"/>
+    <!-- Toilet tank -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M4,2h16v6H4V2z" />
+    <!-- Toilet bowl (top view) -->
+    <path
+        android:fillColor="@android:color/white"
+        android:fillType="evenOdd"
+        android:pathData="M12,9c-4.42,0 -8,3.58 -8,8s3.58,8 8,8s8,-3.58 8,-8S16.42,9 12,9z M12,22c-2.76,0 -5,-2.24 -5,-5s2.24,-5 5,-5s5,2.24 5,5S14.76,22 12,22z" />
 </vector>
