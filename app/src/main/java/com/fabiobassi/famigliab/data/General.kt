@@ -17,5 +17,6 @@ enum class Category {
     REGALI,
     TURISMO,
     RISTORAZIONE,
+    INVESTIMENTI,
     VARIE
 }

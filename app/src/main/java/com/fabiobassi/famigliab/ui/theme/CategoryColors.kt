@@ -23,5 +23,6 @@ val categoryColors: Map<String,Color> = mapOf(
     "REGALI" to Color(0xFFD883FF),
     "TURISMO" to Color(0xFFFF7E79),
     "RISTORAZIONE" to Color(0xFF929000),
+    "INVESTIMENTI" to Color(0xFFAD0101),
     "VARIE" to Color(0xFF666666),
 )
