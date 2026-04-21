@@ -52,6 +52,8 @@ import com.fabiobassi.famigliab.ui.features.settings.dialogs.DeleteAllBudgetingD
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.DeleteArchivedMedicationDataDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.ImportPaymentsDialog
 import com.fabiobassi.famigliab.ui.features.settings.dialogs.SharePasswordsDialog
+import com.fabiobassi.famigliab.file.ZipUtils
+import com.fabiobassi.famigliab.ui.features.settings.dialogs.ShareAppDataDialog
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -78,6 +80,7 @@ fun SettingsScreen(
     var showDeletePoopTrackerCsvDialog by remember { mutableStateOf(false) }
     var showPasswordResetDialog by remember { mutableStateOf(false) }
     var showShareOptionsDialog by remember { mutableStateOf(false) }
+    var showShareAppDataDialog by remember { mutableStateOf(false) }
     var showDeleteArchivedMedicationsDialog by remember { mutableStateOf(false) }
 
     val errorSavingFileText: String = stringResource(R.string.error_saving_file)
@@ -110,6 +113,27 @@ fun SettingsScreen(
             .build()
 
         biometricPrompt.authenticate(promptInfo)
+    }
+
+    val saveAppDataLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri: Uri? ->
+        uri?.let { outputUri ->
+            val sourceDir = File(context.getExternalFilesDir(null), "FamigliAB")
+            val zipFile = File(context.cacheDir, "FamigliAB_backup.zip")
+            if (ZipUtils.zipFolder(sourceDir, zipFile)) {
+                try {
+                    context.contentResolver.openOutputStream(outputUri)?.use { outputStream ->
+                        zipFile.inputStream().copyTo(outputStream)
+                    }
+                    Toast.makeText(context, R.string.app_data_saved_successfully, Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, errorSavingFileText.format(e.message), Toast.LENGTH_LONG).show()
+                } finally {
+                    zipFile.delete()
+                }
+            } else {
+                Toast.makeText(context, R.string.error_creating_zip_file, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     val importPasswordsLauncher = rememberLauncherForActivityResult(
@@ -246,6 +270,12 @@ fun SettingsScreen(
                     },
                     trailing = { ColorPreview(sabColor) }
                 )
+                PreferenceDivider()
+                PreferenceItem(
+                    title = stringResource(R.string.share_app_data_zip),
+                    icon = Icons.Default.Share,
+                    onClick = { showShareAppDataDialog = true }
+                )
             }
         }
 
@@ -323,6 +353,31 @@ fun SettingsScreen(
     }
 
     // Dialogs logic
+    if (showShareAppDataDialog) {
+        val intentTitle = stringResource(R.string.share_file)
+        ShareAppDataDialog(
+            onDismissRequest = { showShareAppDataDialog = false },
+            onShare = {
+                val sourceDir = File(context.getExternalFilesDir(null), "FamigliAB")
+                val zipFile = File(context.cacheDir, "FamigliAB_backup.zip")
+                if (ZipUtils.zipFolder(sourceDir, zipFile)) {
+                    val uri = FileProvider.getUriForFile(context, "com.fabiobassi.famigliab.fileprovider", zipFile)
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        type = "application/zip"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                    }
+                    context.startActivity(Intent.createChooser(intent, intentTitle))
+                } else {
+                    Toast.makeText(context, R.string.error_creating_zip_file, Toast.LENGTH_SHORT).show()
+                }
+            },
+            onSaveToFiles = {
+                saveAppDataLauncher.launch("FamigliAB_backup.zip")
+            }
+        )
+    }
+
     if (showDeleteArchivedMedicationsDialog) {
         DeleteArchivedMedicationDataDialog(
             onDismissRequest = { showDeleteArchivedMedicationsDialog = false },

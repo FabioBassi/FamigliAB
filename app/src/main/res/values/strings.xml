@@ -209,4 +209,8 @@
     <string name="miscellaneous">Miscellaneous</string>
     <string name="mileage">Toyota C-HR usage</string>
     <string name="toyota_chr">Toyota C-HR</string>
+    <string name="share_app_data_zip">Share all app data (zip)</string>
+    <string name="share_or_save_app_data">Share or Save all app data</string>
+    <string name="app_data_saved_successfully">App data saved successfully</string>
+    <string name="error_creating_zip_file">Error creating zip file</string>
 </resources>

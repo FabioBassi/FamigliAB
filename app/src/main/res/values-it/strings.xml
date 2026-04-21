@@ -199,4 +199,8 @@
     <string name="miscellaneous">Varie</string>
     <string name="mileage">Chilometraggio Toyota C-HR</string>
     <string name="toyota_chr">Toyota C-HR</string>
+    <string name="share_app_data_zip">Condividi tutti i dati (zip)</string>
+    <string name="share_or_save_app_data">Condividi o Salva tutti i dati</string>
+    <string name="app_data_saved_successfully">Dati salvati con successo</string>
+    <string name="error_creating_zip_file">Errore nel creare il file zip</string>
 </resources>
